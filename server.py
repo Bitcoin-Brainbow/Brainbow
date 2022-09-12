@@ -5,8 +5,8 @@ from connectrum.svr_info import ServerInfo
 from connectrum.client import StratumClient
 
 from nowallet.scrape import scrape_electrum_servers
-from nowallet import BTC, TBTC, LTC
-CHAINS = [_chain.chain_1209k for _chain in (BTC, TBTC, LTC)]
+from nowallet import BTC, TBTC
+CHAINS = [_chain.chain_1209k for _chain in (BTC, TBTC)]
 
 class Server:
     def __init__(self, _chain):
@@ -29,8 +29,7 @@ class Server:
             self.server_list = list()
 
     async def connect(self):
-        server_info = ServerInfo(
-            "", hostname="mdw.ddns.net", ports=50001)
+        server_info = ServerInfo("", hostname="mdw.ddns.net", ports=50001)
         self.client = StratumClient(self.app.loop)
         self.connection = self.client.connect(
             server_info,

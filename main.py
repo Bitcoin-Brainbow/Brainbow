@@ -57,6 +57,8 @@ if platform != "android":
     Window.size = (350, 550)
 
 
+LOG_OFF_WALLET = "Disconnect and clear wallet"
+
 class Tab(MDFloatLayout, MDTabsBase):
     '''Class implementing content for a tab.'''
     content_text = StringProperty()
@@ -183,7 +185,11 @@ class NowalletApp(MDApp):
                             "on_release": lambda x="Manage UTXOs": app.menu_item_handler(x)},
                            {"viewclass": "MyMenuItem",
                             "text": "Settings",
-                            "on_release": lambda x="Settings": app.menu_item_handler(x)}]
+                            "on_release": lambda x="Settings": app.menu_item_handler(x)},
+                           {"viewclass": "MyMenuItem",
+                            "text": LOG_OFF_WALLET,
+                            "on_release": lambda x=LOG_OFF_WALLET: app.menu_item_handler(x)},
+                           ]
         self.utxo_menu_items = [{"viewclass": "MyMenuItem",
                                  "text": "View Private key"},
                                 {"viewclass": "MyMenuItem",
@@ -243,7 +249,7 @@ class NowalletApp(MDApp):
     def menu_button_handler(self, button):
         if self.root.ids.sm.current == "main":
             # MDDropdownMenu(items=self.menu_items, width_mult=4).open(button)
-            MDDropdownMenu(items=self.menu_items, width_mult=4, caller=button, max_height=dp(200)).open()
+            MDDropdownMenu(items=self.menu_items, width_mult=4, caller=button, max_height=dp(250)).open()
 
     def menu_item_handler(self, text):
         # Main menu items
@@ -255,6 +261,9 @@ class NowalletApp(MDApp):
             self.root.ids.sm.current = "utxo"
         elif "Settings" in text:
             self.open_settings()
+        elif LOG_OFF_WALLET in text:
+            self.logoff()
+
         # UTXO menu items
         elif self.root.ids.sm.current == "utxo":
             addr = self.utxo.address(self.chain.netcode)
@@ -373,6 +382,10 @@ class NowalletApp(MDApp):
     def login(self):
         task1 = asyncio.create_task(self.do_login())
 
+    def logoff(self):
+        self.show_dialog("Disconnected.","")
+        1/0
+
     async def do_listen_task(self):
         logging.info("Listening for new transactions.")
         task = asyncio.create_task(self.wallet.listen_to_addresses())
@@ -414,7 +427,7 @@ class NowalletApp(MDApp):
         self.current_fee = self.estimated_fee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
         logging.info("Finished 'doing login tasks'")
         logging.info("all known addreses {}".format(self.wallet.get_all_known_addresses(addr=True)))
-        
+
     def update_screens(self):
         self.update_balance_screen()
         self.update_send_screen()

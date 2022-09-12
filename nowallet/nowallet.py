@@ -206,8 +206,7 @@ class History:
 Chain = collections.namedtuple("Chain", ["netcode", "chain_1209k", "bip44"])
 BTC = Chain(netcode="BTC", chain_1209k="btc", bip44=0)
 TBTC = Chain(netcode="XTN", chain_1209k="tbtc", bip44=1)
-LTC = Chain(netcode="LTC", chain_1209k="ltc", bip44=2)
-VTC = Chain(netcode="VTC", chain_1209k="vtc", bip44=28)
+
 
 
 def log_time_elapsed(func: Callable) -> Callable:
