@@ -43,7 +43,7 @@ from connectrum.svr_info import ServerInfo
 from .bip49 import SegwitBIP32Node
 from .keys import derive_key
 from .socks_http import urlopen
-
+from .utils import get_timestamp_from_block_header
 from connectrum import ElectrumErrorResponse
 
 class Connection:
@@ -158,7 +158,12 @@ class History:
                 print(e)
                 return
 
-            block_time = block_header["timestamp"]
+            #block_time = block_header["timestamp"]
+            block_time = get_timestamp_from_block_header(block_header)
+            logging.info("block_header={}->timstamp={}".format(block_header, block_time))
+            #FIXME
+            #import datetime
+            #block_time = int(datetime.datetime.utcnow().timestamp())# block_header["timestamp"]
             self.timestamp = block_time
 
             logging.debug("Got timestamp %d from block at height %s",
@@ -186,7 +191,7 @@ class History:
             "<History: TXID:{} is_spend:{} " +
             "value:{} height:{} timestamp:{}>"
         ).format(self.tx_obj.id(), self.is_spend,
-                 self.value, self.height, time.asctime(time.localtime(self.timestamp)))
+                 self.value, self.height, self.timestamp) # time.asctime(time.localtime(self.timestamp)))
 
     def __repr__(self) -> str:
         return str(self)
@@ -233,7 +238,7 @@ class Wallet:
         "get_balance": "blockchain.scripthash.get_balance",
         "listunspent": "blockchain.scripthash.listunspent",
         "get_history": "blockchain.scripthash.get_history",
-        "get_header": "blockchain.block.get_header",
+        "get_header": "blockchain.block.header", # was "get_header", removed in favor of header in electrum
         "subscribe": "blockchain.scripthash.subscribe",
         "estimatefee": "blockchain.estimatefee",
         "broadcast": "blockchain.transaction.broadcast"
@@ -426,9 +431,13 @@ class Wallet:
         """
         history = []  # type: List[History]
         for value in self.history.values():
+            logging.info(value)
             history.extend(value["txns"])
         for value in self.change_history.values():
-            history.extend(filter(lambda t: t.is_spend, value["txns"]))
+            logging.info(value)
+            #history.extend(filter(lambda t: t.is_spend, value["txns"]))
+            if all(t, t.is_spend, h.timestamp):
+                history.extend(filter(lambda t: t.is_spend, value["txns"]))
         history = list(set(history))  # Dedupe
         history.sort(reverse=True, key=lambda h: h.timestamp)
         return history
@@ -573,7 +582,7 @@ class Wallet:
             # Process all Txs into our History objects
             futures = [self._process_history(hist, address, heights[i])
                        for i, hist in enumerate(this_history)]  # type: List[Awaitable[History]]
-            
+
             processed_history = await asyncio.gather(
 #                 *futures, loop=self.loop)  # type: List[History]
                 *futures)  # type: List[History]

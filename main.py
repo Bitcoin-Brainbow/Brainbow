@@ -8,9 +8,6 @@ from aiohttp.client_exceptions import ClientConnectorError
 from decimal import Decimal
 
 
-import kivy
-kivy.require("1.10.0")
-
 from kivy.utils import platform
 from kivy.core.window import Window
 # from kivy.app import App
@@ -22,13 +19,17 @@ from kivy.uix.behaviors import ButtonBehavior
 
 from kivymd.app import MDApp
 from kivymd.theming import ThemeManager
-from kivymd.uix.list import TwoLineListItem, TwoLineIconListItem, ILeftBodyTouch, OneLineListItem
-from kivymd.uix.button import MDIconButton, MDRaisedButton, MDFlatButton
+from kivymd.uix.list import TwoLineListItem
+from kivymd.uix.list import TwoLineIconListItem
+from kivymd.uix.list import ILeftBodyTouch
+from kivymd.uix.list import OneLineListItem
+from kivymd.uix.button import MDIconButton
+from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.label import MDLabel
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.menu import MDDropdownMenu
-#from kivymd.uix.menu.menu import MDMenuItem
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.tab import MDTabsBase
 
@@ -36,10 +37,6 @@ from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.button import ButtonBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty
-
-
-# class MDMenuItem(RecycleDataViewBehavior, ButtonBehavior, BoxLayout):
-    # text = StringProperty()
 
 from kivy.garden.qrcode import QRCodeWidget
 
@@ -122,7 +119,7 @@ class ListItem(TwoLineIconListItem):
     history = ObjectProperty()
 
     def on_release(self):
-        app = App.get_running_app()
+        app = MDApp.get_running_app()
         base_url, chain = None, app.chain.chain_1209k
         txid = self.history.tx_obj.id()
         if app.explorer == "blockcypher":
@@ -307,6 +304,7 @@ class NowalletApp(MDApp):
     async def send_button_handler(self):
         addr_input = self.root.ids.address_input
         address = addr_input.text.strip()
+        logging.info("send_button_handler: address={}".format(address))
         amount_str = self.root.ids.spend_amount_input.text
         amount = Decimal(amount_str) / self.unit_factor
 
@@ -415,7 +413,8 @@ class NowalletApp(MDApp):
         coinkb_fee = await self.wallet.get_fee_estimation()
         self.current_fee = self.estimated_fee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
         logging.info("Finished 'doing login tasks'")
-
+        logging.info("all known addreses {}".format(self.wallet.get_all_known_addresses(addr=True)))
+        
     def update_screens(self):
         self.update_balance_screen()
         self.update_send_screen()

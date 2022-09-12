@@ -21,7 +21,7 @@ BoxLayout:
     orientation: "vertical"
     MDTopAppBar:
         id: toolbar
-        title: "NOWALLET"
+        title: "Brainbow"
         md_bg_color: app.theme_cls.primary_color
         background_palette: "Primary"
         background_hue: "500"
@@ -30,7 +30,6 @@ BoxLayout:
     ScreenManager:
         id: sm
         transition: SlideTransition(direction="up")
-
         LoginScreen:
             name: "login"
             AnchorLayout:
@@ -40,7 +39,7 @@ BoxLayout:
                     orientation: "vertical"
                     MDTextField:
                         id: email_field
-                        hint_text: "Email/Salt"
+                        hint_text: "Email/Username/Salt"
                         color_mode: "accent"
                         write_tab: False
                         required: True
@@ -53,7 +52,7 @@ BoxLayout:
                         required: True
                     MDTextField:
                         id: confirm_field
-                        hint_text: "Confirm Passphrase"
+                        hint_text: "Repeat Passphrase"
                         color_mode: "accent"
                         write_tab: False
                         password: True
@@ -65,14 +64,14 @@ BoxLayout:
                             size: dp(33), dp(33)
                             active: True
                         MDLabel:
-                            text: "Create bech32 wallet"
+                            text: "Use bech32"
                             theme_text_color: "Primary"
                             font_style:"Caption"
                             size_hint_y: None
                             height: dp(33)
                     MDRaisedButton:
                         size_hint_x: 1
-                        text: "Create Wallet"
+                        text: "Access Wallet"
                         id: login_button
 #                        on_release: asyncio.run(app.do_login())
 #                        on_release: await app.do_login()
@@ -355,4 +354,3 @@ BoxLayout:
     on_release: self.on_release()
     IconLeftSampleWidget:
         icon: self.parent.parent.icon
-
