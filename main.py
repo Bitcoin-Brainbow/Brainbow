@@ -158,7 +158,7 @@ class NowalletApp(MDApp):
     theme_cls.theme_style = "Dark"
     theme_cls.primary_palette = "Gray"
     theme_cls.accent_palette = "DeepOrange"
-
+    
     units = StringProperty()
     currency = StringProperty()
     current_coin = StringProperty("0")

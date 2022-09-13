@@ -1,4 +1,5 @@
-from typing import Union, Tuple
+from typing import Union
+from typing import Tuple
 
 from Crypto.Hash import SHA256
 import scrypt
