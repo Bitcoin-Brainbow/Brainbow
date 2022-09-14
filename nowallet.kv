@@ -24,13 +24,13 @@ BoxLayout:
     MDTopAppBar:
         id: toolbar
         title: "Brainbow"
-        md_bg_color: app.theme_cls.primary_color
-        background_palette: "Primary"
+        #md_bg_color: app.theme_cls.primary_color
+        #background_palette: "Primary"
         background_hue: "500"
 
         type_height: "large"
         headline_text: "Headline"
-        md_bg_color: "#2d2734"
+        #md_bg_color: "#2d2734"
 
         left_action_items: [["bitcoin", lambda x: None]]
         right_action_items: [["menu", lambda x: app.menu_button_handler(self)]]
@@ -236,7 +236,7 @@ BoxLayout:
                                         show_border: False
 
                 # For later....
-                #                        
+                #
                 #Tab:
                 #    name: "import-psbt"
                 #    icon: "database-arrow-up-outline"
@@ -262,6 +262,9 @@ BoxLayout:
                 Tab:
                     name: "used-addresses"
                     icon: "database-marker"
+                    #title: "Used Addresses"
+                    #title_icon_mode: "Top"
+                    #title_is_capital: "True"
                     AnchorLayout:
                         BoxLayout:
                             size_hint: 0.9, 0.8
@@ -274,6 +277,9 @@ BoxLayout:
                 Tab:
                     name: "addresses"
                     icon: "map-marker-multiple"
+                    #title: "Addresses"
+                    #title_icon_mode: "Top"
+                    #title_is_capital: "True"
                     AnchorLayout:
                         BoxLayout:
                             size_hint: 0.9, 0.8

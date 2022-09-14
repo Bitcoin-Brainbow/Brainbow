@@ -20,4 +20,4 @@ api_password.txt
 env
 env.old
 *.pyc
-
+-my-notes*

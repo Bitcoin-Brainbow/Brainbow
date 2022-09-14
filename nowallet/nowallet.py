@@ -436,12 +436,19 @@ class Wallet:
             logging.info(value)
             history.extend(value["txns"])
         for value in self.change_history.values():
-            logging.info(value)
-            #history.extend(filter(lambda t: t.is_spend, value["txns"]))
-            if all(t, t.is_spend, h.timestamp):
-                history.extend(filter(lambda t: t.is_spend, value["txns"]))
+            logging.info("*** value: {}".format(value))
+            logging.info("*** t: {}".format(t))
+
+            history.extend(filter(lambda t: t.is_spend, value["txns"]))
+            #if all(t, t.is_spend, h.timestamp):
+            #    history.extend(filter(lambda t: t.is_spend, value["txns"]))
         history = list(set(history))  # Dedupe
-        history.sort(reverse=True, key=lambda h: h.timestamp)
+        #FIXME:
+        # https://github.com/Bitcoin-Brainbow/Brainbow/issues/13#issuecomment-1246377734
+        #history.sort(reverse=True, key=lambda h: h.timestamp)
+        import time
+        history.sort(reverse=True, key=lambda h: int(time.mktime(h.timestamp.timetuple())))
+
         return history
 
     async def _get_history(self, txids: List[str]) -> List[Tx]:
@@ -642,8 +649,7 @@ class Wallet:
                 else self.spend_indicies  # type: List[int]
             hist_dict = self.change_history if change \
                 else self.history  # type: Dict[str, Any]
-            address = self.get_address(
-                self.get_key(index, change), addr=True)  # type: str
+            address = self.get_address(self.get_key(index, change), addr=True)  # type: str
 
             # Reassign historic info for new history
             txid = history["tx_hash"]  # type: str

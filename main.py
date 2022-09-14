@@ -152,11 +152,14 @@ class FloatInput(MDTextField):
 
 class NowalletApp(MDApp):
     """
+    kivymd.color_definitions.theme_colors = ['Primary', 'Secondary', 'Background', 'Surface', 'Error', 'On_Primary', 'On_Secondary', 'On_Background', 'On_Surface', 'On_Error']
+Valid theme colors.
+
      ValueError: ThemeManager.primary_palette is set to an invalid option 'Grey'. Must be one of: ['Red', 'Pink', 'Purple', 'DeepPurple', 'Indigo', 'Blue', 'LightBlue', 'Cyan', 'Teal', 'Green', 'LightGreen', 'Lime', 'Yellow', 'Amber', 'Orange', 'DeepOrange', 'Brown', 'Gray', 'BlueGray']
     """
     theme_cls = ThemeManager()
-    theme_cls.theme_style = "Dark"
-    theme_cls.primary_palette = "Gray"
+    theme_cls.theme_style = "Light" # Dark
+    theme_cls.primary_palette = "Purple"#  "Gray"
     theme_cls.accent_palette = "DeepOrange"
 
     units = StringProperty()
@@ -195,6 +198,10 @@ class NowalletApp(MDApp):
                                 {"viewclass": "MyMenuItem",
                                  "text": "View Redeem script"}]
         super().__init__()
+
+    def show_snackbar(self, text):
+        from kivymd.uix.snackbar import Snackbar
+        Snackbar(text=text).open()
 
     def show_dialog(self, title, message, qrdata=None, cb=None):
         if qrdata:
@@ -341,9 +348,11 @@ class NowalletApp(MDApp):
 
     def check_new_history(self):
         if self.wallet.new_history:
+            logging.info("self.wallet.new_history=True")
             self.update_screens()
+            self.show_snackbar("NEW TRANSACTION")
             self.wallet.new_history = False
-
+        
     @property
     def pub_char(self):
         if self.chain == nowallet.BTC:
