@@ -284,20 +284,37 @@ class Wallet:
                 chain_code=chain_code,
                 secret_exponent=secret_exp
             )  # type: SegwitBIP32Node
+            ddd = dir(self.mpk)
+            for _d in ddd:
+                try:
+                    print(" {} {} -> {}".format(_d, "", getattr(self.mpk, _d)()))
+                    pass
+                except:
+                    pass
 
             bip = 84 if bech32 else 49  # type: int
             path = "{}H/{}H/{}H".format(
                 bip, self.chain.bip44, account
             )  # type: str
-
-            self.account_master = \
-                self.mpk.subkey_for_path(path)  # type: SegwitBIP32Node
-            self.root_spend_key = \
-                self.account_master.subkey(0)  # type: SegwitBIP32Node
-            self.root_change_key = \
-                self.account_master.subkey(1)  # type: SegwitBIP32Node
+            logging.info("path={} for bip={}, self.chain.bip44={}, account={}".format(path, bip, self.chain.bip44, account))
             self.fingerprint = self.mpk.fingerprint().hex()
-            logging.info("path: {}".format(path))
+            self.account_master = self.mpk.subkey_for_path(path)  # type: SegwitBIP32Node
+            self.root_spend_key = self.account_master.subkey(0)  # type: SegwitBIP32Node
+            self.root_change_key = self.account_master.subkey(1)  # type: SegwitBIP32Node
+
+            # Use https://iancoleman.io/bip39/ to verify if everything work as expected.
+            #print ("---")
+            #print ("mpk = BIP32 Root Key")
+            #print("{} {}".format(self.mpk.fingerprint().hex(), self.mpk.hwif()))
+            #print("{} {}".format(self.mpk.fingerprint().hex(), self.mpk.hwif(as_private=1)))
+            #print ("---")
+            #print ("account_master = Account Extended Public|Private Key")
+            #print("{} {}".format(self.account_master.fingerprint().hex(), self.account_master.hwif()))
+            #print("{} {}".format(self.account_master.fingerprint().hex(), self.account_master.hwif(as_private=1)))
+            #print ("---")
+            #print ("root_spend_key = BIP32 Extended Public|Private Key")
+            #print("{} {}".format(self.root_spend_key.fingerprint().hex(), self.root_spend_key.hwif()))
+            #print("{} {}".format(self.root_spend_key.fingerprint().hex(), self.root_spend_key.hwif(as_private=1)))
 
         self.connection = connection  # type: Connection
         self.loop = loop  # type: asyncio.AbstractEventLoop
@@ -333,6 +350,21 @@ class Wallet:
         :returns: a string containing the account's XPUB.
         """
         return self.account_master.hwif()
+
+    @property
+    def private_BIP32_root_key(self) -> str:
+        return mpk.hwif(as_private=1)
+
+    #@property
+    #def bip39_seed(self) -> str:
+    #    """ Returns this account's WIF.
+    #    :returns: a string containing the account's WIF.
+    #    """
+    #    from .utils import dump_BIP39_seed
+    #    sec_int = self.mpk.secret_exponent()
+    
+
+
 
     def get_key(self, index: int, change: bool) -> SegwitBIP32Node:
         """ Returns a specified pycoin.key object.
@@ -437,7 +469,7 @@ class Wallet:
             history.extend(value["txns"])
         for value in self.change_history.values():
             logging.info("*** value: {}".format(value))
-            logging.info("*** t: {}".format(t))
+            #logging.info("*** t: {}".format(t))
 
             history.extend(filter(lambda t: t.is_spend, value["txns"]))
             #if all(t, t.is_spend, h.timestamp):
@@ -447,8 +479,10 @@ class Wallet:
         # https://github.com/Bitcoin-Brainbow/Brainbow/issues/13#issuecomment-1246377734
         #history.sort(reverse=True, key=lambda h: h.timestamp)
         import time
-        history.sort(reverse=True, key=lambda h: int(time.mktime(h.timestamp.timetuple())))
-
+        try:
+            history.sort(reverse=True, key=lambda h: int(time.mktime(h.timestamp.timetuple())))
+        except:
+            pass
         return history
 
     async def _get_history(self, txids: List[str]) -> List[Tx]:

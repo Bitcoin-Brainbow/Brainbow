@@ -85,6 +85,9 @@ class UTXOScreen(Screen):
 class YPUBScreen(Screen):
     pass
 
+class SeedScreen(Screen):
+    pass
+
 
 class PINScreen(Screen):
     pass
@@ -180,6 +183,9 @@ Valid theme colors.
         self.menu_items = [{"viewclass": "MyMenuItem",
                             "text": "View YPUB",
                             "on_release": lambda x="View YPUB": app.menu_item_handler(x)},
+                            {"viewclass": "MyMenuItem",
+                            "text": "View BIP32 Root Key()",
+                            "on_release": lambda x="View BIP39 Seed": app.menu_item_handler(x)},
                            {"viewclass": "MyMenuItem",
                             "text": "Lock with PIN",
                             "on_release": lambda x="Lock with PIN": app.menu_item_handler(x)},
@@ -262,6 +268,8 @@ Valid theme colors.
         # Main menu items
         if "PUB" in text:
             self.root.ids.sm.current = "ypub"
+        if "Seed" in text:
+            self.root.ids.sm.current = "seed"
         elif "PIN" in text:
             self.root.ids.sm.current = "pin"
         elif "UTXO" in text:
@@ -352,7 +360,7 @@ Valid theme colors.
             self.update_screens()
             self.show_snackbar("NEW TRANSACTION")
             self.wallet.new_history = False
-        
+
     @property
     def pub_char(self):
         if self.chain == nowallet.BTC:
@@ -421,6 +429,7 @@ Valid theme colors.
             # connection, self.loop, self.chain, self.bech32))
         self.wallet = nowallet.Wallet(email, passphrase, connection, self.loop, self.chain, self.bech32)
         self.set_wallet_fingetprint(self.wallet.fingerprint)
+
         self.root.ids.wait_text.text = "Fetching history.."
         await self.wallet.discover_all_keys()
 
@@ -440,6 +449,8 @@ Valid theme colors.
         self.update_send_screen()
         self.update_recieve_screen()
         self.update_ypub_screen()
+        self.update_seed_screen()
+
         self.update_utxo_screen()
 
     async def new_history_loop(self):
@@ -495,8 +506,9 @@ Valid theme colors.
     def update_recieve_screen(self):
         address = self.update_recieve_qrcode()
         encoding = "bech32" if self.wallet.bech32 else "P2SH"
-        self.root.ids.addr_label.text = \
-            "Current Address ({}):\n{}".format(encoding, address)
+        current_addr = "Current Address ({}):\n{}".format(encoding, address)
+        #TODO: add derivation path, eg. m/49'/1'/0'/0/5
+        self.root.ids.addr_label.text = "{}".format(current_addr)
 
     def update_recieve_qrcode(self):
         address = self.wallet.get_address(
@@ -516,6 +528,18 @@ Valid theme colors.
         ypub = self.pub_char + ypub[1:]
         self.root.ids.ypub_label.text = "Extended Public Key (SegWit):\n" + ypub
         self.root.ids.ypub_qrcode.data = ypub
+
+    def update_seed_screen(self):
+        try:
+            #self.root.ids.seed_label.text = "BIP39 Seed:\n"   +  self.wallet.bip39_seed
+            #self.root.ids.seed_qrcode.data = self.wallet.bip39_seed
+            self.root.ids.seed_label.text = \
+                "BIP32 Root Key (WIF):\n" + \
+                self.wallet.private_BIP32_root_key
+            self.root.ids.seed_qrcode.data = self.wallet.private_BIP32_root_key
+        except:
+            self.root.ids.seed_label.text = "n/a"
+            self.root.ids.seed_qrcode.data = "n/a"
 
     def lock_UI(self, pin):
         if not pin:
@@ -610,7 +634,7 @@ Valid theme colors.
 
     def build_settings(self, settings):
         coin = self.chain.chain_1209k.upper()
-        settings.add_json_panel("Nowallet Settings",
+        settings.add_json_panel("Settings",
                                 self.config,
                                 data=settings_json(coin))
 
@@ -681,8 +705,8 @@ def open_url(url):
         webbrowser.open(url)
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    # loop = asyncio.new_event_loop()
+    #loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     app = NowalletApp(loop)
 
     loop.run_until_complete(app.async_run())

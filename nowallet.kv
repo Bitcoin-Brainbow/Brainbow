@@ -69,7 +69,8 @@ BoxLayout:
                             id: bech32_checkbox
                             size_hint: None, None
                             size: dp(33), dp(33)
-                            active: True
+                            active: False
+                            disabled: True # bech32 implementation seems broken right now. not sure if it ever worked
                         MDLabel:
                             text: "Use bech32"
                             theme_text_color: "Primary"
@@ -395,6 +396,32 @@ BoxLayout:
                 pos_hint: {"center_x": 0.5, "center_y": 0.13}
                 text: "Go Back"
                 id: ypub_back_button
+                on_release: app.root.ids.sm.current = "main"
+
+        SeedScreen:
+            name: "seed"
+            MDCard:
+                size_hint: None, None
+                size: dp(320), dp(360)
+                pos_hint: {"center_x": 0.5, "center_y": 0.55}
+                BoxLayout:
+                    orientation:"vertical"
+                    padding: dp(10)
+                    spacing: 5
+                    MDLabel:
+                        id: seed_label
+                        theme_text_color: "Primary"
+                        font_style:"Body2"
+                        size_hint_y: None
+                        height: dp(70)
+                    QRCodeWidget:
+                        id: seed_qrcode
+                        show_border: False
+            MDRaisedButton:
+                size_hint: 0.5, 0.07
+                pos_hint: {"center_x": 0.5, "center_y": 0.13}
+                text: "Go Back"
+                id: seed_back_button
                 on_release: app.root.ids.sm.current = "main"
 
 
