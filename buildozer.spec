@@ -1,7 +1,7 @@
 [app]
 
 # (str) Title of your application
-title = Nowallet
+title = Brainbow Bitcoin Client
 
 # (str) Package name
 package.name = nowallet
@@ -270,4 +270,3 @@ warn_on_root = 1
 #    Then, invoke the command line with the "demo" profile:
 #
 #buildozer --profile demo android debug
-

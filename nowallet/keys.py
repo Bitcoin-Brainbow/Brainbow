@@ -5,6 +5,7 @@ from Crypto.Hash import SHA256
 import scrypt
 import pbkdf2
 
+from embit import bip39
 
 def and_split(bytes_: bytes) -> Tuple[bytes, bytes]:
     ba1 = bytearray()  # type: bytearray
@@ -30,6 +31,9 @@ def derive_key(salt: str, passphrase: str, hd: bool = True) -> \
         Union[int, Tuple[int, bytes]]:
     key_length = 64 if hd else 32  # type: int
 
+    print("key_length: {}".format(key_length))
+    print("hd: {}".format(hd))
+
     t1 = and_split(bytes(salt, "utf-8"))  # type: Tuple[bytes, bytes]
     salt1, salt2 = t1
     t2 = and_split(bytes(passphrase, "utf-8"))  # type: Tuple[bytes, bytes]
@@ -45,6 +49,11 @@ def derive_key(salt: str, passphrase: str, hd: bool = True) -> \
     merged = xor_merge(scrypt_key, pbkdf2_key)  # type: bytes
 
     if hd:
+        mnemonic = bip39.mnemonic_from_bytes(merged[0:32])
+        print(mnemonic)
+
+
+
         secret_exp = int(merged[0:32].hex(), 16)  # type: int
         chain_code = merged[32:]  # type: bytes
         return secret_exp, chain_code

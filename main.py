@@ -158,7 +158,7 @@ class NowalletApp(MDApp):
     theme_cls.theme_style = "Dark"
     theme_cls.primary_palette = "Gray"
     theme_cls.accent_palette = "DeepOrange"
-    
+
     units = StringProperty()
     currency = StringProperty()
     current_coin = StringProperty("0")
@@ -392,9 +392,7 @@ class NowalletApp(MDApp):
 
     async def do_login_tasks(self, email, passphrase):
         self.root.ids.wait_text.text = "Connecting.."
-
         server, port, proto = await nowallet.get_random_server(self.loop)
-
         try:
             connection = nowallet.Connection(self.loop, server, port, proto)
         except Exception as ex:
@@ -413,7 +411,7 @@ class NowalletApp(MDApp):
         # wallet = await asyncio.gather(self.loop.run_in_executor(None, nowallet.Wallet, email, passphrase,
             # connection, self.loop, self.chain, self.bech32))
         self.wallet = nowallet.Wallet(email, passphrase, connection, self.loop, self.chain, self.bech32)
-
+        self.set_wallet_fingetprint(self.wallet.fingerprint)
         self.root.ids.wait_text.text = "Fetching history.."
         await self.wallet.discover_all_keys()
 
@@ -455,6 +453,10 @@ class NowalletApp(MDApp):
             balance = "{:.2f}".format(self.wallet.balance * self.get_rate())
             units = self.currency
         return "{} {}".format(balance.rstrip("0").rstrip("."), units)
+
+    def set_wallet_fingetprint(self, fingerprint):
+        print("set fingerprint to {}".format(fingerprint))
+        self.root.ids.toolbar.title = fingerprint.upper()
 
     def update_balance_screen(self):
         self.root.ids.balance_label.text = self.balance_str(

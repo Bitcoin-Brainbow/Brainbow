@@ -296,6 +296,8 @@ class Wallet:
                 self.account_master.subkey(0)  # type: SegwitBIP32Node
             self.root_change_key = \
                 self.account_master.subkey(1)  # type: SegwitBIP32Node
+            self.fingerprint = self.mpk.fingerprint().hex()
+            logging.info("path: {}".format(path))
 
         self.connection = connection  # type: Connection
         self.loop = loop  # type: asyncio.AbstractEventLoop
@@ -306,6 +308,7 @@ class Wallet:
         self.account_master = None  # type: SegwitBIP32Node
         self.root_spend_key = None  # type: SegwitBIP32Node
         self.root_change_key = None  # type: SegwitBIP32Node
+        self.fingerprint = None
         create_root_keys(salt, passphrase)
 
         # Boolean lists, True = used / False = unused

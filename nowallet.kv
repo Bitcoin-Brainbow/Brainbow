@@ -6,6 +6,8 @@
 # import ZbarQrcodeDetector android-zbar-qrcode.main
 #:import ak asynckivy
 #:import asyncio asyncio
+#:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
+
 
 <Tab>
     MDLabel:
@@ -25,7 +27,12 @@ BoxLayout:
         md_bg_color: app.theme_cls.primary_color
         background_palette: "Primary"
         background_hue: "500"
-        left_action_items: [["currency-btc", lambda x: None]]
+
+        type_height: "large"
+        headline_text: "Headline"
+        md_bg_color: "#2d2734"
+
+        left_action_items: [["bitcoin", lambda x: None]]
         right_action_items: [["menu", lambda x: app.menu_button_handler(self)]]
     ScreenManager:
         id: sm
@@ -84,17 +91,20 @@ BoxLayout:
                 Tab:
                     name: "balance"
 #                    text: "Balance"
-                    icon: "bank"
+                    #icon: "database-eye-outline"
+                    icon: "database-eye"
                     BoxLayout:
                         orientation: "vertical"
                         BalanceLabel:
                             id: balance_label
-                            font_style: "H3"
+                            font_style: "H4"
                             theme_text_color: "Primary"
                             halign: "center"
                             size_hint_y: None
                             height: self.texture_size[1] + dp(45)
-                            on_release: self.toggle_balance_label()
+                            on_release: app.toggle_balance_label()
+
+
                         RecycleView:
                             id: recycleView
                             viewclass: "ListItem"
@@ -108,7 +118,9 @@ BoxLayout:
                 Tab:
                     name: "send"
 #                    text: "Sending"
-                    icon: "debug-step-out"
+                    #icon: "database-export-outline"
+                    icon: "database-export"
+                    #icon: "database-arrow-right"
                     AnchorLayout:
                         BoxLayout:
                             size_hint: 0.9, 0.75
@@ -173,7 +185,7 @@ BoxLayout:
                                     on_release: asyncio.create_task(app.send_button_handler())
                             Label:
                             MDFloatingActionButton:
-                                icon: "camera"
+                                icon: "qrcode-scan"
                                 opposite_colors: True
                                 elevation_normal: 8
                                 pos_hint: {"center_x": 0.5, "center_y": 0.2}
@@ -183,7 +195,8 @@ BoxLayout:
                 Tab:
                     name: "recieve"
 #                    text: "Recieving"
-                    icon: "debug-step-into"
+                    #icon: "database-import-outline"
+                    icon: "database-import"
                     AnchorLayout:
                         BoxLayout:
                             size_hint: 0.9, 0.8
@@ -222,6 +235,95 @@ BoxLayout:
                                         id: addr_qrcode
                                         show_border: False
 
+                # For later....
+                #                        
+                #Tab:
+                #    name: "import-psbt"
+                #    icon: "database-arrow-up-outline"
+                #    AnchorLayout:
+                #        BoxLayout:
+                #            size_hint: 0.9, 0.8
+                #            spacing: 3
+                #            orientation: "vertical"
+                #            MDLabel:
+                #                text: "PSBT Import Tab"
+                #Tab:
+                #    name: "export-psbt"
+                #    icon: "database-arrow-down-outline"
+                #    AnchorLayout:
+                #        BoxLayout:
+                #            size_hint: 0.9, 0.8
+                #            spacing: 3
+                #            orientation: "vertical"
+                #            MDLabel:
+                #                text: "PSBT Export Tab"
+
+                # USED ADDRESSES
+                Tab:
+                    name: "used-addresses"
+                    icon: "database-marker"
+                    AnchorLayout:
+                        BoxLayout:
+                            size_hint: 0.9, 0.8
+                            spacing: 3
+                            orientation: "vertical"
+                            MDLabel:
+                                text: "Used 'addresses' and it's TXs/UTXOs, see 'Manage UTXOs' "
+
+                # ADDRESSES
+                Tab:
+                    name: "addresses"
+                    icon: "map-marker-multiple"
+                    AnchorLayout:
+                        BoxLayout:
+                            size_hint: 0.9, 0.8
+                            spacing: 3
+                            orientation: "vertical"
+                            MDLabel:
+                                text: "My 'addresses', see self.wallet.get_all_known_addresses(addr=True) "
+                            MDLabel:
+                                text: "Remove burger menu from top right "
+
+                # SETTINGS
+                Tab:
+                    name: "information"
+                    icon: "information"
+                    AnchorLayout:
+                        BoxLayout:
+                            size_hint: 0.9, 0.8
+                            spacing: 3
+                            orientation: "vertical"
+                            MDLabel:
+                                text: "View x/y/z pub and other wallet information (repeat fingerprint, .. )"
+
+                # SETTINGS
+                Tab:
+                    name: "settings"
+                    icon: "cog"
+                    AnchorLayout:
+                        BoxLayout:
+                            size_hint: 0.9, 0.8
+                            spacing: 3
+                            orientation: "vertical"
+                            MDLabel:
+                                text: "Move settings to this tab."
+
+                # LOGOUT /LOCKING
+                Tab:
+                    name: "logout"
+                    icon: "database-eye-off"
+                    AnchorLayout:
+                        BoxLayout:
+                            size_hint: 0.9, 0.8
+                            spacing: 3
+                            orientation: "vertical"
+                            MDLabel:
+                                text: "Move disconnect (logout) "
+                            MDLabel:
+                                text: "Move lock Brainbow with pin to this tab"
+
+
+
 #        ZbarScreen:
 #            name: "zbar"
 #            ZbarQrcodeDetector:
@@ -237,7 +339,7 @@ BoxLayout:
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
             MDLabel:
                 id: wait_text
-                text: "Loading.."
+                text: "Loading..."
                 theme_text_color: "Primary"
                 font_style: "H4"
                 size_hint: 0.7, None
