@@ -15,7 +15,7 @@
         pos_hint: {"center_x": .5, "center_y": .5}
 
 <UTXOListItem>:
-    on_release: root.utxo()
+    on_release: self.open_utxo_menu()
 
 BoxLayout:
     orientation: "vertical"

@@ -115,10 +115,11 @@ class PINButton(MDRaisedButton):
 class UTXOListItem(TwoLineListItem):
     utxo = ObjectProperty()
 
-    def utxo(self):
+    def open_utxo_menu(self):
         app = MDApp.get_running_app()
         app.utxo = self.utxo
-        MDDropdownMenu(items=app.utxo_menu_items, width_mult=4).open()
+        self.utxo_menu = MDDropdownMenu(items=app.utxo_menu_items, width_mult=4, caller=self, max_height=dp(100))
+        self.utxo_menu.open()
 
 
 # class MyMenuItem(MDMenuItem):
