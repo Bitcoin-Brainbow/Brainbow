@@ -115,6 +115,12 @@ class PINButton(MDRaisedButton):
 class UTXOListItem(TwoLineListItem):
     utxo = ObjectProperty()
 
+    def utxo(self):
+        app = MDApp.get_running_app()
+        app.utxo = self.utxo
+        MDDropdownMenu(items=app.utxo_menu_items, width_mult=4).open()
+
+
 # class MyMenuItem(MDMenuItem):
 class MyMenuItem(OneLineListItem):
     pass
@@ -154,17 +160,6 @@ class FloatInput(MDTextField):
 
 
 class NowalletApp(MDApp):
-    """
-    kivymd.color_definitions.theme_colors = ['Primary', 'Secondary', 'Background', 'Surface', 'Error', 'On_Primary', 'On_Secondary', 'On_Background', 'On_Surface', 'On_Error']
-Valid theme colors.
-
-     ValueError: ThemeManager.primary_palette is set to an invalid option 'Grey'. Must be one of: ['Red', 'Pink', 'Purple', 'DeepPurple', 'Indigo', 'Blue', 'LightBlue', 'Cyan', 'Teal', 'Green', 'LightGreen', 'Lime', 'Yellow', 'Amber', 'Orange', 'DeepOrange', 'Brown', 'Gray', 'BlueGray']
-    """
-    theme_cls = ThemeManager()
-    theme_cls.theme_style = "Light" # Dark
-    theme_cls.primary_palette = "Purple"#  "Gray"
-    theme_cls.accent_palette = "DeepOrange"
-
     units = StringProperty()
     currency = StringProperty()
     current_coin = StringProperty("0")
@@ -614,6 +609,12 @@ Valid theme colors.
         pass
 
     def build(self):
+        #app theme
+        self.theme_cls.theme_style = "Dark"
+        self.theme_cls.primary_palette = "Gray"
+        self.theme_cls.accent_palette = "DeepOrange"
+        self.theme_cls.material_style = "M3"
+
         self.icon = "icons/brain.png"
         self.use_kivy_settings = False
         self.rbf = self.config.get("nowallet", "rbf")

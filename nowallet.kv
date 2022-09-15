@@ -15,9 +15,7 @@
         pos_hint: {"center_x": .5, "center_y": .5}
 
 <UTXOListItem>:
-    on_release:
-        app.utxo = self.utxo
-        MDDropdownMenu(items=app.utxo_menu_items, width_mult=4).open(self)
+    on_release: root.utxo()
 
 BoxLayout:
     orientation: "vertical"
@@ -28,7 +26,7 @@ BoxLayout:
         #background_palette: "Primary"
         background_hue: "500"
 
-        type_height: "large"
+        type_height: "small" # "large"
         headline_text: "Headline"
         #md_bg_color: "#2d2734"
 
@@ -228,7 +226,8 @@ BoxLayout:
                                     spacing: 5
                                     MDLabel:
                                         id: addr_label
-                                        theme_text_color: "Primary"
+#                                        theme_text_color: "Primary"
+                                        theme_text_color: "ContrastParentBackground"
                                         font_style:"Body2"
                                         size_hint_y: None
                                         height: dp(40)
@@ -384,7 +383,8 @@ BoxLayout:
                     spacing: 5
                     MDLabel:
                         id: ypub_label
-                        theme_text_color: "Primary"
+#                        theme_text_color: "Primary"
+                        theme_text_color: "ContrastParentBackground"
                         font_style:"Body2"
                         size_hint_y: None
                         height: dp(70)
@@ -410,7 +410,8 @@ BoxLayout:
                     spacing: 5
                     MDLabel:
                         id: seed_label
-                        theme_text_color: "Primary"
+#                        theme_text_color: "Primary"
+                        theme_text_color: "ContrastParentBackground"
                         font_style:"Body2"
                         size_hint_y: None
                         height: dp(70)
