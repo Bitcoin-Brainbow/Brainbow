@@ -10,8 +10,8 @@ from decimal import Decimal
 
 from kivy.utils import platform
 from kivy.core.window import Window
-# from kivy.app import App
-from kivy.clock import Clock
+
+
 from kivy.metrics import dp
 from kivy.properties import NumericProperty, StringProperty, ObjectProperty
 from kivy.uix.screenmanager import Screen
@@ -47,7 +47,7 @@ import nowallet
 from nowallet.exchange_rate import fetch_exchange_rates
 from settings_json import settings_json
 from functools import partial
-from kivy.clock import Clock
+#from kivy.clock import Clock
 import asynckivy as ak
 import threading
 import concurrent.futures
@@ -154,17 +154,8 @@ class FloatInput(MDTextField):
 
 
 class NowalletApp(MDApp):
-    """
-    kivymd.color_definitions.theme_colors = ['Primary', 'Secondary', 'Background', 'Surface', 'Error', 'On_Primary', 'On_Secondary', 'On_Background', 'On_Surface', 'On_Error']
-Valid theme colors.
-
-     ValueError: ThemeManager.primary_palette is set to an invalid option 'Grey'. Must be one of: ['Red', 'Pink', 'Purple', 'DeepPurple', 'Indigo', 'Blue', 'LightBlue', 'Cyan', 'Teal', 'Green', 'LightGreen', 'Lime', 'Yellow', 'Amber', 'Orange', 'DeepOrange', 'Brown', 'Gray', 'BlueGray']
-    """
-    theme_cls = ThemeManager()
-    theme_cls.theme_style = "Light" # Dark
-    theme_cls.primary_palette = "Purple"#  "Gray"
-    theme_cls.accent_palette = "DeepOrange"
-
+    """ """
+    theme_cls = ThemeManager() # modified in build()
     units = StringProperty()
     currency = StringProperty()
     current_coin = StringProperty("0")
@@ -173,6 +164,13 @@ Valid theme colors.
     current_utxo = ObjectProperty()
 
     def __init__(self, loop):
+        #self.theme_cls.theme_style = "Dark"
+        #self.theme_cls.primary_palette = "Orange"
+        #theme_cls.theme_style = "Light" # Dark
+        #theme_cls.primary_palette = "Purple"#  "Gray"
+        #self.theme_cls.accent_palette = "DeepOrange"
+
+
         self.chain = nowallet.TBTC
         self.loop = loop
         self.is_amount_inputs_locked = False
@@ -479,8 +477,7 @@ Valid theme colors.
         self.root.ids.toolbar.title = fingerprint.upper()
 
     def update_balance_screen(self):
-        self.root.ids.balance_label.text = self.balance_str(
-            fiat=self.fiat_balance)
+        self.root.ids.balance_label.text = self.balance_str(fiat=self.fiat_balance)
         self.root.ids.recycleView.data_model.data = []
 
         for hist in self.wallet.get_tx_history():
@@ -506,7 +503,7 @@ Valid theme colors.
     def update_recieve_screen(self):
         address = self.update_recieve_qrcode()
         encoding = "bech32" if self.wallet.bech32 else "P2SH"
-        current_addr = "Current Address ({}):\n{}".format(encoding, address)
+        current_addr = "Current Marker ({}):\n{}".format(encoding, address)
         #TODO: add derivation path, eg. m/49'/1'/0'/0/5
         self.root.ids.addr_label.text = "{}".format(current_addr)
 
@@ -517,7 +514,7 @@ Valid theme colors.
         #         self.wallet.get_key(index=0, change=False),
         #         addr=True
         #         )
-        logging.info("Current address: {}".format(address))
+        logging.info("Current Marker: {}".format(address))
         amount = Decimal(self.current_coin) / self.unit_factor
         self.root.ids.addr_qrcode.data = \
             "bitcoin:{}?amount={}".format(address, amount)
@@ -538,8 +535,8 @@ Valid theme colors.
                 self.wallet.private_BIP32_root_key
             self.root.ids.seed_qrcode.data = self.wallet.private_BIP32_root_key
         except:
-            self.root.ids.seed_label.text = "n/a"
-            self.root.ids.seed_qrcode.data = "n/a"
+            self.root.ids.seed_label.text = ""
+            self.root.ids.seed_qrcode.data = ""
 
     def lock_UI(self, pin):
         if not pin:
@@ -614,18 +611,36 @@ Valid theme colors.
         pass
 
     def build(self):
+        """
+        kivymd.color_definitions.theme_colors = ['Primary', 'Secondary', 'Background', 'Surface', 'Error', 'On_Primary', 'On_Secondary', 'On_Background', 'On_Surface', 'On_Error']
+    Valid theme colors.
+
+         ValueError: ThemeManager.primary_palette is set to an invalid option 'Grey'. Must be one of: ['Red', 'Pink', 'Purple', 'DeepPurple', 'Indigo', 'Blue', 'LightBlue', 'Cyan', 'Teal', 'Green', 'LightGreen', 'Lime', 'Yellow', 'Amber', 'Orange', 'DeepOrange', 'Brown', 'Gray', 'BlueGray']
+        """
+
+        self.theme_cls.theme_style = "Light"
+        self.theme_cls.surface = "Red"
+        self.theme_cls.primary_palette ="DeepOrange"
+        self.theme_cls.primary_hue = "900"
+
+        self.theme_cls.accent_palette = "DeepOrange"
+        self.theme_cls.accent_hue = "300"
+
         self.icon = "icons/brain.png"
         self.use_kivy_settings = False
         self.rbf = self.config.get("nowallet", "rbf")
         self.units = self.config.get("nowallet", "units")
         self.update_unit()
+        self.auto_broadcast_tx = self.config.get("nowallet", "auto_broadcast_tx")
         self.currency = self.config.get("nowallet", "currency")
         self.explorer = self.config.get("nowallet", "explorer")
         self.set_price_api(self.config.get("nowallet", "price_api"))
 
+
     def build_config(self, config):
         config.setdefaults("nowallet", {
-            "rbf": False,
+            "rbf": True,
+            "auto_broadcast_tx" : True,
             "units": self.chain.chain_1209k.upper(),
             "currency": "USD",
             "explorer": "blockcypher",

@@ -17,7 +17,7 @@
 <UTXOListItem>:
     on_release:
         app.utxo = self.utxo
-        MDDropdownMenu(items=app.utxo_menu_items, width_mult=4).open(self)
+        MDDropdownMenu(items=app.utxo_menu_items, width_mult=4).open()
 
 BoxLayout:
     orientation: "vertical"
@@ -65,18 +65,34 @@ BoxLayout:
                         password: True
                         required: True
                     BoxLayout:
+                        #MDLabel:
+                        #    text: "Do not forget your Username (salt) and passphrase."
+                    #    MDCheckbox:
+                    #        id: multisig_checkbox
+                    #        size_hint: None, None
+                    #        size: dp(33), dp(33)
+                    #        active: False
+                    #        disabled: True
+                    #    MDLabel:
+                    #        text: "Use multisig"
+                    #        theme_text_color: "Primary"
+                    #        font_style:"Caption"
+                    #        size_hint_y: None
+                    #        height: dp(33)
+                    BoxLayout:
                         MDCheckbox:
                             id: bech32_checkbox
                             size_hint: None, None
-                            size: dp(33), dp(33)
+                            size:  dp(33), dp(33)
+                            opacity: 0
                             active: False
                             disabled: True # bech32 implementation seems broken right now. not sure if it ever worked
-                        MDLabel:
-                            text: "Use bech32"
-                            theme_text_color: "Primary"
-                            font_style:"Caption"
-                            size_hint_y: None
-                            height: dp(33)
+                    #    MDLabel:
+                    #        text: "Use bech32"
+                    #        theme_text_color: "Primary"
+                    #        font_style:"Caption"
+                    #        size_hint_y: None
+                    #        height: dp(33)
                     MDRaisedButton:
                         size_hint_x: 1
                         text: "Access Wallet"
@@ -91,8 +107,8 @@ BoxLayout:
                 tab_display_mode: "icons"
                 Tab:
                     name: "balance"
-#                    text: "Balance"
-                    #icon: "database-eye-outline"
+                    title: "TRANSACTIONS"
+                    title_icon_mode: "Top"
                     icon: "database-eye"
                     BoxLayout:
                         orientation: "vertical"
@@ -120,6 +136,9 @@ BoxLayout:
                     name: "send"
 #                    text: "Sending"
                     #icon: "database-export-outline"
+                    title: "SEND"
+                    title_icon_mode: "Top"
+
                     icon: "database-export"
                     #icon: "database-arrow-right"
                     AnchorLayout:
@@ -195,8 +214,8 @@ BoxLayout:
 
                 Tab:
                     name: "recieve"
-#                    text: "Recieving"
-                    #icon: "database-import-outline"
+                    title: "RECIEVE"
+                    title_icon_mode: "Top"
                     icon: "database-import"
                     AnchorLayout:
                         BoxLayout:
@@ -263,9 +282,9 @@ BoxLayout:
                 Tab:
                     name: "used-addresses"
                     icon: "database-marker"
-                    #title: "Used Addresses"
-                    #title_icon_mode: "Top"
-                    #title_is_capital: "True"
+                    title: "UTXOs"
+                    title_icon_mode: "Top"
+                    tab_padding: [10, 0, 0,0]
                     AnchorLayout:
                         BoxLayout:
                             size_hint: 0.9, 0.8
@@ -278,9 +297,9 @@ BoxLayout:
                 Tab:
                     name: "addresses"
                     icon: "map-marker-multiple"
-                    #title: "Addresses"
-                    #title_icon_mode: "Top"
-                    #title_is_capital: "True"
+                    title: "ADDRESSES"
+                    title_icon_mode: "Top"
+                    title_is_capital: "True"
                     AnchorLayout:
                         BoxLayout:
                             size_hint: 0.9, 0.8
@@ -295,6 +314,8 @@ BoxLayout:
                 Tab:
                     name: "information"
                     icon: "information"
+                    title: "INFO"
+                    title_icon_mode: "Top"
                     AnchorLayout:
                         BoxLayout:
                             size_hint: 0.9, 0.8
@@ -307,6 +328,8 @@ BoxLayout:
                 Tab:
                     name: "settings"
                     icon: "cog"
+                    title: "SETTINGS"
+                    title_icon_mode: "Top"
                     AnchorLayout:
                         BoxLayout:
                             size_hint: 0.9, 0.8
@@ -319,6 +342,8 @@ BoxLayout:
                 Tab:
                     name: "logout"
                     icon: "database-eye-off"
+                    title: "CONNECTION"
+                    title_icon_mode: "Top"
                     AnchorLayout:
                         BoxLayout:
                             size_hint: 0.9, 0.8

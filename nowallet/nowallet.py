@@ -279,18 +279,20 @@ class Wallet:
             assert isinstance(t, tuple), "Should never fail"
             secret_exp, chain_code = t
 
+            # master private key
             self.mpk = SegwitBIP32Node(
                 netcode=self.chain.netcode,
                 chain_code=chain_code,
                 secret_exponent=secret_exp
             )  # type: SegwitBIP32Node
-            ddd = dir(self.mpk)
-            for _d in ddd:
-                try:
-                    print(" {} {} -> {}".format(_d, "", getattr(self.mpk, _d)()))
-                    pass
-                except:
-                    pass
+            
+            #ddd = dir(self.mpk)
+            #for _d in ddd:
+            #    try:
+            #        print(" {} {} -> {}".format(_d, "", getattr(self.mpk, _d)()))
+            #        pass
+            #    except:
+            #        pass
 
             bip = 84 if bech32 else 49  # type: int
             path = "{}H/{}H/{}H".format(
@@ -362,7 +364,7 @@ class Wallet:
     #    """
     #    from .utils import dump_BIP39_seed
     #    sec_int = self.mpk.secret_exponent()
-    
+
 
 
 
@@ -900,6 +902,8 @@ class Wallet:
                 total_out += utxo.coin_value
         self.utxos = [utxo for i, utxo in enumerate(self.utxos)
                       if i not in del_indexes]
+        for spendable_utxos in self.spent_utxos:
+            print (spendable_utxos)
 
         # Get change address, mark index as used, and create payables list
         change_key = self.get_next_unused_key(

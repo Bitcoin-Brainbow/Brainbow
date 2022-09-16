@@ -11,6 +11,12 @@ def settings_json(coin="BTC"):
                 "section": "nowallet",
                 "key": "rbf"
             }, {
+                "type": "bool",
+                "title": "Auto-broadcast",
+                "desc": "Broadcast transaction immediately?",
+                "section": "nowallet",
+                "key": "auto_broadcast_tx"
+            }, {
                 "type": "options",
                 "title": "Coin Units",
                 "desc": "Preferred Bitcoin denomination",
