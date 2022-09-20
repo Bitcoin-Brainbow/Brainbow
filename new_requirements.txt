@@ -35,7 +35,7 @@ Pillow==9.2.0
 platformdirs==2.5.2
 ptyprocess==0.7.0
 pycoin==0.80
-pycryptodome==3.6.6
+pycryptodome==3.15.0
 Pygments==2.2.0
 pytoml==0.1.21
 qrcode==5.3
