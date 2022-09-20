@@ -15,9 +15,7 @@
         pos_hint: {"center_x": .5, "center_y": .5}
 
 <UTXOListItem>:
-    on_release:
-        app.utxo = self.utxo
-        MDDropdownMenu(items=app.utxo_menu_items, width_mult=4).open()
+    on_release: self.open_utxo_menu()
 
 BoxLayout:
     orientation: "vertical"
@@ -26,14 +24,18 @@ BoxLayout:
         title: "Brainbow"
         #md_bg_color: app.theme_cls.primary_color
         #background_palette: "Primary"
-        background_hue: "500"
+        #background_hue: "500"
 
-        type_height: "large"
+        type_height: "medium"
         headline_text: "Headline"
         #md_bg_color: "#2d2734"
 
-        left_action_items: [["bitcoin", lambda x: None]]
-        right_action_items: [["menu", lambda x: app.menu_button_handler(self)]]
+
+        left_action_items: [["menu", lambda x: app.navigation_handler(self)]]
+        right_action_items: [["bitcoin", lambda x: app.menu_button_handler(self)]]
+
+
+
     ScreenManager:
         id: sm
         transition: SlideTransition(direction="up")
@@ -134,11 +136,8 @@ BoxLayout:
 
                 Tab:
                     name: "send"
-#                    text: "Sending"
-                    #icon: "database-export-outline"
                     title: "SEND"
                     title_icon_mode: "Top"
-
                     icon: "database-export"
                     #icon: "database-arrow-right"
                     AnchorLayout:
@@ -247,7 +246,8 @@ BoxLayout:
                                     spacing: 5
                                     MDLabel:
                                         id: addr_label
-                                        theme_text_color: "Primary"
+#                                        theme_text_color: "Primary"
+                                        theme_text_color: "ContrastParentBackground"
                                         font_style:"Body2"
                                         size_hint_y: None
                                         height: dp(40)
@@ -308,7 +308,7 @@ BoxLayout:
                             MDLabel:
                                 text: "My 'addresses', see self.wallet.get_all_known_addresses(addr=True) "
                             MDLabel:
-                                text: "Remove burger menu from top right "
+                                text: "xxxx right "
 
                 # SETTINGS
                 Tab:
@@ -409,7 +409,8 @@ BoxLayout:
                     spacing: 5
                     MDLabel:
                         id: ypub_label
-                        theme_text_color: "Primary"
+#                        theme_text_color: "Primary"
+                        theme_text_color: "ContrastParentBackground"
                         font_style:"Body2"
                         size_hint_y: None
                         height: dp(70)
@@ -435,7 +436,8 @@ BoxLayout:
                     spacing: 5
                     MDLabel:
                         id: seed_label
-                        theme_text_color: "Primary"
+#                        theme_text_color: "Primary"
+                        theme_text_color: "ContrastParentBackground"
                         font_style:"Body2"
                         size_hint_y: None
                         height: dp(70)

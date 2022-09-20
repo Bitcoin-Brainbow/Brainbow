@@ -47,10 +47,9 @@ from .utils import get_timestamp_from_block_header
 from connectrum import ElectrumErrorResponse
 
 class Connection:
-    """ Connection object. Connects to an Electrum server, and handles all
-    Stratum protocol messages.
+    """ Connection object.
+    Connects to an Electrum server, and handles all Stratum protocol messages.
     """
-
     #  pylint: disable=E1111
     def __init__(self,
                  loop: asyncio.AbstractEventLoop,
@@ -66,8 +65,7 @@ class Connection:
         """
         logging.info("Connecting...")
 
-        self.server_info = ServerInfo(
-            server, hostname=server, ports=port)  # type: ServerInfo
+        self.server_info = ServerInfo(server, hostname=server, ports=port)  # type: ServerInfo
 
         logging.info(str(self.server_info.get_port(proto)))
 
@@ -155,7 +153,7 @@ class History:
                     [self.height]
                 )  # type: Dict[str, Any]
             except ElectrumErrorResponse as e:
-                print(e)
+                print("E156 {}".format(e))
                 return
 
             #block_time = block_header["timestamp"]
@@ -285,7 +283,7 @@ class Wallet:
                 chain_code=chain_code,
                 secret_exponent=secret_exp
             )  # type: SegwitBIP32Node
-            
+
             #ddd = dir(self.mpk)
             #for _d in ddd:
             #    try:
@@ -888,8 +886,7 @@ class Wallet:
         del_indexes = []  # type: List[int]
 
         # Sort utxos based on current fee rate before coin selection
-        self.utxos.sort(key=lambda utxo: utxo.coin_value,
-                        reverse=not is_high_fee)
+        self.utxos.sort(key=lambda utxo: utxo.coin_value, reverse=not is_high_fee)
 
         # Collect enough utxos for this spend
         # Add them to spent list and delete them from utxo list
@@ -900,14 +897,12 @@ class Wallet:
                 in_addrs.add(utxo.address(self.chain.netcode))
                 del_indexes.append(i)
                 total_out += utxo.coin_value
-        self.utxos = [utxo for i, utxo in enumerate(self.utxos)
-                      if i not in del_indexes]
+        self.utxos = [utxo for i, utxo in enumerate(self.utxos) if i not in del_indexes]
         for spendable_utxos in self.spent_utxos:
             print (spendable_utxos)
 
         # Get change address, mark index as used, and create payables list
-        change_key = self.get_next_unused_key(
-            change=True, using=True)  # type: SegwitBIP32Node
+        change_key = self.get_next_unused_key(change=True, using=True)  # type: SegwitBIP32Node
         change_addr = self.get_address(change_key, addr=True)  # type: str
         payables = []  # type: List[Tuple[str, int]]
         payables.append((out_addr, amount))
@@ -1056,6 +1051,7 @@ class Wallet:
 
         self._signtx(tx, in_addrs, fee)
         if not broadcast:
+            logging.info("Not broadcasting TX {}".format(tx))
             return tx.as_hex(), chg_vout, decimal_fee, tx_vsize
 
         chg_out = tx.txs_out[chg_vout]  # type: TxOut

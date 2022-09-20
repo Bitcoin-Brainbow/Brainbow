@@ -22,14 +22,14 @@ def settings_json(coin="BTC"):
                 "desc": "Preferred Bitcoin denomination",
                 "section": "nowallet",
                 "key": "units",
-                "options": [coin, "m{}".format(coin), "u{}".format(coin)]
+                "options": [coin, "sats ({})".format(coin)] #"m{}".format(coin), "u{}".format(coin)]
             }, {
                 "type": "options",
                 "title": "Currency",
                 "desc": "Fiat currency for exchange rates",
                 "section": "nowallet",
                 "key": "currency",
-                "options": CURRENCIES
+                "options": CURRENCIES 
             }, {
                 "type": "options",
                 "title": "Block Explorer",
@@ -43,7 +43,7 @@ def settings_json(coin="BTC"):
                 "desc": "Preferred price provider",
                 "section": "nowallet",
                 "key": "price_api",
-                "options": ["BitcoinAverage", "CryptoCompare"]
+                "options": ["CoinGecko", "CryptoCompare"]
             }
         ]
     )

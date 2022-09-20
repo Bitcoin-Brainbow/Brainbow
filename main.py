@@ -97,6 +97,12 @@ class ZbarScreen(Screen):
     pass
 
 
+class TXReviewScreen(Screen):
+    pass
+
+
+
+
 # Declare custom widgets
 class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
     pass
@@ -114,6 +120,19 @@ class PINButton(MDRaisedButton):
 
 class UTXOListItem(TwoLineListItem):
     utxo = ObjectProperty()
+
+    def open_utxo_menu(self):
+        app = MDApp.get_running_app()
+        app.utxo = self.utxo
+        self.utxo_menu = MDDropdownMenu(items=app.utxo_menu_items, width_mult=4, caller=self, max_height=dp(100))
+        self.utxo_menu.open()
+        for d in dir(app.utxo):
+            try:
+                print("{} -> {}".format(d, getattr(app.utxo, d)))
+            except:
+                pass
+        logging.info("open_utxo_menu utxo > {}".format(app.utxo.as_dict))
+
 
 # class MyMenuItem(MDMenuItem):
 class MyMenuItem(OneLineListItem):
@@ -154,8 +173,6 @@ class FloatInput(MDTextField):
 
 
 class NowalletApp(MDApp):
-    """ """
-    theme_cls = ThemeManager() # modified in build()
     units = StringProperty()
     currency = StringProperty()
     current_coin = StringProperty("0")
@@ -164,13 +181,6 @@ class NowalletApp(MDApp):
     current_utxo = ObjectProperty()
 
     def __init__(self, loop):
-        #self.theme_cls.theme_style = "Dark"
-        #self.theme_cls.primary_palette = "Orange"
-        #theme_cls.theme_style = "Light" # Dark
-        #theme_cls.primary_palette = "Purple"#  "Gray"
-        #self.theme_cls.accent_palette = "DeepOrange"
-
-
         self.chain = nowallet.TBTC
         self.loop = loop
         self.is_amount_inputs_locked = False
@@ -261,6 +271,8 @@ class NowalletApp(MDApp):
         if self.root.ids.sm.current == "main":
             # MDDropdownMenu(items=self.menu_items, width_mult=4).open(button)
             MDDropdownMenu(items=self.menu_items, width_mult=4, caller=button, max_height=dp(250)).open()
+    def navigation_handler(self, button):
+        pass
 
     def menu_item_handler(self, text):
         # Main menu items
@@ -321,7 +333,7 @@ class NowalletApp(MDApp):
 
     async def do_spend(self, address, amount, fee_rate):
         self.spend_tuple = await self.wallet.spend(
-            address, amount, fee_rate, rbf=self.rbf)
+            address, amount, fee_rate, rbf=self.rbf, broadcast=self.auto_broadcast_tx)
 
     async def send_button_handler(self):
         addr_input = self.root.ids.address_input
@@ -356,7 +368,7 @@ class NowalletApp(MDApp):
         if self.wallet.new_history:
             logging.info("self.wallet.new_history=True")
             self.update_screens()
-            self.show_snackbar("NEW TRANSACTION")
+            self.show_snackbar("Transaction history updated.")
             self.wallet.new_history = False
 
     @property
@@ -391,7 +403,8 @@ class NowalletApp(MDApp):
         self.root.ids.sm.current = "main"
         await asyncio.gather(
             self.new_history_loop(),
-            self.do_listen_task()
+            self.do_listen_task(),
+            self.update_exchange_rates()
             )
 
     def login(self):
@@ -401,18 +414,20 @@ class NowalletApp(MDApp):
         self.show_dialog("Disconnected.","")
         1/0
 
+
     async def do_listen_task(self):
         logging.info("Listening for new transactions.")
         task = asyncio.create_task(self.wallet.listen_to_addresses())
 
     async def do_login_tasks(self, email, passphrase):
         self.root.ids.wait_text.text = "Connecting.."
+
         server, port, proto = await nowallet.get_random_server(self.loop)
         try:
             connection = nowallet.Connection(self.loop, server, port, proto)
         except Exception as ex:
             print("excepted")
-            logging.error(ex, exc_info=True)
+            logging.error("L442 {}".format(ex), exc_info=True)
             logging.info("{} {} {}".format(server, port, proto))
             await connection.do_connect()
             logging.info("{} {} {} -&gt; connected".format(server, port, proto))
@@ -433,8 +448,8 @@ class NowalletApp(MDApp):
 
         self.root.ids.wait_text.text = "Fetching exchange rates.."
         # just await, but since the fetching url ruturns 403 make it anything
-        # self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
-        self.exchange_rates = False
+        self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
+        #self.exchange_rates = False
 
         self.root.ids.wait_text.text = "Getting fee estimate.."
         coinkb_fee = await self.wallet.get_fee_estimation()
@@ -456,19 +471,37 @@ class NowalletApp(MDApp):
             await asyncio.sleep(1)
             self.check_new_history()
 
+    async def update_exchange_rates(self):
+        while True:
+            await asyncio.sleep(60)
+            logging.info("run fetch_exchange_rates")
+            if self.currency != "BTC" or \
+                (self.currency == "BTC" and Decimal(self.get_rate()) != Decimal(1)):
+                self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
+                self.update_balance_screen()
+                if self.currency != "BTC":
+                    self.show_snackbar("Exchange rates updated. {}".format(self.get_rate()))
 
     def toggle_balance_label(self):
         self.fiat_balance = not self.fiat_balance
         self.update_balance_screen()
+
+
 
     def balance_str(self, fiat=False):
         balance, units = None, None
         if not fiat:
             balance = self.unit_precision.format(
                 self.wallet.balance * self.unit_factor)
-            units = self.units
+            if self.units == "sats (BTC)":
+                units = "sats"
+            else:
+                units = self.units
         else:
-            balance = "{:.2f}".format(self.wallet.balance * self.get_rate())
+            if self.currency == "BTC":
+                balance = "{:.8f}".format(self.wallet.balance)
+            else:
+                balance = "{:.2f}".format(self.wallet.balance * self.get_rate())
             units = self.currency
         return "{} {}".format(balance.rstrip("0").rstrip("."), units)
 
@@ -569,13 +602,9 @@ class NowalletApp(MDApp):
     def update_unit(self):
         self.unit_factor = 1
         self.unit_precision = "{:.8f}"
-        if self.units[0] == "m":
-            self.unit_factor = 1000
-            self.unit_precision = "{:.5f}"
-        elif self.units[0] == "u":
-            self.unit_factor = 1000000
-            self.unit_precision = "{:.2f}"
-
+        if self.units[0] == "s": # sats
+            self.unit_factor = 100000000
+            self.unit_precision = "{:.1f}"
         coin = Decimal(self.current_coin) / self.unit_factor
         fiat = Decimal(self.current_fiat) / self.unit_factor
         self.update_amount_fields(coin, fiat)
@@ -603,28 +632,121 @@ class NowalletApp(MDApp):
         self.is_amount_inputs_locked = True
         _coin = self.unit_precision.format(coin)
         self.current_coin = _coin.rstrip("0").rstrip(".")
+        #if self.currency == "BTC":
+        #    _fiat = "{:.8f}".format(fiat)
+        #    self.current_fiat = _fiat
+        #else:
         _fiat = "{:.2f}".format(fiat)
         self.current_fiat = _fiat.rstrip("0").rstrip(".")
+        #
         self.is_amount_inputs_locked = False
 
     def on_start(self):
         pass
 
     def build(self):
+        """ """
         """
-        kivymd.color_definitions.theme_colors = ['Primary', 'Secondary', 'Background', 'Surface', 'Error', 'On_Primary', 'On_Secondary', 'On_Background', 'On_Surface', 'On_Error']
-    Valid theme colors.
+        self.theme_cls.theme_style = "Dark"
+        self.theme_cls.primary_palette = "Gray"
+        self.theme_cls.accent_palette = "DeepOrange"
+        self.theme_cls.material_style = "M3"
 
-         ValueError: ThemeManager.primary_palette is set to an invalid option 'Grey'. Must be one of: ['Red', 'Pink', 'Purple', 'DeepPurple', 'Indigo', 'Blue', 'LightBlue', 'Cyan', 'Teal', 'Green', 'LightGreen', 'Lime', 'Yellow', 'Amber', 'Orange', 'DeepOrange', 'Brown', 'Gray', 'BlueGray']
+  <color name="primaryColor">#4d4d4d</color>
+  <color name="primaryLightColor">#797979</color>
+  <color name="primaryDarkColor">#252525</color>
+  <color name="primaryTextColor">#ffffff</color>
+
+  let primaryColor = UIColor(red: 0.30, green: 0.30, blue: 0.30, alpha: 1.0);
+  let primaryLightColor = UIColor(red: 0.47, green: 0.47, blue: 0.47, alpha: 1.0);
+  let primaryDarkColor = UIColor(red: 0.15, green: 0.15, blue: 0.15, alpha: 1.0);
+  let primaryTextColor = UIColor(red: 1.00, green: 1.00, blue: 1.00, alpha: 1.0);
+
         """
+        colors = {
+        "Teal": {
+            "50": "e4f8f9",
+            "100": "bdedf0",
+            "200": "97e2e8",
+            "300": "79d5de",
+            "400": "6dcbd6",
+            "500": "6ac2cf",
+            "600": "63b2bc",
+            "700": "5b9ca3",
+            "800": "54888c",
+            "900": "486363",
+            "A100": "bdedf0",
+            "A200": "97e2e8",
+            "A400": "6dcbd6",
+            "A700": "5b9ca3",
+        },
+        "Blue": {
+            "50": "e3f3f8",
+            "100": "b9e1ee",
+            "200": "91cee3",
+            "300": "72bad6",
+            "400": "62acce",
+            "500": "589fc6",
+            "600": "5191b8",
+            "700": "487fa5",
+            "800": "426f91",
+            "900": "35506d",
+            "A100": "b9e1ee",
+            "A200": "91cee3",
+            "A400": "62acce",
+            "A700": "487fa5",
+        },
+        "Red": {
+            "50": "FFEBEE",
+            "100": "FFCDD2",
+            "200": "EF9A9A",
+            "300": "E57373",
+            "400": "EF5350",
+            "500": "F44336",
+            "600": "E53935",
+            "700": "D32F2F",
+            "800": "C62828",
+            "900": "B71C1C",
+            "A100": "FF8A80",
+            "A200": "FF5252",
+            "A400": "FF1744",
+            "A700": "D50000",
+        },
+        "Light": {
+            "StatusBar": "4d4d4d",
+            "AppBar": "797979",
+            "Background": "FAFAFA",
+            "CardsDialogs": "FFFFFF",
+            "FlatButtonDown": "cccccc",
+        },
+        "Dark": {
+            "StatusBar": "000000",
+            "AppBar": "212121",
+            "Background": "303030",
+            "CardsDialogs": "424242",
+            "FlatButtonDown": "999999",
+        }#,
+        #"BTCGrey": {
+        #      <color name="primaryColor">#4d4d4d</color>
+        #      <color name="primaryLightColor">#797979</color>
+        #      <color name="primaryDarkColor">#252525</color>
+        #      <color name="primaryTextColor">#ffffff</color>
+        #}
+    }
 
         self.theme_cls.theme_style = "Light"
-        self.theme_cls.surface = "Red"
-        self.theme_cls.primary_palette ="DeepOrange"
-        self.theme_cls.primary_hue = "900"
+        self.theme_cls.colors = colors
+    #    self.theme_cls.primary_palette = "BTCGrey"
+#        self.theme_cls.accent_palette = "Teal"
 
-        self.theme_cls.accent_palette = "DeepOrange"
-        self.theme_cls.accent_hue = "300"
+        #self.theme_cls.surface = "Red"
+#        self.theme_cls.primary_palette ="Red"
+#        self.theme_cls.primary_hue = "900"
+
+#        self.theme_cls.accent_palette = "Red"
+#        self.theme_cls.accent_hue = "300"
+
+
 
         self.icon = "icons/brain.png"
         self.use_kivy_settings = False
@@ -640,18 +762,16 @@ class NowalletApp(MDApp):
     def build_config(self, config):
         config.setdefaults("nowallet", {
             "rbf": True,
-            "auto_broadcast_tx" : True,
+            "auto_broadcast_tx": True,
             "units": self.chain.chain_1209k.upper(),
-            "currency": "USD",
+            "currency": "BTC",
             "explorer": "blockcypher",
-            "price_api": "BitcoinAverage"})
+            "price_api": "CoinGecko"})
         Window.bind(on_keyboard=self.key_input)
 
     def build_settings(self, settings):
         coin = self.chain.chain_1209k.upper()
-        settings.add_json_panel("Settings",
-                                self.config,
-                                data=settings_json(coin))
+        settings.add_json_panel("Settings", self.config, data=settings_json(coin))
 
     def on_config_change(self, config, section, key, value):
         if key == "rbf":
@@ -673,8 +793,8 @@ class NowalletApp(MDApp):
             self.update_amounts()
 
     def set_price_api(self, val):
-        if val == "BitcoinAverage":
-            self.price_api = "btcav"
+        if val == "CoinGecko":
+            self.price_api = "coingecko"
         elif val == "CryptoCompare":
             self.price_api = "ccomp"
 
