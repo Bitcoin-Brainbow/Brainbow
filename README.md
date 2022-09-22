@@ -5,20 +5,29 @@
 
 ### Secure, private, and plausibly deniable
 #### Cross-platform Bitcoin brainwallet
-
+ 
 ### Introduction:
-This project is a secure Bitcoin brainwallet app that will ultimately be
-meant for desktop and mobile platforms. It was inspired by reports of
-incidents of Bitcoin being seized physically at border crossings.
-People need an option for a brainwallet that is secure and easy to use.
+ 
+This project, [Brainbow](https://github.com/Bitcoin-Brainbow/Brainbow/) is built on top of [nowallet](https://github.com/metamarcdw/nowallet), a project which was discontinued before it was completed. 
 
-It's written in Python and depends on the pycoin and connectrum
-libraries. It uses Electrum servers on the back end, and communicates
-exclusively over Tor. It uses a variant of the ['WarpWallet'](https://keybase.io/warp/)
-technique, combining PBKDF2 and scrypt with a salt for key derivation,
-rather than the typical, highly insecure SHA256(passphrase) method that
-your average brainwallet uses. Here's a basic explanation of the benefits
-of using the WarpWallet technique:
+The adopted nowallet sources have been completely reworked and adapted.
+
+
+### What is Brainbow? ### 
+
+Brainbow is a secure Bitcoin brainwallet app, a Bitcoin Client, that will ultimately be meant for desktop and mobile platforms. 
+
+It was inspired by reports of incidents of Bitcoin being seized physically at border crossings.
+
+People need an option for a brainwallet that is **secure** and **easy to use**.
+
+It's written in Python and depends on the pycoin and Coinkite's connectrum libraries. 
+
+It uses Electrum servers on the back end, and communicates exclusively over Tor.
+
+It uses a variant of the ['WarpWallet'](https://keybase.io/warp/) technique, combining PBKDF2 and scrypt with a salt for key derivation, rather than the typical, highly insecure SHA256(passphrase) method that your average brainwallet uses.
+
+Here's a basic explanation of the benefits of using the WarpWallet technique:
 
 
 ##### Quoted from https://keybase.io/warp/:
@@ -61,7 +70,7 @@ If you're interested in testing, you can get some testnet coins here:
 * https://testnet-faucet.mempool.co/
 * https://tbtc.bitaps.com/
 * https://testnet.help/en/btcfaucet/testnet
-
+<!--
 ### SCREENSHOTS:
 ![Login](https://github.com/metamarcdw/nowallet/blob/master/screens/Screenshot_login.png)
 ![Balance](https://github.com/metamarcdw/nowallet/blob/master/screens/Screenshot_balance.png)
@@ -116,3 +125,4 @@ OR
 #### UNIT TESTING:
 Run unit tests (Must install dev libs):  
 `make test`  
+-->
