@@ -1,7 +1,7 @@
 aioconsole==0.1.10
 aiohttp==3.8.1
 aiosignal==1.2.0
-git+https://github.com/nibrag/aiosocks.git
+git+https://github.com/nibrag/aiosocks.git@d4a85e73c9e3beadd7ab4c46b8f3ceb3b57338b2
 appdirs==1.4.4
 async-timeout==4.0.2
 asyncgui==0.5.5
@@ -13,7 +13,7 @@ certifi==2018.1.18
 chardet==3.0.4
 charset-normalizer==2.1.1
 colorama==0.4.5
--e git+https://github.com/coinkite/connectrum@14735d7b77426f4fdefc001c67af1dc8cdf1c3a4#egg=connectrum
+#-e git+https://github.com/coinkite/connectrum@14735d7b77426f4fdefc001c67af1dc8cdf1c3a4#egg=connectrum
 Cython==0.29.32
 distlib==0.3.6
 docutils==0.14

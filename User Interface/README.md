@@ -12,6 +12,13 @@ Gray
   CMYK: (65, 58, 57, 37)
   PANTONE: PMS 7540 C
 
+
+
 Material Design:
+V1:
+  https://codepen.io/xavierfiechter/pen/rNvwyVE
+  https://material.io/resources/color/#!/?view.left=0&view.right=1&primary.color=4D4D4D&secondary.color=F7931A
+
+V2:
   https://codepen.io/xavierfiechter/pen/dyeNLRe
   https://material.io/resources/color/#!/?view.left=0&view.right=1&primary.color=4D4D4D

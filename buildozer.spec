@@ -1,13 +1,13 @@
 [app]
 
 # (str) Title of your application
-title = My Application
+title = Brainbow Bitcoin Client
 
 # (str) Package name
-package.name = myapp
+package.name = brainbow
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.test
+package.domain = org.brainbow
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -15,18 +15,12 @@ source.dir = .
 # (list) Source files to include (let empty to include all the files)
 source.include_exts = py,png,jpg,kv,atlas
 
-# (list) List of inclusions using pattern matching
-#source.include_patterns = assets/*,images/*.png
 
 # (list) Source files to exclude (let empty to not exclude anything)
-#source.exclude_exts = spec
+source.exclude_exts = spec
 
 # (list) List of directory to exclude (let empty to not exclude anything)
-#source.exclude_dirs = tests, bin, venv
-
-# (list) List of exclusions using pattern matching
-# Do not prefix with './'
-#source.exclude_patterns = license,images/*/*.jpg
+source.exclude_dirs = tests, bin, venv, old-sources, multisig
 
 # (str) Application versioning (method 1)
 version = 0.1
@@ -37,7 +31,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy
+requirements = python3,aioconsole==0.1.10,aiohttp==3.8.1,aiosignal==1.2.0,git+https://github.com/nibrag/aiosocks.git,appdirs==1.4.4,async-timeout==4.0.2,asyncgui==0.5.5,asynckivy==0.5.4,attrs==17.4.0,beautifulsoup4==4.6.0,buildozer==1.4.0,certifi==2018.1.18,chardet==3.0.4,charset-normalizer==2.1.1,colorama==0.4.5,-e git+https://github.com/coinkite/connectrum@14735d7b77426f4fdefc001c67af1dc8cdf1c3a4#egg=connectrum,Cython==0.29.32,distlib==0.3.6,docutils==0.14,filelock==3.8.0,frozenlist==1.3.1,idna==2.6,importlib-metadata==4.12.0,Jinja2==3.1.2,Kivy==2.1.0,Kivy-Garden==0.1.5,kivymd==1.0.2,MarkupSafe==2.1.1,multidict==6.0.2,# -e git+https://github.com/xavierfiechter/nowallet.git@76ccef11b8f303fb8931b9ae8c3b7df4252bf508#egg=nowallet,pbkdf2==1.3,pep517==0.6.0,pexpect==4.8.0,Pillow==9.2.0,platformdirs==2.5.2,ptyprocess==0.7.0,pycoin==0.80,pycryptodome==3.15.0,Pygments==2.2.0,pytoml==0.1.21,qrcode==5.3,requests==2.20.0,scrypt==0.8.20,sh==1.14.3,six==1.11.0,toml==0.10.2,urllib3==1.24.3,virtualenv==20.16.4,yarl==1.8.1,zipp==3.8.1
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -263,7 +257,7 @@ fullscreen = 0
 # (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
 # In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
 # android.archs = arm64-v8a, armeabi-v7a
-android.arch = arm64-v8a 
+android.arch = arm64-v8a
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # this is not the same as app version and should only be edited if you know what you're doing

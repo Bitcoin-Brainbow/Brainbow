@@ -1,4 +1,4 @@
-Included https://github.com/coinkite/connectrum@14735d7b77426f4fdefc001c67af1dc8cdf1c3a4#egg=connectrum into Brainbow.
+Included Connectrum at commit https://github.com/coinkite/connectrum@14735d7b77426f4fdefc001c67af1dc8cdf1c3a4#egg=connectrum into Brainbow.
 
 
 Connectrum

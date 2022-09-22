@@ -23,22 +23,30 @@ async def fetch_from_api(base_url: str, chain_1209k: str, loop=None) -> Dict[str
 
 
 async def fetch_exchange_rates(chain_1209k: str = "btc", loop=None) -> Dict[str, Dict]:
+    all_rates = {}  # type: Dict[str, Dict[str, Any]]
+
     coingecko_url = ("https://api.coingecko.com/api/v3/simple/price" +
                 "?ids=bitcoin%2C&vs_currencies=" +
                 "%2C".join(CURRENCIES))  # type: str
+    try:
+        coingecko_json = await fetch_from_api(coingecko_url, chain_1209k, loop=loop)  # type: Dict[str, Any]
+        rates = {}
+        for symbol, value in coingecko_json.get('bitcoin').items():
+            if symbol.upper() in CURRENCIES:
+                rates[symbol.upper()] = value
+        all_rates["coingecko"] = rates
+    except Exception as ex:
+        logging.error("coingecko_url call failed with {}".format(ex), exc_info=True)
+
     ccomp_url = ("https://min-api.cryptocompare.com/data/" +
                  "price?fsym={}&tsyms={}")  # type: str
-    all_rates = {}  # type: Dict[str, Dict[str, Any]]
-    coingecko_json = await fetch_from_api(coingecko_url, chain_1209k, loop=loop)  # type: Dict[str, Any]
-    rates = {}
-    for symbol, value in coingecko_json.get('bitcoin').items():
-        if symbol.upper() in CURRENCIES:
-            rates[symbol.upper()] = value
-    all_rates["coingecko"] = rates
 
-    ccomp_json = await fetch_from_api(
-        ccomp_url, chain_1209k, loop=loop)  # type: Dict[str, Any]
-    all_rates["ccomp"] = ccomp_json
+    try:
+        ccomp_json = await fetch_from_api(
+            ccomp_url, chain_1209k, loop=loop)  # type: Dict[str, Any]
+        all_rates["ccomp"] = ccomp_json
+    except Exception as ex:
+        logging.error("coingecko_url call failed with {}".format(ex), exc_info=True)
 
     print("EXCHANGE RATES: {} {} ".format(all_rates, ""))
 
