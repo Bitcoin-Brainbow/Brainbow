@@ -1,5 +1,5 @@
 aioconsole==0.1.10
-aiohttp==3.8.1
+aiohttp==3.8.3
 aiosignal==1.2.0
 #git+https://github.com/nibrag/aiosocks.git@d4a85e73c9e3beadd7ab4c46b8f3ceb3b57338b2
 appdirs==1.4.4
