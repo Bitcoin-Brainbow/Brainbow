@@ -32,7 +32,8 @@ from typing import (
 
 from pycoin.serialize import b2h
 from pycoin.ui import standard_tx_out_script
-from pycoin.tx.tx_utils import distribute_from_split_pool, sign_tx
+from pycoin.tx.tx_utils import distribute_from_split_pool
+from pycoin.tx.tx_utils import sign_tx
 from pycoin.tx.Tx import Tx
 from pycoin.tx.TxIn import TxIn
 from pycoin.tx.TxOut import TxOut
@@ -977,7 +978,6 @@ class Wallet:
                     script_hash = key.p2wpkh_script_hash()  # type: bytes
                     redeem_scripts[script_hash] = p2aw_script
                     wifs.append(key.wif())
-
         # Include our total fee and sign the Tx
         distribute_from_split_pool(unsigned_tx, fee)
         sign_tx(unsigned_tx, wifs=wifs,
@@ -1048,15 +1048,17 @@ class Wallet:
         total_out = amount + decimal_fee
         if total_out > self.balance:
             raise Exception("Insufficient funds.")
-
+        logging.info("unsigned_tx {}".format(tx) )
         self._signtx(tx, in_addrs, fee)
-        if not broadcast:
-            logging.info("Not broadcasting TX {}".format(tx))
-            return tx.as_hex(), chg_vout, decimal_fee, tx_vsize
+        if broadcast:
 
-        chg_out = tx.txs_out[chg_vout]  # type: TxOut
-        txid = await self.broadcast(tx.as_hex(), chg_out)  # type: str
-        return txid, decimal_fee, tx_vsize
+            chg_out = tx.txs_out[chg_vout]  # type: TxOut
+            txid = await self.broadcast(tx.as_hex(), chg_out)  # type: str
+            return txid, decimal_fee, tx_vsize
+
+        logging.info("Not broadcasting TX {}".format(tx.as_hex()))
+        return tx.as_hex(), chg_vout, decimal_fee, tx_vsize
+
 
     async def broadcast(self, tx_hex: str, chg_out: TxOut) -> str:
         txid = await self.connection.listen_rpc(

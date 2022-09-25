@@ -172,6 +172,15 @@ BoxLayout:
                             BoxLayout:
                                 size_hint: 1, 0.6
                                 spacing: 5
+                                BoxLayout:
+                                    size_hint: 1, 0.6
+                                    spacing: 5
+                                    FloatInput:
+                                        id: donation_input
+                                        helper_text: "Donation amount"
+                                        helper_text_mode: "persistent"
+                                        color_mode: "accent"
+                                        #on_text: app.fee_input_handler()
                                 FloatInput:
                                     id: fee_input
                                     helper_text: "Miner Fee: sat/byte"
@@ -185,6 +194,7 @@ BoxLayout:
                                     size_hint: 0.5, 1
                                     text: "Normal Fee"
                                     on_release: app.fee_button_handler()
+
                             BoxLayout:
                                 size_hint: 1, 0.6
                                 spacing: 5

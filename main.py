@@ -3,6 +3,7 @@ import sys
 import re
 import asyncio
 import logging
+
 from aiosocks import SocksConnectionError
 from aiohttp.client_exceptions import ClientConnectorError
 from decimal import Decimal
@@ -448,8 +449,11 @@ class NowalletApp(MDApp):
 
         self.root.ids.wait_text.text = "Fetching exchange rates.."
         # just await, but since the fetching url ruturns 403 make it anything
-        self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
-        #self.exchange_rates = False
+        try:
+            self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
+        except:
+            self.exchange_rates = False
+            self.show_snackbar("Failed fetching exchange rates. Starting without...")
 
         self.root.ids.wait_text.text = "Getting fee estimate.."
         coinkb_fee = await self.wallet.get_fee_estimation()
@@ -477,7 +481,12 @@ class NowalletApp(MDApp):
             logging.info("run fetch_exchange_rates")
             if self.currency != "BTC" or \
                 (self.currency == "BTC" and Decimal(self.get_rate()) != Decimal(1)):
-                self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
+                old_rates = self.exchange_rates
+                try:
+                    self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
+                except:
+                    self.exchange_rates = old_rates or False
+                    logging.info("Restoring exchange rates using old_rates.")
                 self.update_balance_screen()
                 if self.currency != "BTC":
                     self.show_snackbar("Exchange rates updated. {}".format(self.get_rate()))
@@ -610,9 +619,13 @@ class NowalletApp(MDApp):
         self.update_amount_fields(coin, fiat)
 
     def get_rate(self):
-        rate = self.exchange_rates[self.price_api][self.currency] \
-            if self.exchange_rates else 1
-        return Decimal(str(rate))
+        try:
+            rate = self.exchange_rates[self.price_api][self.currency]
+            return Decimal(str(rate))
+        except:
+            self.exchange_rates = False
+            return Decimal(str(1))
+
 
     def update_amounts(self, text=None, type="coin"):
         if self.is_amount_inputs_locked:
@@ -840,9 +853,7 @@ def open_url(url):
         webbrowser.open(url)
 
 if __name__ == "__main__":
-    #loop = asyncio.get_event_loop()
     loop = asyncio.new_event_loop()
     app = NowalletApp(loop)
-
     loop.run_until_complete(app.async_run())
     loop.close()
