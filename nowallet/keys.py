@@ -2,10 +2,12 @@ from typing import Union
 from typing import Tuple
 
 from Crypto.Hash import SHA256
-import scrypt
 import pbkdf2
-#import hashlib
 
+# https://github.com/Bitcoin-Brainbow/Brainbow/issues/26
+#import hashlib
+#import scrypt
+from Crypto.Protocol.KDF import scrypt
 
 
 
@@ -47,16 +49,29 @@ def derive_key(salt: str, passphrase: str, hd: bool = True) -> \
     scrypt_key = hashlib.scrypt(pass1,
                                   salt=salt1,
                                   n=N,
-                                  r=1,
+                                  r=1, should be 8
                                   p=1,
                                   maxmem=2147483646,   #ValueError: maxmem must be positive and smaller than 2147483647, why ?
                                   dklen=key_length)
                                                 #  ValueError: [digital envelope routines: EVP_PBE_scrypt] memory limit exceeded
 
     """
+    """
     scrypt_key = scrypt.hash(
         pass1, salt1,
         N, buflen=key_length)  # type: bytes
+    """
+
+    scrypt_key = scrypt(
+        pass1,
+        salt=salt1,
+        key_len=key_length,
+        N=N,
+        r=8,
+        p=1,
+        num_keys=1,
+    )
+
 
 
     pbkdf2_key = pbkdf2.PBKDF2(
