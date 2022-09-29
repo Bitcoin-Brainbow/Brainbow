@@ -33,6 +33,7 @@ from kivymd.uix.textfield import MDTextField
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.tab import MDTabsBase
+from kivymd.uix.snackbar import Snackbar
 
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.button import ButtonBehavior
@@ -57,6 +58,7 @@ __version__ = nowallet.__version__
 if platform != "android":
     Window.size = (350, 550)
 
+from nowallet.utils import get_block_height
 
 LOG_OFF_WALLET = "Disconnect and clear wallet"
 
@@ -180,6 +182,7 @@ class NowalletApp(MDApp):
     current_fiat = StringProperty("0")
     current_fee = NumericProperty()
     current_utxo = ObjectProperty()
+    block_height = 0
 
     def __init__(self, loop):
         self.chain = nowallet.TBTC
@@ -215,7 +218,6 @@ class NowalletApp(MDApp):
         super().__init__()
 
     def show_snackbar(self, text):
-        from kivymd.uix.snackbar import Snackbar
         Snackbar(text=text).open()
 
     def show_dialog(self, title, message, qrdata=None, cb=None):
@@ -253,6 +255,7 @@ class NowalletApp(MDApp):
 
     def start_zbar(self):
         if platform != "android":
+            self.show_snackbar("Scanning is not supported on {}.".format(platform))
             return
         self.root.ids.sm.current = "zbar"
         self.root.ids.detector.start()
@@ -328,13 +331,16 @@ class NowalletApp(MDApp):
         self.root.ids.address_input.error = not is_valid
 
     def set_amount_error(self, amount):
+        #try:
         _amount = Decimal(amount) if amount else Decimal("0")
+        #except:
+        #    _amount = Decimal("0")
         is_valid = _amount / self.unit_factor <= self.wallet.balance
         self.root.ids.spend_amount_input.error = not is_valid
 
     async def do_spend(self, address, amount, fee_rate):
         self.spend_tuple = await self.wallet.spend(
-            address, amount, fee_rate, rbf=self.rbf, broadcast=self.auto_broadcast_tx)
+            address, amount, fee_rate, rbf=self.rbf, broadcast=self.broadcast_tx)
 
     async def send_button_handler(self):
         addr_input = self.root.ids.address_input
@@ -397,7 +403,7 @@ class NowalletApp(MDApp):
             await self.do_login_tasks(email, passphrase)
         except (SocksConnectionError, ClientConnectorError):
             self.show_dialog("Error",
-                             "Make sure Tor/Orbot is installed and running before using Nowallet.",
+                             "Make sure Tor/Orbot is installed and running before using Brainbow.",
                              cb=lambda x: sys.exit(1))
             return
         self.update_screens()
@@ -405,7 +411,8 @@ class NowalletApp(MDApp):
         await asyncio.gather(
             self.new_history_loop(),
             self.do_listen_task(),
-            self.update_exchange_rates()
+            self.update_exchange_rates(),
+            self.check_new_block(),
             )
 
     def login(self):
@@ -467,13 +474,36 @@ class NowalletApp(MDApp):
         self.update_recieve_screen()
         self.update_ypub_screen()
         self.update_seed_screen()
-
         self.update_utxo_screen()
 
     async def new_history_loop(self):
         while True:
             await asyncio.sleep(1)
             self.check_new_history()
+
+    #async def check_new_block(self):
+    #    while True:
+    #        await asyncio.sleep(10)
+    #        logging.info("run chk block")
+
+    #async def check_new_block(self):
+    #    logging.info("Listening for new blocks.")
+    #    await self.wallet.listen_to_blocks()
+
+    async def check_new_block(self):
+        while True:
+            logging.info("run get_block_height")
+            try:
+                tip = get_block_height()
+                if tip > self.block_height:
+                    self.block_height = tip
+                    logging.info("NEW self.block_height={}".format(self.block_height))
+                    self.update_balance_screen()
+                    self.show_snackbar("Block {} found!".format(self.block_height))
+            except Exception as err:
+                logging.error(err)
+                self.block_height = 0
+            await asyncio.sleep(60)
 
     async def update_exchange_rates(self):
         while True:
@@ -500,12 +530,11 @@ class NowalletApp(MDApp):
     def balance_str(self, fiat=False):
         balance, units = None, None
         if not fiat:
-            balance = self.unit_precision.format(
-                self.wallet.balance * self.unit_factor)
-            if self.units == "sats (BTC)":
-                units = "sats"
-            else:
-                units = self.units
+            balance = self.unit_precision.format(self.wallet.balance * self.unit_factor)
+            #if self.units == "sats (BTC)":
+            #    units = "sats"  # Testnet will be displayed as "sats (TBTC)"
+            #else:
+            units = self.units
         else:
             if self.currency == "BTC":
                 balance = "{:.8f}".format(self.wallet.balance)
@@ -517,6 +546,8 @@ class NowalletApp(MDApp):
     def set_wallet_fingetprint(self, fingerprint):
         print("set fingerprint to {}".format(fingerprint))
         self.root.ids.toolbar.title = fingerprint.upper()
+        if self.chain  == nowallet.TBTC:
+            self.root.ids.toolbar.title += " TESTNET"
 
     def update_balance_screen(self):
         self.root.ids.balance_label.text = self.balance_str(fiat=self.fiat_balance)
@@ -524,9 +555,14 @@ class NowalletApp(MDApp):
 
         for hist in self.wallet.get_tx_history():
             logging.info("Adding history item to balance screen\n{}".format(hist))
-            verb = "Sent" if hist.is_spend else "Recieved"
-            hist_str = "{} {} {}".format(
-                verb, hist.value * self.unit_factor, self.units)
+            verb = "-" if hist.is_spend else "+"
+            #if self.units.startswith("sats"):
+            val = self.unit_precision.format(hist.value * self.unit_factor)
+            val = val.rstrip("0").rstrip(".")
+#
+#            else:
+#            val = hist.value * self.unit_factor
+            hist_str = "{}{} {}".format(verb, val, self.units)
             self.add_list_item(hist_str, hist)
 
     def update_utxo_screen(self):
@@ -545,7 +581,7 @@ class NowalletApp(MDApp):
     def update_recieve_screen(self):
         address = self.update_recieve_qrcode()
         encoding = "bech32" if self.wallet.bech32 else "P2SH"
-        current_addr = "Current Marker ({}):\n{}".format(encoding, address)
+        current_addr = "Current address ({}):\n{}".format(encoding, address)
         #TODO: add derivation path, eg. m/49'/1'/0'/0/5
         self.root.ids.addr_label.text = "{}".format(current_addr)
 
@@ -556,7 +592,7 @@ class NowalletApp(MDApp):
         #         self.wallet.get_key(index=0, change=False),
         #         addr=True
         #         )
-        logging.info("Current Marker: {}".format(address))
+        logging.info("Current address: {}".format(address))
         amount = Decimal(self.current_coin) / self.unit_factor
         self.root.ids.addr_qrcode.data = \
             "bitcoin:{}?amount={}".format(address, amount)
@@ -630,7 +666,10 @@ class NowalletApp(MDApp):
     def update_amounts(self, text=None, type="coin"):
         if self.is_amount_inputs_locked:
             return
+        #try:
         amount = Decimal(text) if text else Decimal("0")
+        #except:
+        #    amount = Decimal("0")
         rate = self.get_rate() / self.unit_factor
         new_amount = None
         if type == "coin":
@@ -659,6 +698,8 @@ class NowalletApp(MDApp):
 
     def build(self):
         """ """
+        self.title = 'Brainbow'
+
         """
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Gray"
@@ -762,11 +803,16 @@ class NowalletApp(MDApp):
 
 
         self.icon = "icons/brain.png"
-        self.use_kivy_settings = False
-        self.rbf = self.config.get("nowallet", "rbf")
+        self.use_kivy_settings = True
+        self.rbf = self.config.getboolean("nowallet", "rbf")
         self.units = self.config.get("nowallet", "units")
         self.update_unit()
-        self.auto_broadcast_tx = self.config.get("nowallet", "auto_broadcast_tx")
+        self.broadcast_tx = self.config.getboolean("nowallet", "broadcast_tx")
+        if self.broadcast_tx:
+            self.root.ids.send_button.text = 'Send TX'
+        else:
+            self.root.ids.send_button.text = 'Preview TX'
+
         self.currency = self.config.get("nowallet", "currency")
         self.explorer = self.config.get("nowallet", "explorer")
         self.set_price_api(self.config.get("nowallet", "price_api"))
@@ -775,11 +821,12 @@ class NowalletApp(MDApp):
     def build_config(self, config):
         config.setdefaults("nowallet", {
             "rbf": True,
-            "auto_broadcast_tx": True,
+            "broadcast_tx": True,
             "units": self.chain.chain_1209k.upper(),
             "currency": "BTC",
             "explorer": "blockcypher",
-            "price_api": "CoinGecko"})
+            "price_api": "CoinGecko",
+            })
         Window.bind(on_keyboard=self.key_input)
 
     def build_settings(self, settings):
@@ -788,7 +835,13 @@ class NowalletApp(MDApp):
 
     def on_config_change(self, config, section, key, value):
         if key == "rbf":
-            self.rbf = value
+            self.rbf = value in [1, '1', True]
+        elif key == "broadcast_tx":
+            self.broadcast_tx = value in [1, '1', True]
+            if self.broadcast_tx:
+                self.root.ids.send_button.text = 'Send TX'
+            else:
+                self.root.ids.send_button.text = 'Preview TX'
         elif key == "units":
             self.units = value
             self.update_unit()
@@ -821,12 +874,22 @@ class NowalletApp(MDApp):
         return True
 
     def add_list_item(self, text, history):
+        #if self.block_height:
+        #    chain_tip = self.block_height
+        #else:
+        #    chain_tip = 0
         data = self.root.ids.recycleView.data_model.data
-        icon = "check-circle" if history.height > 0 else "timer-sand"
+        if history.height == 0:
+            icon = "timer-sand"
+        elif abs(self.block_height-history.height)+1 < 6:
+            icon = "numeric-{}-circle".format( abs(self.block_height- history.height)+1  ) # confirmation count
+        else:
+            icon = "check-circle"
+
         data.append({"text": text,
-                        "secondary_text": history.tx_obj.id(),
-                        "history": history,
-                        "icon": icon})
+                    "secondary_text": history.tx_obj.id(),
+                    "history": history,
+                    "icon": icon})
 
     def add_utxo_list_item(self, text, utxo):
         data = self.root.ids.utxoRecycleView.data_model.data

@@ -25,12 +25,14 @@ BoxLayout:
         #md_bg_color: app.theme_cls.primary_color
         #background_palette: "Primary"
         #background_hue: "500"
-
         type_height: "medium"
         headline_text: "Headline"
         #md_bg_color: "#2d2734"
+        #anchor_title: "center"
 
 
+        #icon: "fingerprint"
+        #left_action_items: [["menu", lambda x: app.navigation_handler(self)]]
         left_action_items: [["menu", lambda x: app.navigation_handler(self)]]
         right_action_items: [["bitcoin", lambda x: app.menu_button_handler(self)]]
 
@@ -97,11 +99,18 @@ BoxLayout:
                     #        height: dp(33)
                     MDRaisedButton:
                         size_hint_x: 1
-                        text: "Access Wallet"
+                        text: "Let's get started"
                         id: login_button
 #                        on_release: asyncio.run(app.do_login())
 #                        on_release: await app.do_login()
                         on_release: app.login()
+
+                    MDLabel:
+                        size: self.size
+                        opacity: 0.8
+                        halign: 'center'
+                        font_size: '11sp'
+                        text: "\n\nBy continuing, you agree to our ToS and PP."
 
         MainScreen:
             name: "main"
@@ -169,6 +178,35 @@ BoxLayout:
                                 size_hint: 1, 0.2
                                 theme_text_color: "Primary"
                                 font_style: "H6"
+
+                            BoxLayout:
+                                size_hint: 1, 0.6
+                                spacing: 25
+                                #BoxLayout:
+                                #    size_hint: 1, 0.6
+                                #    spacing: 5
+                                #    FloatInput:
+                                #        id: donation_input
+                                #        helper_text: "Donation amount"
+                                #        helper_text_mode: "persistent"
+                                #        color_mode: "accent"
+                                #        text: "0.0005"
+                                #        #on_text: app.fee_input_handler()
+                                FloatInput:
+                                    id: fee_input
+                                    helper_text: "Miner Fee: sat/byte"
+                                    helper_text_mode: "persistent"
+                                    color_mode: "accent"
+                                    write_tab: False
+                                    disabled: True
+                                    on_text: app.fee_input_handler()
+                                MDRaisedButton:
+                                    id: fee_button
+                                    #size_hint: 0.5, 1
+                                    size_hint_x: 1
+                                    text: "Normal Fee"
+                                    on_release: app.fee_button_handler()
+
                             BoxLayout:
                                 size_hint: 1, 0.6
                                 spacing: 5
@@ -180,20 +218,8 @@ BoxLayout:
                                         helper_text: "Donation amount"
                                         helper_text_mode: "persistent"
                                         color_mode: "accent"
+                                        text: "0.0005"
                                         #on_text: app.fee_input_handler()
-                                FloatInput:
-                                    id: fee_input
-                                    helper_text: "Miner Fee: sat/byte"
-                                    helper_text_mode: "persistent"
-                                    color_mode: "accent"
-                                    write_tab: False
-                                    disabled: True
-                                    on_text: app.fee_input_handler()
-                                MDRaisedButton:
-                                    id: fee_button
-                                    size_hint: 0.5, 1
-                                    text: "Normal Fee"
-                                    on_release: app.fee_button_handler()
 
                             BoxLayout:
                                 size_hint: 1, 0.6
@@ -207,13 +233,19 @@ BoxLayout:
                                     on_text: app.set_address_error(self.text)
                                     on_text_validate: app.set_address_error(self.text)
                                     on_focus: app.set_address_error(self.text)
+
+                            BoxLayout:
+                                size_hint: 1, 0.6
+                                spacing: 5
                                 MDRaisedButton:
                                     id: send_button
-                                    size_hint: 0.5, 1
+                                    #size_hint: 0.5, 1
+                                    size_hint_x: 1
                                     text: "Send TX"
                                     on_release: asyncio.create_task(app.send_button_handler())
-                            Label:
+
                             MDFloatingActionButton:
+
                                 icon: "qrcode-scan"
                                 opposite_colors: True
                                 elevation_normal: 8

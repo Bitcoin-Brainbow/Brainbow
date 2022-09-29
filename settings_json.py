@@ -15,21 +15,21 @@ def settings_json(coin="BTC"):
                 "title": "Auto-broadcast",
                 "desc": "Broadcast transaction immediately?",
                 "section": "nowallet",
-                "key": "auto_broadcast_tx"
+                "key": "broadcast_tx"
             }, {
                 "type": "options",
                 "title": "Coin Units",
                 "desc": "Preferred Bitcoin denomination",
                 "section": "nowallet",
                 "key": "units",
-                "options": [coin, "sats ({})".format(coin)] #"m{}".format(coin), "u{}".format(coin)]
+                "options": [coin, "sats"]
             }, {
                 "type": "options",
                 "title": "Currency",
                 "desc": "Fiat currency for exchange rates",
                 "section": "nowallet",
                 "key": "currency",
-                "options": CURRENCIES 
+                "options": CURRENCIES
             }, {
                 "type": "options",
                 "title": "Block Explorer",

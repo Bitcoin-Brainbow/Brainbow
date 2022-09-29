@@ -31,7 +31,8 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,aioconsole==0.1.10,aiosignal==1.2.0,appdirs==1.4.4,async-timeout==4.0.2,asyncgui==0.5.5,asynckivy==0.5.4,aiohttp==v3.8.3,attrs==17.4.0,beautifulsoup4==4.6.0,buildozer==1.4.0,certifi==2018.1.18,chardet==3.0.4,charset-normalizer==2.1.1,colorama==0.4.5,Cython==0.29.32,distlib==0.3.6,docutils==0.14,filelock==3.8.0,frozenlist==1.3.1,idna==2.6,importlib-metadata==4.12.0,Jinja2==3.1.2,Kivy==2.1.0,Kivy-Garden==0.1.5,kivymd==1.0.2,MarkupSafe==2.1.1,multidict==6.0.2,pbkdf2==1.3,pep517==0.6.0,pexpect==4.8.0,Pillow==9.2.0,platformdirs==2.5.2,ptyprocess==0.7.0,pycoin==0.80,pycryptodome==3.15.0,Pygments==2.2.0,pytoml==0.1.21,qrcode==5.3,requests==2.20.0,six==1.11.0,toml==0.10.2,urllib3==1.24.3,yarl==1.8.1,zipp==3.8.1
+requirements = python3
+#,aioconsole==0.1.10,aiosignal==1.2.0,appdirs==1.4.4,async-timeout==4.0.2,asyncgui==0.5.5,asynckivy==0.5.4,aiohttp==v3.8.3,attrs==17.4.0,beautifulsoup4==4.6.0,buildozer==1.4.0,certifi==2018.1.18,chardet==3.0.4,charset-normalizer==2.1.1,colorama==0.4.5,Cython==0.29.32,distlib==0.3.6,docutils==0.14,filelock==3.8.0,frozenlist==1.3.1,idna==2.6,importlib-metadata==4.12.0,Jinja2==3.1.2,Kivy==2.1.0,Kivy-Garden==0.1.5,kivymd==1.0.2,MarkupSafe==2.1.1,multidict==6.0.2,pbkdf2==1.3,pep517==0.6.0,pexpect==4.8.0,Pillow==9.2.0,platformdirs==2.5.2,ptyprocess==0.7.0,pycoin==0.80,pycryptodome==3.15.0,Pygments==2.2.0,pytoml==0.1.21,qrcode==5.3,requests==2.20.0,six==1.11.0,toml==0.10.2,urllib3==1.24.3,yarl==1.8.1,zipp==3.8.1
 
 # unused? : sh==1.14.3,
 # problems: scrypt==0.8.20
@@ -63,7 +64,7 @@ orientation = portrait
 osx.python_version = 3
 
 # Kivy version to use
-osx.kivy_version = 1.9.1
+osx.kivy_version = 2.1.0
 
 #
 # Android specific
@@ -96,19 +97,19 @@ fullscreen = 0
 #android.features = android.hardware.usb.host
 
 # (int) Target Android API, should be as high as possible.
-#android.api = 27
+android.api = 28
 
 # (int) Minimum API your APK / AAB will support.
-#android.minapi = 21
+android.minapi = 23
 
 # (int) Android SDK version to use
-#android.sdk = 20
+#android.sdk = 23
 
 # (str) Android NDK version to use
-#android.ndk = 23b
+android.ndk = 23b
 
 # (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
-#android.ndk_api = 21
+android.ndk_api = 23b
 
 # (bool) Use --private data storage (True) or --dir public storage (False)
 #android.private_storage = True

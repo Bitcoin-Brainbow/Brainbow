@@ -94,7 +94,6 @@ class Connection:
         :param args: Params associated with current method
         :returns: Future. Response from server for this method(args)
         """
-        #return await self.client.RPC(method, *args)
         return await self.client.RPC(method, *args)
 
     def listen_subscribe(self, method: str, args: List) -> None:
@@ -187,8 +186,7 @@ class History:
         :returns: The string representation of this History object
         """
         return (
-            "<History: TXID:{} is_spend:{} " +
-            "value:{} height:{} timestamp:{}>"
+            "<History: TXID:{} is_spend:{} value:{} height:{} timestamp:{}>"
         ).format(self.tx_obj.id(), self.is_spend,
                  self.value, self.height, self.timestamp) # time.asctime(time.localtime(self.timestamp)))
 
@@ -238,6 +236,7 @@ class Wallet:
         "get_history": "blockchain.scripthash.get_history",
         "get_header": "blockchain.block.header", # was "get_header", removed in favor of header in electrum
         "subscribe": "blockchain.scripthash.subscribe",
+        "subscribe_headers": "blockchain.headers.subscribe",
         "estimatefee": "blockchain.estimatefee",
         "broadcast": "blockchain.transaction.broadcast"
     }  # type: Dict[str, str]
@@ -249,9 +248,9 @@ class Wallet:
                  loop: asyncio.AbstractEventLoop,
                  chain,
                  bech32=False) -> None:
-        """ Wallet object constructor. Use discover_keys() and listen_to_addresses()
-        coroutine method to construct wallet data, and listen for new data from
-        the server.
+        """ Wallet object constructor.
+        Use discover_keys() and listen_to_addresses() coroutine method to
+        construct wallet data, and listen for new data fromthe server.
 
         :param salt: a string to use as a salt for key derivation
         :param passphrase: a string containing a secure passphrase
@@ -403,11 +402,11 @@ class Wallet:
         return key.bech32_p2wpkh_address() if self.bech32 else key.p2sh_p2wpkh_address()
 
     def get_all_known_addresses(self, change: bool = False, addr: bool = False) -> List[str]:
-        """ Returns a list of all addresses currently known to us.
+        """
+        Returns a list of all addresses currently known to us.
 
         :param change: a boolean indicating which key root to use
-        :returns: a list of address strings containing all addresses known
-            for the given root
+        :returns: a list of address strings containing all addresses known for the given root
         """
         indicies = self.change_indicies if change else self.spend_indicies  # type: List[bool]
         return [self.get_address(self.get_key(i, change), addr=addr)
@@ -466,7 +465,7 @@ class Wallet:
         """
         history = []  # type: List[History]
         for value in self.history.values():
-            logging.info(value)
+            logging.info("get_tx_history -> value {}".format(value))
             history.extend(value["txns"])
         for value in self.change_history.values():
             logging.info("*** value: {}".format(value))
@@ -493,8 +492,7 @@ class Wallet:
         :param txids: a list of txid strings to retrieve tx histories for
         :returns: Future, a list of Tx objects
         """
-        futures = [self.connection.listen_rpc(
-            self.methods["get"], [txid]) for txid in txids]  # type: str
+        futures = [self.connection.listen_rpc(self.methods["get"], [txid]) for txid in txids]  # type: str
 #        results = await asyncio.gather(*futures, loop=self.loop)
         results = await asyncio.gather(*futures)
         txs = [Tx.from_hex(tx_hex) for tx_hex in results]  # type: List[Tx]
@@ -507,13 +505,12 @@ class Wallet:
         :param address: an address string to retrieve a balance for
         :returns: Future, a tuple of Decimals representing the balances.
         """
-        result = await self.connection.listen_rpc(
-            self.methods["get_balance"], [address])  # type: Dict[str, Any]
+        result = await self.connection.listen_rpc(self.methods["get_balance"], [address])  # type: Dict[str, Any]
+        print ("result of get_balance {}".format(result))
+
         logging.debug("Retrieved a balance for address: %s", address)
-        confirmed = \
-            Decimal(str(result["confirmed"])) / Wallet.COIN  # type: Decimal
-        zeroconf = \
-            Decimal(str(result["unconfirmed"])) / Wallet.COIN  # type: Decimal
+        confirmed = Decimal(str(result["confirmed"])) / Wallet.COIN  # type: Decimal
+        zeroconf = Decimal(str(result["unconfirmed"])) / Wallet.COIN  # type: Decimal
         return confirmed, zeroconf
 
     async def _get_utxos(self, address: str) -> List[Spendable]:
@@ -549,8 +546,7 @@ class Wallet:
         :param tx: A Tx object given from our transaction history
         :returns: The coin value associated with our spend output.
         """
-        change_addrs = \
-            self.get_all_known_addresses(change=True)  # type: List[str]
+        change_addrs = self.get_all_known_addresses(change=True)  # type: List[str]
         chg_vout = None  # type: int
         for i, txout in enumerate(tx.txs_out):
             address = txout.address(netcode=self.chain.netcode)  # type: str
@@ -692,8 +688,7 @@ class Wallet:
 
             # Get Tx object and process into our History object
             tx_list = await self._get_history([txid])  # type: List[Tx]
-            new_history = await self._process_history(
-                tx_list.pop(), address, height)  # type: History
+            new_history = await self._process_history(tx_list.pop(), address, height)  # type: History
 
             # Add History object to our history dict
             if index in hist_dict:
@@ -749,8 +744,7 @@ class Wallet:
             futures = []  # type: List[Awaitable]
             for i in range(current_index, current_index + Wallet._GAP_LIMIT):
                 addr = self.get_address(self.get_key(i, change))  # type: str
-                futures.append(self.connection.listen_subscribe(
-                    self.methods["subscribe"], [addr]))
+                futures.append(self.connection.listen_subscribe(self.methods["subscribe"], [addr]))
 
             result = await asyncio.gather(
 #                *futures, loop=self.loop)  # type: List[Dict[str, Any]]
@@ -774,6 +768,7 @@ class Wallet:
         logging.debug("Listening for updates involving any known address...")
         await self.connection.consume_queue(self._dispatch_result)
 
+
     async def _dispatch_result(self, result: List[str]) -> None:
         """ Gets called by the Connection's consume_queue method when a new tx
         history is sent from the server, then populates data structures using
@@ -790,6 +785,16 @@ class Wallet:
             if not empty_flag:
                 self.new_history = True
                 logging.info("Dispatched a new history for address %s", addr)
+
+    #async def listen_to_blocks(self) -> None:
+    #    """ Coroutine,  waiting for new blocks
+    #    """
+    #
+    #    logging.info("block_info, listen s")
+    #    a = []
+    #    ans = await self.connection.listen_subscribe(self.methods["subscribe_headers"], a)
+    #    logging.info("block_info, listen e {} {}".format(ans, a))
+
 
     @staticmethod
     def _calculate_vsize(tx: Tx) -> int:
@@ -867,9 +872,11 @@ class Wallet:
 
     def _mktx(self, out_addr: str, dec_amount: Decimal,
               is_high_fee: bool, rbf: bool = False) -> Tuple[Tx, Set[str], int]:
-        """ Builds a standard Bitcoin transaction - in the most naive way.
-        Coin selection is basically random. Uses one output and one change
-        address. Takes advantage of our subclasses to implement BIP69.
+        """
+        Builds a standard Bitcoin transaction - in the most naive way.
+        Coin selection is basically random.
+        Uses one output and one change address.
+        Takes advantage of our subclasses to implement BIP69.
 
         :param out_addr: an address to send to
         :param amount: a Decimal amount in whole BTC
@@ -917,6 +924,9 @@ class Wallet:
             if txout.address(self.chain.netcode) == change_addr:
                 chg_vout = i
                 break
+        #
+        from .utils import decodetx
+        decodetx(tx.as_hex())
 
         # Create pycoin Tx object from inputs/outputs
         return tx, in_addrs, chg_vout
@@ -938,8 +948,7 @@ class Wallet:
 
         # Create input list from utxos
         # Set sequence numbers to zero if using RBF.
-        txs_in = [spendable.tx_in()
-                  for spendable in spendables]  # type: List[TxIn]
+        txs_in = [spendable.tx_in() for spendable in spendables]  # type: List[TxIn]
         if rbf:
             logging.info("Spending with opt-in Replace by Fee! (RBF)")
             for txin in txs_in:
@@ -1047,11 +1056,12 @@ class Wallet:
         decimal_fee = Decimal(str(fee)) / Wallet.COIN  # type: Decimal
         total_out = amount + decimal_fee
         if total_out > self.balance:
+            print("total_out {:.8f} = amount {:.8f} + decimal_fee {:.8f}".format(total_out, amount, decimal_fee))
             raise Exception("Insufficient funds.")
         logging.info("unsigned_tx {}".format(tx) )
         self._signtx(tx, in_addrs, fee)
         if broadcast:
-
+            logging.info("broadcast TX")
             chg_out = tx.txs_out[chg_vout]  # type: TxOut
             txid = await self.broadcast(tx.as_hex(), chg_out)  # type: str
             return txid, decimal_fee, tx_vsize
@@ -1061,17 +1071,13 @@ class Wallet:
 
 
     async def broadcast(self, tx_hex: str, chg_out: TxOut) -> str:
-        txid = await self.connection.listen_rpc(
-            self.methods["broadcast"], [tx_hex])  # type: str
-
-        change_address = chg_out.address(
-            netcode=self.chain.netcode)  # type:str
+        txid = await self.connection.listen_rpc(self.methods["broadcast"], [tx_hex])  # type: str
+        change_address = chg_out.address(netcode=self.chain.netcode)  # type:str
         change_key = self.search_for_key(change_address, change=True)
         scripthash = self.get_address(change_key)
 
         logging.info("Subscribing to new change address...")
-        self.connection.listen_subscribe(
-            self.methods["subscribe"], [scripthash])
+        self.connection.listen_subscribe(self.methods["subscribe"], [scripthash])
         logging.info("Finished subscribing to new change address...")
         return txid
 
@@ -1090,8 +1096,7 @@ class Wallet:
         new_fee = self._get_fee(tx, coin_per_kb)[0]  # type: int
 
         self._signtx(tx, in_addrs, new_fee)
-        txid = await self.connection.listen_rpc(
-                self.methods["broadcast"], [tx.as_hex()])  # type: str
+        txid = await self.connection.listen_rpc(self.methods["broadcast"], [tx.as_hex()])  # type: str
 
         fee_diff = new_fee - hist_obj.tx_obj.fee()  # type: int
         self.balance -= fee_diff

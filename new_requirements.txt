@@ -40,7 +40,6 @@ Pygments==2.2.0
 pytoml==0.1.21
 qrcode==5.3
 requests==2.20.0
-scrypt==0.8.20
 sh==1.14.3
 six==1.11.0
 toml==0.10.2
