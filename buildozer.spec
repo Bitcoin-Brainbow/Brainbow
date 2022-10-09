@@ -98,19 +98,19 @@ fullscreen = 0
 
 
 # (int) Target Android API, should be as high as possible.
-android.api = 27
+android.api = 31
 
 # (int) Minimum API your APK / AAB will support.
-android.minapi = 27
+#android.minapi = 27
 
 # (int) Android SDK version to use
-android.sdk = 27
+#android.sdk = 27
 
 # (str) Android NDK version to use
-android.ndk = 23b
+#android.ndk = 23b
 
 # (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
-android.ndk_api = 21
+#android.ndk_api = 21
 
 # (bool) Use --private data storage (True) or --dir public storage (False)
 #android.private_storage = True
@@ -299,8 +299,8 @@ android.allow_backup = True
 #p4a.fork = kivy
 
 # (str) python-for-android branch to use, defaults to master
-#p4a.branch = master
-p4a.branch = develop
+p4a.branch = master
+#p4a.branch = develop
 
 # (str) python-for-android specific commit to use, defaults to HEAD, must be within p4a.branch
 #p4a.commit = HEAD
