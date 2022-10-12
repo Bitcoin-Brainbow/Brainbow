@@ -5,23 +5,23 @@
 
 ### Secure, private, and plausibly deniable
 #### Cross-platform Bitcoin brainwallet
- 
+
 ### Introduction:
- 
-This project, [Brainbow](https://github.com/Bitcoin-Brainbow/Brainbow/) is built on top of [nowallet](https://github.com/metamarcdw/nowallet), a project which was discontinued before it was completed. 
+
+This project, [Brainbow](https://github.com/Bitcoin-Brainbow/Brainbow/) is built on top of [nowallet](https://github.com/metamarcdw/nowallet), a project which was discontinued before it was completed.
 
 The adopted nowallet sources have been completely reworked and adapted.
 
 
-### What is Brainbow? ### 
+### What is Brainbow? ###
 
-Brainbow is a secure Bitcoin brainwallet app, a Bitcoin Client, that will ultimately be meant for desktop and mobile platforms. 
+Brainbow is a secure Bitcoin brainwallet app, a Bitcoin Client, that will ultimately be meant for desktop and mobile platforms.
 
 It was inspired by reports of incidents of Bitcoin being seized physically at border crossings.
 
 People need an option for a brainwallet that is **secure** and **easy to use**.
 
-It's written in Python and depends on the pycoin and Coinkite's connectrum libraries. 
+It's written in Python and depends on the pycoin and Coinkite's connectrum libraries.
 
 It uses Electrum servers on the back end, and communicates exclusively over Tor.
 
