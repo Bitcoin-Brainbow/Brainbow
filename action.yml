@@ -1,0 +1,32 @@
+name: Buildozer action
+description: Build Python package with Kivy Buildozer
+author: Artem Bulgakov
+branding:
+  icon: package
+  color: yellow
+
+inputs:
+  command:
+    description: Command to start Buildozer. Set to `buildozer ios debug` for iOS
+    required: true
+    default: buildozer android debug
+  repository_root:
+    description: Path to cloned repository. Set if you specified path for `actions/checkout` action.
+    required: true
+    default: .
+  workdir:
+    description: Working directory where buildozer.spec is located. Set to `src` if buildozer.spec is in `src` directory
+    required: true
+    default: .
+  buildozer_version:
+    description: Version of Buildozer to install. By default installs latest release
+    required: true
+    default: stable
+
+outputs:
+  filename:
+    description: Filename of built package
+
+runs:
+  using: docker
+  image: Dockerfile
