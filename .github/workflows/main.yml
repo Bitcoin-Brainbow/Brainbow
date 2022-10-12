@@ -1,6 +1,0 @@
-
-name: Install
-on:
-  push:
-  - name: Buildozer action
-    uses: ArtemSBulgakov/buildozer-action@v1.1.3
