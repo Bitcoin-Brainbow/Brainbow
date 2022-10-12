@@ -31,11 +31,11 @@ multidict==6.0.2
 pbkdf2==1.3
 pep517==0.6.0
 pexpect==4.8.0
-Pillow==8.4.0 # 8.4.0 is needed, otherwise buildozer can't patch it as of 2022-10-12. See https://github.com/kivy/python-for-android/issues/2671 
+Pillow==8.4.0 # 8.4.0 is needed, otherwise buildozer can't patch it as of 2022-10-12. See https://github.com/kivy/python-for-android/issues/2671
 platformdirs==2.5.2
 ptyprocess==0.7.0
 pycoin==0.80
-pycryptodome==3.15.0
+pycryptodome==3.9.8
 Pygments==2.2.0
 pytoml==0.1.21
 qrcode==5.3
