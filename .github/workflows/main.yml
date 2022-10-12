@@ -1,0 +1,2 @@
+- name: Buildozer action
+  uses: ArtemSBulgakov/buildozer-action@v1.1.3
