@@ -105,6 +105,9 @@ orientation = portrait
 # OSX Specific
 #
 
+# (list) Garden requirements
+garden_requirements = qrcode
+
 #
 # author = © Copyright Info
 
