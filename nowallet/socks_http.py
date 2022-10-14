@@ -1,7 +1,6 @@
 import asyncio
 import aiohttp
-import aiosocks
-from aiosocks.connector import ProxyConnector, ProxyClientRequest
+from nowallet.aiosocks.connector import ProxyConnector, ProxyClientRequest
 
 
 class SocksHTTPError(Exception):

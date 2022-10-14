@@ -38,14 +38,14 @@ from pycoin.tx.Tx import Tx
 from pycoin.tx.TxIn import TxIn
 from pycoin.tx.TxOut import TxOut
 from pycoin.tx.Spendable import Spendable
-from connectrum.client import StratumClient
-from connectrum.svr_info import ServerInfo
+from nowallet.connectrum.client import StratumClient
+from nowallet.connectrum.svr_info import ServerInfo
 
 from .bip49 import SegwitBIP32Node
 from .keys import derive_key
 from .socks_http import urlopen
 from .utils import get_timestamp_from_block_header
-from connectrum import ElectrumErrorResponse
+from nowallet.connectrum import ElectrumErrorResponse
 
 class Connection:
     """ Connection object.

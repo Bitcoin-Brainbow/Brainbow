@@ -4,7 +4,7 @@ import re
 import asyncio
 import logging
 
-from aiosocks import SocksConnectionError
+from nowallet.aiosocks import SocksConnectionError
 from aiohttp.client_exceptions import ClientConnectorError
 from decimal import Decimal
 
