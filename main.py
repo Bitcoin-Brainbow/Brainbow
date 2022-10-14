@@ -4,7 +4,6 @@ import re
 import asyncio
 import logging
 
-from .nowallet.aiosocks import SocksConnectionError
 from aiohttp.client_exceptions import ClientConnectorError
 from decimal import Decimal
 
@@ -53,6 +52,9 @@ from functools import partial
 import asynckivy as ak
 import threading
 import concurrent.futures
+
+from nowallet.aiosocks import SocksConnectionError
+
 
 __version__ = nowallet.__version__
 if platform != "android":
