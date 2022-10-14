@@ -53,7 +53,7 @@ import asynckivy as ak
 import threading
 import concurrent.futures
 
-from nowallet.aiosocks import SocksConnectionError
+#from .nowallet.aiosocks import SocksConnectionError
 
 
 __version__ = nowallet.__version__
@@ -403,7 +403,8 @@ class NowalletApp(MDApp):
         self.root.ids.sm.current = "wait"
         try:
             await self.do_login_tasks(email, passphrase)
-        except (SocksConnectionError, ClientConnectorError):
+        #except (SocksConnectionError, ClientConnectorError):
+        except:
             self.show_dialog("Error",
                              "Make sure Tor/Orbot is installed and running before using Brainbow.",
                              cb=lambda x: sys.exit(1))
