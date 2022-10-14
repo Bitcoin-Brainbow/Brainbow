@@ -4,7 +4,6 @@ import re
 import asyncio
 import logging
 
-from aiohttp.client_exceptions import ClientConnectorError
 from decimal import Decimal
 
 
@@ -48,12 +47,12 @@ import nowallet
 from nowallet.exchange_rate import fetch_exchange_rates
 from settings_json import settings_json
 from functools import partial
-#from kivy.clock import Clock
-import asynckivy as ak
+#import asynckivy as ak
 import threading
 import concurrent.futures
 
 #from .nowallet.aiosocks import SocksConnectionError
+# from aiohttp.client_exceptions import ClientConnectorError
 
 
 __version__ = nowallet.__version__
