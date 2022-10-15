@@ -34,6 +34,7 @@ version = 0.1
 requirements =
   python3==3.9.9,
   cffi,
+  pbkdf2,
   aioconsole==0.1.10,
   aiosignal==1.2.0,
   appdirs==1.4.4,
@@ -78,7 +79,6 @@ requirements =
   urllib3==1.24.3,
   yarl==1.8.1,
   zipp==3.8.1,
-  pbkdf2==1.3
 
 
 

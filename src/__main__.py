@@ -3,11 +3,11 @@ import asyncio
 import getpass
 
 from decimal import Decimal
-from nowallet.aiosocks import SocksConnectionError
+from aiosocks import SocksConnectionError
 from aiohttp.client_exceptions import ClientConnectorError
 from typing import List, Tuple, Any
 
-from . import nowallet
+import nowallet
 
 
 async def print_loop(wallet: nowallet.Wallet) -> None:
