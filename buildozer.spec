@@ -56,11 +56,11 @@ requirements =
   importlib-metadata==4.12.0,
   Jinja2==3.1.2,
   Kivy==2.1.0,
-  kivy-garden.kivymd==2019.910,
-  kivy-garden.qrcode==2021.314,
-  kivy-garden.xcamera==2019.928,
-  kivy-garden.zbarcam==2019.1020,
   kivymd==1.0.2,
+  #kivy-garden.kivymd==2019.910,
+  kivy-garden.qrcode==2021.314,
+  #kivy-garden.xcamera==2019.928,
+  #kivy-garden.zbarcam==2019.1020,
   MarkupSafe==2.1.1,
   multidict==6.0.2,
   pep517==0.6.0,
@@ -105,8 +105,6 @@ orientation = portrait
 # OSX Specific
 #
 
-# (list) Garden requirements
-garden_requirements = qrcode
 
 #
 # author = © Copyright Info

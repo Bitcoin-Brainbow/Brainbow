@@ -38,7 +38,11 @@ from kivy.uix.button import ButtonBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty
 
-from kivy.garden.qrcode import QRCodeWidget
+#from kivy.garden.qrcode import QRCodeWidget
+from kivy_garden.qrcode import QRCodeWidget
+
+
+
 
 from pycoin.key import validate
 from pycoin.serialize import b2h
