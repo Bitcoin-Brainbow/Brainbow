@@ -35,6 +35,7 @@ requirements =
   python3==3.9.9,
   cffi,
   pbkdf2,
+  typing-extensions==4.4.0,
   aioconsole==0.1.10,
   aiosignal==1.2.0,
   appdirs==1.4.4,
