@@ -78,7 +78,7 @@ requirements =
   toml==0.10.2,
   urllib3==1.24.3,
   yarl==1.8.1,
-  zipp==3.8.1
+  zipp==3.8.1,
   -e git+https://github.com/Bitcoin-Brainbow/Brainbow@master#egg=nowallet
 
 # failing: pbkdf2==1.3,
