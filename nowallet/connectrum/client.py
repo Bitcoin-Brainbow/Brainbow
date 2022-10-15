@@ -16,7 +16,7 @@ if importutil.find_spec("aiosocks") is not None:
 else:
     have_aiosocks = False
 """
-from nowallet import aiosocks
+import aiosocks
 have_aiosocks = True
 
 from collections import defaultdict

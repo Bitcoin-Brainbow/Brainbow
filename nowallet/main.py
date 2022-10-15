@@ -47,23 +47,24 @@ from kivy_garden.qrcode import QRCodeWidget
 from pycoin.key import validate
 from pycoin.serialize import b2h
 
+#import __init__  as nowallet
 import nowallet
-from nowallet.exchange_rate import fetch_exchange_rates
+from exchange_rate import fetch_exchange_rates
 from settings_json import settings_json
 from functools import partial
 #import asynckivy as ak
 import threading
 import concurrent.futures
 
-#from .nowallet.aiosocks import SocksConnectionError
-# from aiohttp.client_exceptions import ClientConnectorError
+from aiosocks import SocksConnectionError
+from aiohttp.client_exceptions import ClientConnectorError
 
 
-__version__ = nowallet.__version__
+__version__ = "0.0.1"
 if platform != "android":
     Window.size = (350, 550)
 
-from nowallet.utils import get_block_height
+from utils import get_block_height
 
 LOG_OFF_WALLET = "Disconnect and clear wallet"
 
@@ -406,8 +407,7 @@ class NowalletApp(MDApp):
         self.root.ids.sm.current = "wait"
         try:
             await self.do_login_tasks(email, passphrase)
-        #except (SocksConnectionError, ClientConnectorError):
-        except:
+        except (SocksConnectionError, ClientConnectorError):
             self.show_dialog("Error",
                              "Make sure Tor/Orbot is installed and running before using Brainbow.",
                              cb=lambda x: sys.exit(1))

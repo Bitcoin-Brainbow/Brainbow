@@ -1,5 +1,5 @@
 import json
-from nowallet.exchange_rate import CURRENCIES
+from exchange_rate import CURRENCIES
 
 def settings_json(coin="BTC"):
     return json.dumps(

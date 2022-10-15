@@ -1,7 +1,7 @@
 import asyncio
 import aiohttp
-import nowallet.aiosocks as n_aiosocks
-from nowallet.aiosocks.connector import ProxyConnector, ProxyClientRequest
+import aiosocks
+from aiosocks.connector import ProxyConnector, ProxyClientRequest
 
 
 class SocksHTTPError(Exception):
@@ -13,7 +13,7 @@ async def urlopen(url: str, bauth_tuple=None, loop=None) -> str:
     if bauth_tuple:
         login, password = bauth_tuple
         bauth = aiohttp.BasicAuth(login, password=password, encoding='latin1')
-    auth5 = n_aiosocks.Socks5Auth(
+    auth5 = aiosocks.Socks5Auth(
         'proxyuser1', password='pwd')  # type: aiosocks.Socks5Auth
     conn = ProxyConnector(
         remote_resolve=True, loop=loop)  # type: ProxyConnector

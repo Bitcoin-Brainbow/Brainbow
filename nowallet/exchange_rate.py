@@ -3,7 +3,7 @@ import asyncio
 import json
 from typing import Dict, List, Any
 
-from .socks_http import urlopen
+from socks_http import urlopen
 
 
 CURRENCIES = [
