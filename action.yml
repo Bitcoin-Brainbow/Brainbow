@@ -17,7 +17,7 @@ inputs:
   workdir:
     description: Working directory where buildozer.spec is located. Set to `src` if buildozer.spec is in `src` directory
     required: true
-    default: nowallet
+    default: src
   buildozer_version:
     description: Version of Buildozer to install. By default installs latest release
     required: true

@@ -10,7 +10,7 @@ package.name = brainbow
 package.domain = org.brainbow
 
 # (str) Source code where the main.py live
-source.dir = .
+source.dir = src
 
 # (list) Source files to include (let empty to include all the files)
 source.include_exts = py,png,jpg,kv,atlas
@@ -42,7 +42,6 @@ requirements =
   aiohttp==v3.7.3,
   attrs==17.4.0,
   beautifulsoup4==4.6.0,
-  buildozer==1.4.0,
   certifi==2018.1.18,
   chardet==3.0.4,
   charset-normalizer==2.1.1,
