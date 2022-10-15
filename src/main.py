@@ -1,5 +1,9 @@
 #! /usr/bin/env python3
-import sys
+
+# Monkey patch based on https://github.com/kivy/python-for-android/issues/1866#issuecomment-927157780 
+import ctypes, sys
+ctypes.pythonapi = ctypes.PyDLL("libpython%d.%d.so" % sys.version_info[:2])   # replaces ctypes.PyDLL(None)
+
 import re
 import asyncio
 import logging
