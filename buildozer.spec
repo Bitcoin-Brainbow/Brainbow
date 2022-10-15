@@ -77,10 +77,10 @@ requirements =
   toml==0.10.2,
   urllib3==1.24.3,
   yarl==1.8.1,
-  zipp==3.8.1
+  zipp==3.8.1,
+  pbkdf2==1.3
 
-# failing: pbkdf2==1.3,
-# removed Kivy-Garden==0.1.5, in favor of kivy-garden.qrcode
+
 
 # ,hostpython3==3.10.6,
 # (str) Custom source folders for requirements
