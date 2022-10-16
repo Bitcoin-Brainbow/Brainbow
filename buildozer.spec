@@ -35,6 +35,7 @@ requirements =
   python3==3.9.9,
   cffi,
   pbkdf2,
+  Cython==0.29.32,
   typing-extensions==4.4.0,
   aioconsole==0.1.10,
   aiosignal==1.2.0,
@@ -48,7 +49,6 @@ requirements =
   chardet==3.0.4,
   charset-normalizer==2.1.1,
   colorama==0.4.5,
-  Cython==0.29.32,
   distlib==0.3.6,
   docutils==0.14,
   filelock==3.8.0,
@@ -58,10 +58,7 @@ requirements =
   Jinja2==3.1.2,
   Kivy==2.1.0,
   kivymd==1.0.2,
-  #kivy-garden.kivymd==2019.910,
   kivy-garden.qrcode==2021.314,
-  #kivy-garden.xcamera==2019.928,
-  #kivy-garden.zbarcam==2019.1020,
   MarkupSafe==2.1.1,
   multidict==6.0.2,
   pep517==0.6.0,
@@ -84,6 +81,7 @@ requirements =
 
 
 # ,hostpython3==3.10.6,
+
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
 # requirements.source.kivy = ../../kivy
