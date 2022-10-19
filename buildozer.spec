@@ -79,10 +79,10 @@ requirements =
   zipp==3.8.1,
 
   blockcypher==1.0.93,
-  python-dateutil<3.0.0,
+  python-dateutil==2.8.2,
   bitcoin==1.1.39,
 
-  
+
 
 # ,hostpython3==3.10.6,
 
