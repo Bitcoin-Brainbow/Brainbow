@@ -45,6 +45,7 @@ from bip49 import SegwitBIP32Node
 from keys import derive_key
 from socks_http import urlopen
 from utils import get_timestamp_from_block_header
+from utils import decodetx
 from connectrum import ElectrumErrorResponse
 
 class Connection:
@@ -924,8 +925,6 @@ class Wallet:
             if txout.address(self.chain.netcode) == change_addr:
                 chg_vout = i
                 break
-        #
-        from .utils import decodetx
         decodetx(tx.as_hex())
 
         # Create pycoin Tx object from inputs/outputs

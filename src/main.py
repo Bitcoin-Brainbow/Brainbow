@@ -48,6 +48,8 @@ from kivy.properties import StringProperty
 #from kivy.garden.qrcode import QRCodeWidget
 from kivy_garden.qrcode import QRCodeWidget
 
+from kivy.core.clipboard import Clipboard
+
 
 
 
@@ -675,6 +677,13 @@ class NowalletApp(MDApp):
             self.exchange_rates = False
             return Decimal(str(1))
 
+    def copy_current_address_to_clipboard(self):
+        try:
+            current_address = self.root.ids.addr_qrcode.data.replace("bitcoin:","").split("?")[0] # "bitcoin:{}?amount={}"
+            Clipboard.copy(current_address)
+            Snackbar(text="Current address copied to clipboard.").open()
+        except:
+            Snackbar(text="Can't copy to clipboard.").open()
 
     def update_amounts(self, text=None, type="coin"):
         if self.is_amount_inputs_locked:

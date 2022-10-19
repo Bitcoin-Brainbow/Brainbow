@@ -286,6 +286,7 @@ BoxLayout:
                                     orientation:"vertical"
                                     padding: dp(10)
                                     spacing: 5
+                                    on_touch_down: app.copy_current_address_to_clipboard()
                                     MDLabel:
                                         id: addr_label
 #                                        theme_text_color: "Primary"
