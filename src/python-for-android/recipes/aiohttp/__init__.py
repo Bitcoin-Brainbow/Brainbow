@@ -6,7 +6,7 @@ from pythonforandroid.recipe import IncludedFilesBehaviour, CppCompiledComponent
 import os
 import sys
 
-class AIOHTTPRecipe(IncludedFilesBehaviour, CppCompiledComponentsPythonRecipe):
+class AIOHTTPRecipe( CppCompiledComponentsPythonRecipe):
 
     version = "v3.8.3"
     url = "https://github.com/aio-libs/aiohttp/archive/{version}.zip"
