@@ -77,7 +77,7 @@ requirements =
   urllib3==1.24.3,
   yarl==1.8.1,
   zipp==3.8.1,
-
+  blockcypher==1.0.93,
 
 
 # ,hostpython3==3.10.6,
