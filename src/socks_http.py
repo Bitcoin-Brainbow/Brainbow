@@ -39,7 +39,7 @@ async def urlopen(url: str, bauth_tuple=None, loop=None) -> str:
     except aiohttp.ClientProxyConnectionError:
         # connection problem
         pass
-    except n_aiosocks.SocksError:
+    except aiosocks.SocksError:
         # communication problem
         pass
     return ""  # Should never happen

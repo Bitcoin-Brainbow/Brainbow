@@ -206,7 +206,7 @@ class NowalletApp(MDApp):
         self.fiat_balance = False
         self.bech32 = False
         self.exchange_rates = None
-
+        self.current_tab_name = "balance"
         self.menu_items = [{"viewclass": "MyMenuItem",
                             "text": "View YPUB",
                             "on_release": lambda x="View YPUB": app.menu_item_handler(x)},
@@ -231,6 +231,10 @@ class NowalletApp(MDApp):
                                 {"viewclass": "MyMenuItem",
                                  "text": "View Redeem script"}]
         super().__init__()
+
+    def give_current_tab_name(self, *args):
+        self.current_tab_name = args[1].name
+        print ("current_tab_name: {}".format(self.current_tab_name))
 
     def show_snackbar(self, text):
         Snackbar(text=text).open()
@@ -678,12 +682,13 @@ class NowalletApp(MDApp):
             return Decimal(str(1))
 
     def copy_current_address_to_clipboard(self):
-        try:
-            current_address = self.root.ids.addr_qrcode.data.replace("bitcoin:","").split("?")[0] # "bitcoin:{}?amount={}"
-            Clipboard.copy(current_address)
-            Snackbar(text="Current address copied to clipboard.").open()
-        except:
-            Snackbar(text="Can't copy to clipboard.").open()
+        if self.current_tab_name == "recieve":
+            try:
+                current_address = self.root.ids.addr_qrcode.data.replace("bitcoin:","").split("?")[0] # "bitcoin:{}?amount={}"
+                Clipboard.copy(current_address)
+                Snackbar(text="Current address copied to clipboard.").open()
+            except:
+                Snackbar(text="Can't copy to clipboard.").open()
 
     def update_amounts(self, text=None, type="coin"):
         if self.is_amount_inputs_locked:
@@ -824,8 +829,8 @@ class NowalletApp(MDApp):
 
 
 
-        self.icon = "icons/brain.png"
-        self.use_kivy_settings = True
+        self.icon = "brain.png"
+        self.use_kivy_settings = False
         self.rbf = self.config.getboolean("nowallet", "rbf")
         self.units = self.config.get("nowallet", "units")
         self.update_unit()
@@ -921,7 +926,7 @@ class NowalletApp(MDApp):
 
 
 def open_url(url):
-    if platform == 'android':
+    if False and platform == 'android':
         ''' Open a webpage in the default Android browser.  '''
         from jnius import autoclass, cast
         context = autoclass('org.renpy.android.PythonActivity').mActivity
@@ -935,7 +940,9 @@ def open_url(url):
         currentActivity.startActivity(intent)
     else:
         import webbrowser
-        webbrowser.open(url)
+        #webbrowser.open(url)
+        webbrowser.open_new(url)
+
 
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()

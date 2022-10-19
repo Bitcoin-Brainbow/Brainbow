@@ -9,13 +9,15 @@ def settings_json(coin="BTC"):
                 "title": "RBF",
                 "desc": "Use opt in replace by fee?",
                 "section": "nowallet",
-                "key": "rbf"
+                "key": "rbf",
+                "default": "true"
             }, {
                 "type": "bool",
                 "title": "Auto-broadcast",
                 "desc": "Broadcast transaction immediately?",
                 "section": "nowallet",
-                "key": "broadcast_tx"
+                "key": "broadcast_tx",
+                "default": "true"
             }, {
                 "type": "options",
                 "title": "Coin Units",

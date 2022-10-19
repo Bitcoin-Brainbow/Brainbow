@@ -116,6 +116,7 @@ BoxLayout:
             name: "main"
             MDTabs
                 tab_display_mode: "icons"
+                on_tab_switch: app.give_current_tab_name(*args)
                 Tab:
                     name: "balance"
                     title: "TRANSACTIONS"
