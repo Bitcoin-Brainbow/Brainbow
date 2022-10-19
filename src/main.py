@@ -160,7 +160,8 @@ class ListItem(TwoLineIconListItem):
     icon = StringProperty("check-circle")
     history = ObjectProperty()
 
-    def on_release(self):
+    def on_press(self):
+    #def on_release(self):
         app = MDApp.get_running_app()
         base_url, chain = None, app.chain.chain_1209k
         txid = self.history.tx_obj.id()
