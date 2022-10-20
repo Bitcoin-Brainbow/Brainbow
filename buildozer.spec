@@ -83,21 +83,16 @@ requirements =
   python-dateutil==2.8.2,
   bitcoin==1.1.39,
 
-  zbarcam,
-  android,
-  hostpython3==3.9.9,
-  libiconv,
-  libzbar,
-  pyzbar==0.1.8,
-  xcamera==2019.928,
 
-  zbarcam,
+#  kivy-garden.zbarcam==2020.524, -> zbarcam
   android,
   hostpython3==3.9.9,
+  zbarcam,
   libiconv,
   libzbar,
-  pyzbar==0.1.8,
-  xcamera==2019.928,
+  pyzbar==0.1.9,
+  xcamera==2020.613,
+
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -200,7 +195,7 @@ android.api = 33
 # (bool) If True, then automatically accept SDK license
 # agreements. This is intended for automation only. If set to False,
 # the default, you will be shown the license when first running buildozer.
-# android.accept_sdk_license = False
+android.accept_sdk_license = True
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.kivy.android.PythonActivity

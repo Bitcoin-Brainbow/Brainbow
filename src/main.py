@@ -939,7 +939,7 @@ def open_url(url):
     if False and platform == 'android':
         ''' Open a webpage in the default Android browser.  '''
         from jnius import autoclass, cast
-        context = autoclass('org.renpy.android.PythonActivity').mActivity
+        context = autoclass('org.kivy.android.PythonActivity').mActivity
         Uri = autoclass('android.net.Uri')
         Intent = autoclass('android.content.Intent')
 
