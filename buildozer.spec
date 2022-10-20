@@ -85,14 +85,12 @@ requirements =
 
   zbarcam,
   android,
-  hostpython3==3.8.1,
+  hostpython3==3.9.9,
   libiconv,
   libzbar,
   pyzbar==0.1.8,
   xcamera==2019.928,
-
-# ,hostpython3==3.10.6,
-
+ 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
 # requirements.source.kivy = ../../kivy
