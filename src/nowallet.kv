@@ -8,6 +8,7 @@
 #:import asyncio asyncio
 #:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
 
+#:import ZBarCam kivy_garden.zbarcam.ZBarCam
 
 <Tab>
     MDLabel:
@@ -408,13 +409,20 @@ BoxLayout:
                             MDLabel:
                                 text: "Move lock Brainbow with pin to this tab"
 
-
-
         ZbarScreen:
             name: "zbar"
-            ZbarQrcodeDetector:
-                id: detector
-                on_symbols: app.qrcode_handler(self.symbols)
+#            ZbarQrcodeDetector:
+#                id: detector
+#                on_symbols: app.qrcode_handler(self.symbols)
+            BoxLayout:
+                orientation: 'vertical'
+                ZBarCam:
+                    id: zbarcam
+                    code_types: 'QRCODE'
+                Label:
+                    size_hint: None, None
+                    size: self.texture_size[0], 50
+                    text: ', '.join([str(symbol.data) for symbol in zbarcam.symbols])
 
         WaitScreen:
             name: "wait"

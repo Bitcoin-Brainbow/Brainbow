@@ -30,7 +30,6 @@ version = 0.1
 # version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
-# comma separated e.g. requirements = sqlite3,kivy
 requirements =
   python3==3.9.9,
   cffi,
@@ -41,7 +40,8 @@ requirements =
   aiosignal==1.2.0,
   appdirs==1.4.4,
   async-timeout==4.0.2,
-  asyncgui==0.5.5,asynckivy==0.5.4,
+  asyncgui==0.5.5,
+  asynckivy==0.5.4,
   aiohttp==3.8.3,
   attrs==17.4.0,
   beautifulsoup4==4.6.0,
@@ -83,7 +83,8 @@ requirements =
   python-dateutil==2.8.2,
   bitcoin==1.1.39,
 
-
+  zbarcam,
+  
 
 # ,hostpython3==3.10.6,
 
