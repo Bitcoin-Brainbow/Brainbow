@@ -50,8 +50,7 @@ from kivy_garden.qrcode import QRCodeWidget
 
 from kivy.core.clipboard import Clipboard
 
-from kivy_garden.zbarcam import ZBarCam
-
+#from kivy_garden.zbarcam import ZBarCam 
 
 
 from pycoin.key import validate
