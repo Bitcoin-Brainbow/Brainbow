@@ -58,6 +58,7 @@ requirements =
   Jinja2==3.1.2,
   Kivy==2.1.0,
   kivymd==1.0.2,
+  connectrum==0.8.1,
   kivy-garden.qrcode==2021.314,
   MarkupSafe==2.1.1,
   multidict==6.0.2,
@@ -143,7 +144,7 @@ fullscreen = 0
 # (list) Permissions
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA
 
-#, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE 
+#, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host
