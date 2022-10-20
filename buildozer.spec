@@ -199,7 +199,6 @@ android.accept_sdk_license = True
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.kivy.android.PythonActivity
-android.entrypoint = org.kivy.android.PythonActivity
 
 
 # (str) Full name including package path of the Java class that implements Android Activity
