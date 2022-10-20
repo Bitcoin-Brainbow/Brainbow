@@ -280,6 +280,14 @@ class NowalletApp(MDApp):
         self.root.ids.sm.current = "zbar"
         self.root.ids.detector.start()
 
+    def start_nfc_tap(self):
+        if platform != "android":
+            self.show_snackbar("Tapping is not supported on {}.".format(platform))
+            return
+        #self.root.ids.sm.current = "zbar"
+        #self.root.ids.detector.start()
+        logging.info("start_nfc_tap")
+        
     def qrcode_handler(self, symbols):
         try:
             address, amount = nowallet.get_payable_from_BIP21URI(symbols[0])
