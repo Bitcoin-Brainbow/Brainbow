@@ -50,6 +50,7 @@ from kivy_garden.qrcode import QRCodeWidget
 
 from kivy.core.clipboard import Clipboard
 
+from kivy_garden.zbarcam import ZBarCam
 
 
 
@@ -287,7 +288,7 @@ class NowalletApp(MDApp):
         #self.root.ids.sm.current = "zbar"
         #self.root.ids.detector.start()
         logging.info("start_nfc_tap")
-        
+
     def qrcode_handler(self, symbols):
         try:
             address, amount = nowallet.get_payable_from_BIP21URI(symbols[0])

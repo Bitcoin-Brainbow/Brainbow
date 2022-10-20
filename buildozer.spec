@@ -84,7 +84,12 @@ requirements =
   bitcoin==1.1.39,
 
   zbarcam,
-  
+  android,
+  hostpython3==3.8.1,
+  libiconv,
+  libzbar,
+  pyzbar==0.1.8,
+  xcamera==2019.928,
 
 # ,hostpython3==3.10.6,
 
