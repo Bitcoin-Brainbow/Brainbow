@@ -42,7 +42,7 @@ requirements =
   appdirs==1.4.4,
   async-timeout==4.0.2,
   asyncgui==0.5.5,asynckivy==0.5.4,
-  aiohttp==v3.8.3,
+  aiohttp==3.8.3,
   attrs==17.4.0,
   beautifulsoup4==4.6.0,
   certifi==2018.1.18,
