@@ -256,13 +256,13 @@ BoxLayout:
                                 on_release: app.start_zbar()
 
 
-                            #MDFloatingActionButton:
-                            #    icon: "credit-card-scan-outline"
-                            #    opposite_colors: True
-                            #    elevation_normal: 8
-                            #    pos_hint: {"center_x": 0.5, "center_y": 0.2}
-                            #    id: nfc_button
-                            #    on_release: app.start_nfc_tap()
+                            MDFloatingActionButton:
+                                icon: "credit-card-scan-outline"
+                                opposite_colors: True
+                                elevation_normal: 8
+                                pos_hint: {"center_x": 0.5, "center_y": 0.2}
+                                id: nfc_button
+                                on_release: app.start_nfc_tap()
 
 
                 Tab:
@@ -409,18 +409,18 @@ BoxLayout:
                             MDLabel:
                                 text: "Move lock Brainbow with pin to this tab"
 
-        ZbarScreen:
-            name: "zbar"
-            ZbarQrcodeDetector:
-                id: detector
-                on_symbols: app.qrcode_handler(self.symbols)
+#        ZbarScreen:
+#            name: "zbar"
+##            ZbarQrcodeDetector:
+##                id: detector
+##               on_symbols: app.qrcode_handler(self.symbols)
 #            BoxLayout:
 #                orientation: 'vertical'
 #                ZBarCam:
 #                    id: zbarcam
 #                    code_types: 'QRCODE'
 #                Label:
-#                    size_hint: None, None
+#                   size_hint: None, None
 #                    size: self.texture_size[0], 50
 #                    text: ', '.join([str(symbol.data) for symbol in zbarcam.symbols])
 

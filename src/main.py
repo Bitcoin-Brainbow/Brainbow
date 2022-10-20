@@ -50,7 +50,7 @@ from kivy_garden.qrcode import QRCodeWidget
 
 from kivy.core.clipboard import Clipboard
 
-#from kivy_garden.zbarcam import ZBarCam 
+#from kivy_garden.zbarcam import ZBarCam
 
 
 from pycoin.key import validate
@@ -281,9 +281,10 @@ class NowalletApp(MDApp):
         self.root.ids.detector.start()
 
     def start_nfc_tap(self):
-        if platform != "android":
-            self.show_snackbar("Tapping is not supported on {}.".format(platform))
-            return
+        #if platform != "android":
+        #    self.show_snackbar("Tapping is not supported on {}.".format(platform))
+        #    return
+
         #self.root.ids.sm.current = "zbar"
         #self.root.ids.detector.start()
         logging.info("start_nfc_tap")
@@ -935,7 +936,7 @@ class NowalletApp(MDApp):
 
 
 def open_url(url):
-    if False and platform == 'android':
+    if platform == 'android':
         ''' Open a webpage in the default Android browser.  '''
         from jnius import autoclass, cast
         context = autoclass('org.kivy.android.PythonActivity').mActivity
