@@ -90,7 +90,15 @@ requirements =
   libzbar,
   pyzbar==0.1.8,
   xcamera==2019.928,
- 
+
+  zbarcam,
+  android,
+  hostpython3==3.9.9,
+  libiconv,
+  libzbar,
+  pyzbar==0.1.8,
+  xcamera==2019.928,
+
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
 # requirements.source.kivy = ../../kivy
@@ -196,6 +204,8 @@ android.api = 33
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.kivy.android.PythonActivity
+android.entrypoint = org.kivy.android.PythonActivity
+
 
 # (str) Full name including package path of the Java class that implements Android Activity
 # use that parameter together with android.entrypoint to set custom Java class instead of PythonActivity
