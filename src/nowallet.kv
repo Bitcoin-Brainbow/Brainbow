@@ -234,7 +234,7 @@ BoxLayout:
                                     on_text: app.set_address_error(self.text)
                                     on_text_validate: app.set_address_error(self.text)
                                     on_focus: app.set_address_error(self.text)
-                                
+
 
                             BoxLayout:
                                 size_hint: 1, 0.6
@@ -410,11 +410,11 @@ BoxLayout:
 
 
 
-#        ZbarScreen:
-#            name: "zbar"
-#            ZbarQrcodeDetector:
-#                id: detector
-#                on_symbols: app.qrcode_handler(self.symbols)
+        ZbarScreen:
+            name: "zbar"
+            ZbarQrcodeDetector:
+                id: detector
+                on_symbols: app.qrcode_handler(self.symbols)
 
         WaitScreen:
             name: "wait"
