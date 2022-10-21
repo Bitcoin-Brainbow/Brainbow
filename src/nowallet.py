@@ -520,18 +520,18 @@ class Wallet:
         zeroconf = Decimal(str(result["unconfirmed"])) / Wallet.COIN  # type: Decimal
         return confirmed, zeroconf
 
-    async def _get_utxos(self, address: str) -> List[Spendable]:
+    async def _get_utxos(self, scripthash: str) -> List[Spendable]:
         """ Coroutine. Returns a list of pycoin.tx.Spendable objects for all
-        UTXOS associated with the given address
+        UTXOS associated with the given scripthash (address)
 
-        :param address: an address string to retrieve a balance for
+        :param scripthash: scripthash/an address string to retrieve a balance for
         :returns: Future, a list of pycoin Spendable objects.
         """
-        logging.info("Retrieving utxos for address %s", address)
-        update_loading_small_text("Retrieving utxos for address {}".format(address))
+        logging.info("Retrieving utxos for scripthash %s", scripthash)
+        update_loading_small_text("Retrieving utxos for address {}".format(scripthash))
 
         result = await self.connection.listen_rpc(
-            self.methods["listunspent"], [address])  # type: Dict
+            self.methods["listunspent"], [scripthash])  # type: Dict
         pos_map = {unspent["tx_hash"]: unspent["tx_pos"]
                    for unspent in result}  # type: Dict[str, int]
         futures = [self.connection.listen_rpc(self.methods["get"], [unspent["tx_hash"]])
