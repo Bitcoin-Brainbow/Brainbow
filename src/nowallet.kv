@@ -8,7 +8,7 @@
 #:import asyncio asyncio
 #:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
 
-# :import ZBarCam kivy_garden.zbarcam.ZBarCam
+#:import ZBarCam kivy_garden.zbarcam.ZBarCam
 
 <Tab>
     MDLabel:
@@ -439,6 +439,16 @@ BoxLayout:
                 size_hint: 0.7, None
                 halign: "center"
                 pos_hint: {"center_x": 0.5, "center_y": 0.66}
+            MDLabel:
+                id: wait_text_small
+                size: self.size
+                font_size: '11sp'
+                text: "-"
+                theme_text_color: "Primary"
+                size_hint: 0.7, None
+                halign: "center"
+                pos_hint: {"center_x": 0.5, "center_y": 0.95}
+
 
         UTXOScreen:
             name: "utxo"

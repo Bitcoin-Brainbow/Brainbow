@@ -48,6 +48,13 @@ from utils import get_timestamp_from_block_header
 from utils import decodetx
 from connectrum import ElectrumErrorResponse
 
+
+from kivymd.app import MDApp
+
+def update_loading_small_text(text):
+    app = MDApp.get_running_app()
+    app.root.ids.wait_text_small.text = text
+
 class Connection:
     """ Connection object.
     Connects to an Electrum server, and handles all Stratum protocol messages.
@@ -508,7 +515,6 @@ class Wallet:
         """
         result = await self.connection.listen_rpc(self.methods["get_balance"], [address])  # type: Dict[str, Any]
         print ("result of get_balance {}".format(result))
-
         logging.debug("Retrieved a balance for address: %s", address)
         confirmed = Decimal(str(result["confirmed"])) / Wallet.COIN  # type: Decimal
         zeroconf = Decimal(str(result["unconfirmed"])) / Wallet.COIN  # type: Decimal
@@ -521,7 +527,8 @@ class Wallet:
         :param address: an address string to retrieve a balance for
         :returns: Future, a list of pycoin Spendable objects.
         """
-        logging.debug("Retrieving utxos for address %s", address)
+        logging.info("Retrieving utxos for address %s", address)
+        update_loading_small_text("Retrieving utxos for address {}".format(address))
 
         result = await self.connection.listen_rpc(
             self.methods["listunspent"], [address])  # type: Dict

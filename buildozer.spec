@@ -83,15 +83,24 @@ requirements =
   python-dateutil==2.8.2,
   bitcoin==1.1.39,
 
-
-#  kivy-garden.zbarcam==2020.524, -> zbarcam
+  numpy==1.22.3,
   android,
   hostpython3==3.9.9,
-  zbarcam,
   libiconv,
   libzbar,
-  pyzbar==0.1.9,
+  opencv-python==4.6.0.66,
+  #opencv==4.5.1,
+  pyzbar==0.1.8,
+  zbarlight==2.1,
   xcamera==2020.613,
+  kivy-garden.zbarcam==2020.524,
+#  kivy-garden.zbarcam==2020.524, -> zbarcam
+#  android,
+#  hostpython3==3.9.9,
+
+#  libiconv,
+#  libzbar,
+#  pyzbar==0.1.9,
 
 
 # (str) Custom source folders for requirements

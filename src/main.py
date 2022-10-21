@@ -58,6 +58,7 @@ from pycoin.serialize import b2h
 
 #import __init__  as nowallet
 import nowallet
+
 from exchange_rate import fetch_exchange_rates
 from settings_json import settings_json
 from functools import partial
@@ -67,8 +68,33 @@ import concurrent.futures
 
 from aiosocks import SocksConnectionError
 from aiohttp.client_exceptions import ClientConnectorError
+"""
+# NFC
+
+from jnius import autoclass, cast
+from android.runnable import run_on_ui_thread
+from android import activity
+
+NfcAdapter = autoclass('android.nfc.NfcAdapter')
+PythonActivity = autoclass('org.renpy.android.PythonActivity')
+Intent = autoclass('android.content.Intent')
+IntentFilter = autoclass('android.content.IntentFilter')
+PendingIntent = autoclass('android.app.PendingIntent')
+NdefRecord = autoclass('android.nfc.NdefRecord')
+NdefMessage = autoclass('android.nfc.NdefMessage')
+Tag = autoclass('android.nfc.Tag')
+IsoDep = autoclass('android.nfc.tech.IsoDep')
+MifareClassic = autoclass('android.nfc.tech.MifareClassic')
+MifareUltralight = autoclass('android.nfc.tech.MifareUltralight')
+Ndef = autoclass('android.nfc.tech.Ndef')
+NfcA = autoclass('android.nfc.tech.NfcA')
+NfcB = autoclass('android.nfc.tech.NfcB')
+NfcF = autoclass('android.nfc.tech.NfcF')
+NfcV = autoclass('android.nfc.tech.NfcV')
 
 
+# end NFC
+"""
 __version__ = "0.0.1"
 if platform != "android":
     Window.size = (350, 550)
@@ -161,7 +187,6 @@ class ListItem(TwoLineIconListItem):
     history = ObjectProperty()
 
     def on_press(self):
-    #def on_release(self):
         app = MDApp.get_running_app()
         base_url, chain = None, app.chain.chain_1209k
         txid = self.history.tx_obj.id()
@@ -233,10 +258,83 @@ class NowalletApp(MDApp):
                                  "text": "View Redeem script"}]
         super().__init__()
 
+    # NFC
+    """
+    def get_ndef_details(self, tag):
+        #Get all the details from the tag.
+        tag_details = ""
+        details = {}
+        try:
+            #print 'id'
+            tag_details= "UID: "+':'.join(['{:02x}'.format(bt & 0xff) for bt in tag.getId()])
+            #print 'technologies'
+            tag_details+="\nTECH LIST: "+str(tag.getTechList())
+            #print 'get NDEF tag details'
+            ndefTag = cast('android.nfc.tech.Ndef', Ndef.get(tag))
+            #print 'tag size'
+            tag_details+="\nSIZE: "+str(ndefTag.getMaxSize())
+            #print 'is tag writable?'
+            tag_details+="\nWRITABLE: "+str(ndefTag.isWritable())
+            # get size of current records
+            ndefMesg = ndefTag.getCachedNdefMessage()
+            #print 'tag type'
+            tag_details+="\nTAG TYPE: "+str(ndefTag.getType())
+            # check if tag is empty
+            if not ndefMesg:
+                tag_details+="\nNDEF MESSAGE: NO NDEF MESSAGE"
+            else:
+                ndefrecords =  ndefMesg.getRecords()
+                length = len(ndefrecords)
+                recTypes = []
+                for record in ndefrecords:
+                    recTypes.append({
+                        'type': ''.join(map(unichr, record.getType())),
+                        'payload': ''.join(map(unichr, record.getPayload()))
+                        })
+                tag_details+="\nREC TYPES: "+str(recTypes)
+        except Exception as err:
+            print("ERROR: "+str(err))
+
+        print(tag_details)
+        return details
+
+
+    def on_new_intent(self, intent):
+        print ('on_new_intent(), {}'.format(intent.getAction()) )
+        # get TAG details
+        tag = cast('android.nfc.Tag', intent.getParcelableExtra(NfcAdapter.EXTRA_TAG))
+        print ('details, {}'.format(tag))
+        details = self.get_ndef_details(tag)
+        print ('details, {}'.format(details))
+
+    def nfc_init(self):
+        activity.bind(on_new_intent=self.on_new_intent)
+        self.j_context = context = PythonActivity.mActivity
+        self.nfc_adapter = NfcAdapter.getDefaultAdapter(context)
+        self.nfc_pending_intent = PendingIntent.getActivity(context, 0, Intent(context, context.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0)
+        self.enable_nfc_foreground_dispatch()
+        return True
+
+    @run_on_ui_thread
+    def disable_nfc_foreground_dispatch(self):
+        self.nfc_adapter.disableForegroundDispatch(self.j_context)
+
+    @run_on_ui_thread
+    def enable_nfc_foreground_dispatch(self):
+        self.nfc_adapter.enableForegroundDispatch(self.j_context, self.nfc_pending_intent, None,None)
+
+    def on_pause(self):
+        self.disable_nfc_foreground_dispatch()
+        return True
+
+    def on_resume(self):
+        self.enable_nfc_foreground_dispatch()
+    # end NFC
+    """
     def give_current_tab_name(self, *args):
         self.current_tab_name = args[1].name
         print ("current_tab_name: {}".format(self.current_tab_name))
-
+    # end NFC
     def show_snackbar(self, text):
         Snackbar(text=text).open()
 
@@ -275,7 +373,8 @@ class NowalletApp(MDApp):
 
     def start_zbar(self):
         if platform != "android":
-            self.show_snackbar("Scanning is not supported on {}.".format(platform))
+            snackbar_msg = "Scanning is not supported on {}.".format(platform)
+            self.show_snackbar(snackbar_msg)
             return
         self.root.ids.sm.current = "zbar"
         self.root.ids.detector.start()
@@ -302,8 +401,8 @@ class NowalletApp(MDApp):
 
     def menu_button_handler(self, button):
         if self.root.ids.sm.current == "main":
-            # MDDropdownMenu(items=self.menu_items, width_mult=4).open(button)
-            MDDropdownMenu(items=self.menu_items, width_mult=4, caller=button, max_height=dp(250)).open()
+            MDDropdownMenu(items=self.menu_items, width_mult=4, caller=button, \
+                max_height=dp(250)).open()
     def navigation_handler(self, button):
         pass
 
@@ -458,8 +557,9 @@ class NowalletApp(MDApp):
 
     async def do_login_tasks(self, email, passphrase):
         self.root.ids.wait_text.text = "Connecting.."
-
+        self.root.ids.wait_text_small.text = "Getting a random server for you."
         server, port, proto = await nowallet.get_random_server(self.loop)
+        self.root.ids.wait_text_small.text = "Connected to {}.".format(server)
         try:
             connection = nowallet.Connection(self.loop, server, port, proto)
         except Exception as ex:
@@ -472,14 +572,14 @@ class NowalletApp(MDApp):
         await connection.do_connect()
 
         self.root.ids.wait_text.text = "Deriving Keys.."
-
+        self.root.ids.wait_text_small.text = "This will take a moment.."
         # make run in a seperate thread
         # in executor runs but gets stuck
         # wallet = await asyncio.gather(self.loop.run_in_executor(None, nowallet.Wallet, email, passphrase,
             # connection, self.loop, self.chain, self.bech32))
         self.wallet = nowallet.Wallet(email, passphrase, connection, self.loop, self.chain, self.bech32)
         self.set_wallet_fingetprint(self.wallet.fingerprint)
-
+        self.root.ids.wait_text_small.text = "Wallet fingerprint is {}.".format(self.wallet.fingerprint)
         self.root.ids.wait_text.text = "Fetching history.."
         await self.wallet.discover_all_keys()
 
@@ -495,6 +595,7 @@ class NowalletApp(MDApp):
         coinkb_fee = await self.wallet.get_fee_estimation()
         self.current_fee = self.estimated_fee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
         logging.info("Finished 'doing login tasks'")
+
         logging.info("all known addreses {}".format(self.wallet.get_all_known_addresses(addr=True)))
 
     def update_screens(self):
