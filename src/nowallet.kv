@@ -7,7 +7,6 @@
 #:import ak asynckivy
 #:import asyncio asyncio
 #:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
-
 #:import ZBarCam kivy_garden.zbarcam.ZBarCam
 
 <Tab>
@@ -391,7 +390,7 @@ BoxLayout:
                             ZBarCam:
                                 id: zbarcam
                                 # optional, by default checks all types
-                                code_types: 'QRCODE' 
+                                code_types: 'QRCODE'
                             Label:
                                 size_hint: None, None
                                 size: self.texture_size[0], 50

@@ -90,7 +90,7 @@ requirements =
   libzbar,
   opencv-python==4.6.0.66,
   #opencv==4.5.1,
-  #pyzbar==0.1.8,
+  pyzbar==0.1.8,
   zbarlight==2.1,
   xcamera==2020.613,
   kivy-garden.zbarcam==2020.524,
