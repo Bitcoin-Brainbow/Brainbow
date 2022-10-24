@@ -7,6 +7,8 @@ try:
     ctypes.pythonapi = ctypes.PyDLL("libpython%d.%d.so" % sys.version_info[:2])   # replaces ctypes.PyDLL(None)
 except:
     pass
+# End patch
+
 import re
 import asyncio
 import logging
