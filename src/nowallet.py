@@ -305,6 +305,7 @@ class Wallet:
                 bip, self.chain.bip44, account
             )  # type: str
             logging.info("path={} for bip={}, self.chain.bip44={}, account={}".format(path, bip, self.chain.bip44, account))
+            self.derivation = {'bip': bip, 'bip44': self.chain.bip44, 'account': account}
             self.fingerprint = self.mpk.fingerprint().hex()
             self.account_master = self.mpk.subkey_for_path(path)  # type: SegwitBIP32Node
             self.root_spend_key = self.account_master.subkey(0)  # type: SegwitBIP32Node
@@ -602,8 +603,7 @@ class Wallet:
         :returns: A boolean that is true if all given histories were empty
         """
         indicies = self.change_indicies if change else self.spend_indicies  # type: List[bool]
-        history_dict = self.change_history if change \
-            else self.history  # type: Dict[Any]
+        history_dict = self.change_history if change else self.history  # type: Dict[Any]
 
         is_empty = True  # type: bool
         # Each iteration represents one key index
@@ -627,6 +627,7 @@ class Wallet:
             heights = [tx["height"] for tx in history]  # type: List[int]
 
             # Get Tx objects
+            print("\tGet Tx objects for txids={}".format(txids))
             this_history = await self._get_history(txids)  # type: List[Tx]
 
             # Process all Txs into our History objects
@@ -780,7 +781,7 @@ class Wallet:
 
 
     async def _dispatch_result(self, result: List[str]) -> None:
-        """ Gets called by the Connection's consume_queue method when a new tx
+        """ Gets called by the Connection's consume_queue method when a new TX
         history is sent from the server, then populates data structures using
         _interpret_new_history().
 
@@ -790,8 +791,7 @@ class Wallet:
         history = await self.connection.listen_rpc(
             self.methods["get_history"], [addr])  # type: List[Dict[str, Any]]
         for tx in history:
-            empty_flag = await self._interpret_new_history(
-                addr, tx)  # type: bool
+            empty_flag = await self._interpret_new_history(addr, tx) # type: bool
             if not empty_flag:
                 self.new_history = True
                 logging.info("Dispatched a new history for address %s", addr)

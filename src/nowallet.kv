@@ -134,8 +134,6 @@ BoxLayout:
                             size_hint_y: None
                             height: self.texture_size[1] + dp(45)
                             on_release: app.toggle_balance_label()
-
-
                         RecycleView:
                             id: recycleView
                             viewclass: "ListItem"
@@ -334,26 +332,27 @@ BoxLayout:
                 #            MDLabel:
                 #                text: "PSBT Export Tab"
 
-                # USED ADDRESSES
-                Tab:
-                    name: "used-addresses"
-                    icon: "database-marker"
-                    title: "UTXOs"
-                    title_icon_mode: "Top"
-                    tab_padding: [10, 0, 0,0]
-                    AnchorLayout:
-                        BoxLayout:
-                            size_hint: 0.9, 0.8
-                            spacing: 3
-                            orientation: "vertical"
-                            MDLabel:
-                                text: "Used 'addresses' and it's TXs/UTXOs, see 'Manage UTXOs' "
-
-                # ADDRESSES
                 Tab:
                     name: "addresses"
                     icon: "map-marker-multiple"
                     title: "ADDRESSES"
+                    title_icon_mode: "Top"
+                    tab_padding: [10, 0, 0,0]
+                    BoxLayout:
+                        orientation: "vertical"
+                        RecycleView:
+                            id: addresses_recycle_view
+                            viewclass: "TwoLineListItem" #TwoLineIconListItem
+                            RecycleBoxLayout:
+                                default_size: None, None #dp(56)
+                                default_size_hint: 1, None
+                                size_hint_y: None
+                                height: self.minimum_height
+                                orientation: "vertical"
+                Tab:
+                    name: "used-addresses"
+                    icon: "database-marker"
+                    title: "UTXOs"
                     title_icon_mode: "Top"
                     title_is_capital: "True"
                     AnchorLayout:

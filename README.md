@@ -1,6 +1,6 @@
 
 <h1 align=center>
-<img src="Logo/horizontal.png" alt="Nowallet" width=60%>
+<img src="Logo/horizontal.png" alt="Brainbow" width=60%>
 </h1>
 
 ### Secure, private, and plausibly deniable
@@ -8,14 +8,14 @@
 
 ### Introduction:
 
-This project, [Brainbow](https://github.com/Bitcoin-Brainbow/Brainbow/) is built on top of [nowallet](https://github.com/metamarcdw/nowallet), a project which was discontinued before it was completed.
+This project, [Brainbow](https://github.com/Bitcoin-Brainbow/Brainbow/) is built on top of [nowallet](https://github.com/metamarcdw/nowallet), a project which was discontinued before it was completed.s
 
 The adopted nowallet sources have been completely reworked and adapted.
 
 
 ### What is Brainbow? ###
 
-Brainbow is a secure Bitcoin brainwallet app, a Bitcoin Client, that will ultimately be meant for desktop and mobile platforms.
+Brainbow is a secure Bitcoin brainwallet app, a Bitcoin wallet also known as Bitcoin Client, that will ultimately be meant for desktop and mobile platforms.
 
 It was inspired by reports of incidents of Bitcoin being seized physically at border crossings.
 
@@ -126,3 +126,10 @@ OR
 Run unit tests (Must install dev libs):  
 `make test`  
 -->
+
+
+
+Test wallets:
+
+
+test1 / test

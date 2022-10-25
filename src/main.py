@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+                                                                                    #! /usr/bin/env python3
 import sys
 
 # Monkey patch based on https://github.com/kivy/python-for-android/issues/1866#issuecomment-927157780
@@ -99,7 +99,7 @@ NfcV = autoclass('android.nfc.tech.NfcV')
 """
 __version__ = "0.0.1"
 if platform != "android":
-    Window.size = (350, 550)
+    Window.size = (768/2, 1366/2)
 
 from utils import get_block_height
 
@@ -422,9 +422,7 @@ class NowalletApp(MDApp):
             self.open_settings()
         elif LOG_OFF_WALLET in text:
             self.logoff()
-
-        # UTXO menu items
-        elif self.root.ids.sm.current == "utxo":
+        elif self.root.ids.sm.current == "utxo": # UTXO menu items
             addr = self.utxo.address(self.chain.netcode)
             key = self.wallet.search_for_key(addr)
             if not key:
@@ -704,6 +702,7 @@ class NowalletApp(MDApp):
             utxo_str = (self.unit_precision + " {}").format(
                 value * self.unit_factor, self.units)
             self.add_utxo_list_item(utxo_str, utxo)
+        self.update_addresses_screen()
 
     def update_send_screen(self):
         self.root.ids.send_balance.text = \
@@ -748,6 +747,23 @@ class NowalletApp(MDApp):
             print(ex)
             self.root.ids.seed_label.text = ""
             self.root.ids.seed_qrcode.data = ""
+
+    def update_addresses_screen(self):
+        self.root.ids.addresses_recycle_view.data_model.data = []
+
+        for address in self.wallet.get_all_known_addresses(addr=True, change=False):
+            logging.info("Adding addr item to update_addresses_screen\n{}".format(address))
+            self.root.ids.addresses_recycle_view.data_model.data.append({
+                "text": address,
+                "secondary_text": "Derivation: m{}'/{}'/{}'/{}/{}".format(
+                    self.wallet.derivation.get('bip'),
+                    self.wallet.derivation.get('bip44'),
+                    self.wallet.derivation.get('account'),
+                    0, #change
+                    self.wallet.search_for_index(search=address, addr=True, change=False)),
+            #    "tertiary_text": "Value: XXX XXX sats"    
+                })
+
 
     def lock_UI(self, pin):
         if not pin:
