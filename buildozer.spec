@@ -78,10 +78,15 @@ requirements =
   urllib3==1.24.3,
   yarl==1.8.1,
   zipp==3.8.1,
-
-  blockcypher==1.0.93, # These are used to see decrypt TX
+  blockcypher==1.0.93,
   python-dateutil==2.8.2,
   bitcoin==1.1.39,
+
+# These are used to see decrypt TX
+#
+# blockcypher==1.0.93, 
+# python-dateutil==2.8.2,
+# bitcoin==1.1.39,
 
 # QR SCANNER BELOW:
 #

@@ -361,7 +361,9 @@ class Wallet:
 
     @property
     def private_BIP32_root_key(self) -> str:
-        return mpk.hwif(as_private=1)
+        root_key = self.mpk.hwif(as_private=1)
+        #print(root_key)
+        return root_key
 
     #@property
     #def bip39_seed(self) -> str:

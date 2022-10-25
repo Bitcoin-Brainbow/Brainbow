@@ -38,13 +38,13 @@ class SegwitBIP32Node(BIP32Node):
         return ScriptPayToAddressWit(b'\0', hash160_c).script()
 
 
-def main():
-    secret = "CORRECT HORSE BATTERY STAPLE"  # type: str
-    mpk = SegwitBIP32Node.from_master_secret(
-        secret.encode("utf-8"))  # type: SegwitBIP32Node
-    print(mpk.p2sh_p2wpkh_address())
-    print(mpk.bech32_p2wpkh_address())
+#def main():
+#    secret = "CORRECT HORSE BATTERY STAPLE"  # type: str
+#    mpk = SegwitBIP32Node.from_master_secret(
+#        secret.encode("utf-8"))  # type: SegwitBIP32Node
+#    print(mpk.p2sh_p2wpkh_address())
+#    print(mpk.bech32_p2wpkh_address())
+#
 
-
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()

@@ -239,8 +239,8 @@ class NowalletApp(MDApp):
                             "text": "View YPUB",
                             "on_release": lambda x="View YPUB": app.menu_item_handler(x)},
                             {"viewclass": "MyMenuItem",
-                            "text": "View BIP32 Root Key()",
-                            "on_release": lambda x="View BIP39 Seed": app.menu_item_handler(x)},
+                            "text": "View BIP32 Root Key (WIF)",
+                            "on_release": lambda x="View BIP32 Root Key (WIF)": app.menu_item_handler(x)},
                            {"viewclass": "MyMenuItem",
                             "text": "Lock with PIN",
                             "on_release": lambda x="Lock with PIN": app.menu_item_handler(x)},
@@ -412,7 +412,7 @@ class NowalletApp(MDApp):
         # Main menu items
         if "PUB" in text:
             self.root.ids.sm.current = "ypub"
-        if "Seed" in text:
+        if "BIP32" in text:
             self.root.ids.sm.current = "seed"
         elif "PIN" in text:
             self.root.ids.sm.current = "pin"
@@ -744,7 +744,8 @@ class NowalletApp(MDApp):
                 "BIP32 Root Key (WIF):\n" + \
                 self.wallet.private_BIP32_root_key
             self.root.ids.seed_qrcode.data = self.wallet.private_BIP32_root_key
-        except:
+        except Exception as ex:
+            print(ex)
             self.root.ids.seed_label.text = ""
             self.root.ids.seed_qrcode.data = ""
 
