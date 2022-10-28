@@ -226,7 +226,7 @@ class NowalletApp(MDApp):
     current_fee = NumericProperty()
     current_utxo = ObjectProperty()
     block_height = 0
-
+    _wallet_ready = False  # is false until we can use the wallet
     def __init__(self, loop):
         self.chain = nowallet.TBTC
         self.loop = loop
@@ -338,7 +338,11 @@ class NowalletApp(MDApp):
         print ("current_tab_name: {}".format(self.current_tab_name))
     # end NFC
     def show_snackbar(self, text):
-        Snackbar(text=text).open()
+        snackbar = Snackbar(text=text,
+                            snackbar_x="8dp",
+                            snackbar_y="8dp")
+        snackbar.size_hint_x = (Window.width - (snackbar.snackbar_x * 2)) / Window.width
+        snackbar.open()
 
     def show_dialog(self, title, message, qrdata=None, cb=None):
         if qrdata:
@@ -401,11 +405,23 @@ class NowalletApp(MDApp):
         self.root.ids.detector.stop()
         self.root.ids.sm.current = "main"
 
+
+    def nav_drawer_handler(self):
+        if self._wallet_ready:
+            self.root.ids.nav_drawer.set_state("open")
+        elif self.root.ids.sm.current == "wait":
+            self.show_snackbar('Loading wallet state...')
+        else:
+            self.show_snackbar('No active session.')
+
     def menu_button_handler(self, button):
-        if self.root.ids.sm.current == "main":
-            MDDropdownMenu(items=self.menu_items, width_mult=4, caller=button, \
-                max_height=dp(250)).open()
+    #    #if self.root.ids.sm.current == "main":
+    #    #    MDDropdownMenu(items=self.menu_items, width_mult=4, caller=button, \
+    #    #        max_height=dp(250)).open()
+        pass
+
     def navigation_handler(self, button):
+        print ("navigation_handler. button={}".format(button))
         pass
 
     def menu_item_handler(self, text):
@@ -506,6 +522,18 @@ class NowalletApp(MDApp):
             self.show_snackbar("Transaction history updated.")
             self.wallet.new_history = False
 
+    def wallet_ready(self):
+        """
+        Wallet is ready.
+        - load main screen
+        - unlock nav
+        """
+        self._wallet_ready = True
+        print("_wallet_ready=True")
+        self.root.ids.sm.current = "main"
+        # All methods below verify if self._wallet_ready is True.
+        #self._unlock_nav_drawer()
+
     @property
     def pub_char(self):
         if self.chain == nowallet.BTC:
@@ -535,7 +563,7 @@ class NowalletApp(MDApp):
                              cb=lambda x: sys.exit(1))
             return
         self.update_screens()
-        self.root.ids.sm.current = "main"
+        self.wallet_ready()
         await asyncio.gather(
             self.new_history_loop(),
             self.do_listen_task(),
@@ -548,7 +576,7 @@ class NowalletApp(MDApp):
 
     def logoff(self):
         self.show_dialog("Disconnected.","")
-        1/0
+        MDApp.get_running_app().stop()
 
 
     async def do_listen_task(self):
@@ -761,7 +789,7 @@ class NowalletApp(MDApp):
                     self.wallet.derivation.get('account'),
                     0, #change
                     self.wallet.search_for_index(search=address, addr=True, change=False)),
-            #    "tertiary_text": "Value: XXX XXX sats"    
+            #    "tertiary_text": "Value: XXX XXX sats"
                 })
 
 
@@ -816,9 +844,9 @@ class NowalletApp(MDApp):
             try:
                 current_address = self.root.ids.addr_qrcode.data.replace("bitcoin:","").split("?")[0] # "bitcoin:{}?amount={}"
                 Clipboard.copy(current_address)
-                Snackbar(text="Current address copied to clipboard.").open()
+                self.show_snackbar(text="Current address copied to clipboard.")
             except:
-                Snackbar(text="Can't copy to clipboard.").open()
+                self.show_snackbar(text="Can't copy to clipboard.")
 
     def update_amounts(self, text=None, type="coin"):
         if self.is_amount_inputs_locked:
@@ -856,108 +884,17 @@ class NowalletApp(MDApp):
     def build(self):
         """ """
         self.title = 'Brainbow'
-
+        self.theme_cls.material_style = "M2"
         """
-        self.theme_cls.theme_style = "Dark"
-        self.theme_cls.primary_palette = "Gray"
-        self.theme_cls.accent_palette = "DeepOrange"
-        self.theme_cls.material_style = "M3"
-
+<resources>
   <color name="primaryColor">#4d4d4d</color>
   <color name="primaryLightColor">#797979</color>
   <color name="primaryDarkColor">#252525</color>
   <color name="primaryTextColor">#ffffff</color>
-
-  let primaryColor = UIColor(red: 0.30, green: 0.30, blue: 0.30, alpha: 1.0);
-  let primaryLightColor = UIColor(red: 0.47, green: 0.47, blue: 0.47, alpha: 1.0);
-  let primaryDarkColor = UIColor(red: 0.15, green: 0.15, blue: 0.15, alpha: 1.0);
-  let primaryTextColor = UIColor(red: 1.00, green: 1.00, blue: 1.00, alpha: 1.0);
+</resources>
 
         """
-        colors = {
-        "Teal": {
-            "50": "e4f8f9",
-            "100": "bdedf0",
-            "200": "97e2e8",
-            "300": "79d5de",
-            "400": "6dcbd6",
-            "500": "6ac2cf",
-            "600": "63b2bc",
-            "700": "5b9ca3",
-            "800": "54888c",
-            "900": "486363",
-            "A100": "bdedf0",
-            "A200": "97e2e8",
-            "A400": "6dcbd6",
-            "A700": "5b9ca3",
-        },
-        "Blue": {
-            "50": "e3f3f8",
-            "100": "b9e1ee",
-            "200": "91cee3",
-            "300": "72bad6",
-            "400": "62acce",
-            "500": "589fc6",
-            "600": "5191b8",
-            "700": "487fa5",
-            "800": "426f91",
-            "900": "35506d",
-            "A100": "b9e1ee",
-            "A200": "91cee3",
-            "A400": "62acce",
-            "A700": "487fa5",
-        },
-        "Red": {
-            "50": "FFEBEE",
-            "100": "FFCDD2",
-            "200": "EF9A9A",
-            "300": "E57373",
-            "400": "EF5350",
-            "500": "F44336",
-            "600": "E53935",
-            "700": "D32F2F",
-            "800": "C62828",
-            "900": "B71C1C",
-            "A100": "FF8A80",
-            "A200": "FF5252",
-            "A400": "FF1744",
-            "A700": "D50000",
-        },
-        "Light": {
-            "StatusBar": "4d4d4d",
-            "AppBar": "797979",
-            "Background": "FAFAFA",
-            "CardsDialogs": "FFFFFF",
-            "FlatButtonDown": "cccccc",
-        },
-        "Dark": {
-            "StatusBar": "000000",
-            "AppBar": "212121",
-            "Background": "303030",
-            "CardsDialogs": "424242",
-            "FlatButtonDown": "999999",
-        }#,
-        #"BTCGrey": {
-        #      <color name="primaryColor">#4d4d4d</color>
-        #      <color name="primaryLightColor">#797979</color>
-        #      <color name="primaryDarkColor">#252525</color>
-        #      <color name="primaryTextColor">#ffffff</color>
-        #}
-    }
-
         self.theme_cls.theme_style = "Light"
-        self.theme_cls.colors = colors
-    #    self.theme_cls.primary_palette = "BTCGrey"
-#        self.theme_cls.accent_palette = "Teal"
-
-        #self.theme_cls.surface = "Red"
-#        self.theme_cls.primary_palette ="Red"
-#        self.theme_cls.primary_hue = "900"
-
-#        self.theme_cls.accent_palette = "Red"
-#        self.theme_cls.accent_hue = "300"
-
-
 
         self.icon = "brain.png"
         self.use_kivy_settings = False
@@ -988,7 +925,7 @@ class NowalletApp(MDApp):
 
     def build_settings(self, settings):
         coin = self.chain.chain_1209k.upper()
-        settings.add_json_panel("Settings", self.config, data=settings_json(coin))
+        #settings.add_json_panel("Settings", self.config, data=settings_json(coin))
 
     def on_config_change(self, config, section, key, value):
         if key == "rbf":
@@ -1030,6 +967,9 @@ class NowalletApp(MDApp):
     def on_pause(self):
         return True
 
+    def on_stop(self):
+        return True
+
     def add_list_item(self, text, history):
         #if self.block_height:
         #    chain_tip = self.block_height
@@ -1051,9 +991,23 @@ class NowalletApp(MDApp):
     def add_utxo_list_item(self, text, utxo):
         data = self.root.ids.utxoRecycleView.data_model.data
         data.append({"text": text,
-                        "secondary_text": utxo.as_dict()["tx_hash_hex"],
-                        "utxo": utxo})
+                     "secondary_text": utxo.as_dict()["tx_hash_hex"],
+                     "utxo": utxo})
 
+
+    #def _unlock_nav_drawer(self):
+    #    if self._wallet_ready:
+    #        print("wallet-ready-unlock-")
+    #        self.root.ids.nav_drawer_item_gmail.text_color = "000000"
+    #        self.root.ids.nav_drawer_item_gmail.selected_color: "#ff0000"
+
+    def goto_screen(self, name, tab=None):
+        if self._wallet_ready:
+            self.root.ids.sm.current = name
+            # TODO: allow to jump to random tab, instead of starting using the first
+            #if tab and name == "main":
+            #    self.root.ids.switch_tab("send")
+            self.root.ids.nav_drawer.set_state("close")
 
 def open_url(url):
     if platform == 'android':

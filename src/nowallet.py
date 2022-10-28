@@ -166,7 +166,7 @@ class History:
 
             #block_time = block_header["timestamp"]
             block_time = get_timestamp_from_block_header(block_header)
-            logging.info("block_header={}->timstamp={}".format(block_header, block_time))
+            #logging.info("block_header={}->timstamp={}".format(block_header, block_time))
             #FIXME
             #import datetime
             #block_time = int(datetime.datetime.utcnow().timestamp())# block_header["timestamp"]
@@ -491,8 +491,12 @@ class Wallet:
         #history.sort(reverse=True, key=lambda h: h.timestamp)
         import time
         try:
+            # FIXME: CHECKME
+            #history.sort(reverse=True, key=lambda h: h.timestamp)
             history.sort(reverse=True, key=lambda h: int(time.mktime(h.timestamp.timetuple())))
-        except:
+        except Exception as ex:
+            print(traceback.format_exc())
+            print("EX496 {}".format(ex))
             pass
         return history
 
