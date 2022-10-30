@@ -415,9 +415,9 @@ class NowalletApp(MDApp):
             self.show_snackbar('No active session.')
 
     def menu_button_handler(self, button):
-    #    #if self.root.ids.sm.current == "main":
-    #    #    MDDropdownMenu(items=self.menu_items, width_mult=4, caller=button, \
-    #    #        max_height=dp(250)).open()
+        if self.root.ids.sm.current == "main":
+            MDDropdownMenu(items=self.menu_items, width_mult=4, caller=button, \
+            max_height=dp(250)).open()
         pass
 
     def navigation_handler(self, button):
@@ -965,9 +965,14 @@ class NowalletApp(MDApp):
             return False
 
     def on_pause(self):
+        print ("on_pause called")
+        return True
+    def on_resume(self):
+        print ("on_resume called")
         return True
 
     def on_stop(self):
+        print ("on_stop called")
         return True
 
     def add_list_item(self, text, history):

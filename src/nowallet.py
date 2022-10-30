@@ -363,7 +363,7 @@ class Wallet:
     @property
     def private_BIP32_root_key(self) -> str:
         root_key = self.mpk.hwif(as_private=1)
-        #print(root_key)
+        print("Root key: {}".format(root_key))
         return root_key
 
     #@property
