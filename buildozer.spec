@@ -81,6 +81,7 @@ requirements =
   blockcypher==1.0.93,
   python-dateutil==2.8.2,
   bitcoin==1.1.39,
+  android,
   pyjnius==1.4.2,
 
 # These are used to see decrypt TX
