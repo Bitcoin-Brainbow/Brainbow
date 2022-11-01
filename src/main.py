@@ -70,7 +70,7 @@ import concurrent.futures
 
 from aiosocks import SocksConnectionError
 from aiohttp.client_exceptions import ClientConnectorError
-"""
+
 # NFC
 
 from jnius import autoclass, cast
@@ -96,7 +96,7 @@ NfcV = autoclass('android.nfc.tech.NfcV')
 
 
 # end NFC
-"""
+ 
 __version__ = "0.0.1"
 if platform != "android":
     Window.size = (768/2, 1366/2)
@@ -261,9 +261,8 @@ class NowalletApp(MDApp):
         super().__init__()
 
     # NFC
-    """
     def get_ndef_details(self, tag):
-        #Get all the details from the tag.
+        # Get all the details from the tag.
         tag_details = ""
         details = {}
         try:
@@ -296,7 +295,6 @@ class NowalletApp(MDApp):
                 tag_details+="\nREC TYPES: "+str(recTypes)
         except Exception as err:
             print("ERROR: "+str(err))
-
         print(tag_details)
         return details
 
@@ -325,14 +323,14 @@ class NowalletApp(MDApp):
     def enable_nfc_foreground_dispatch(self):
         self.nfc_adapter.enableForegroundDispatch(self.j_context, self.nfc_pending_intent, None,None)
 
-    def on_pause(self):
-        self.disable_nfc_foreground_dispatch()
-        return True
-
-    def on_resume(self):
-        self.enable_nfc_foreground_dispatch()
+    #def on_pause(self):
+    #    self.disable_nfc_foreground_dispatch()
+    #    return True
+    #
+    #def on_resume(self):
+    #    self.enable_nfc_foreground_dispatch()
     # end NFC
-    """
+
     def give_current_tab_name(self, *args):
         self.current_tab_name = args[1].name
         print ("current_tab_name: {}".format(self.current_tab_name))
@@ -965,13 +963,17 @@ class NowalletApp(MDApp):
             return False
 
     def on_pause(self):
+        self.disable_nfc_foreground_dispatch()
         print ("on_pause called")
         return True
+
     def on_resume(self):
+        self.enable_nfc_foreground_dispatch()
         print ("on_resume called")
         return True
 
     def on_stop(self):
+        self.disable_nfc_foreground_dispatch()
         print ("on_stop called")
         return True
 
