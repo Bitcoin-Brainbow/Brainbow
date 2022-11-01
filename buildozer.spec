@@ -82,7 +82,7 @@ requirements =
   python-dateutil==2.8.2,
   bitcoin==1.1.39,
   pyjnius==1.4.2,
-  
+
 # These are used to see decrypt TX
 #
 # blockcypher==1.0.93,
@@ -158,7 +158,7 @@ fullscreen = 0
 #icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
 
 # (list) Permissions
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA,NFC
 
 #, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 
