@@ -1,5 +1,5 @@
-                                                                                    #! /usr/bin/env python3
-import sys
+#!/usr/bin/env python3
+import sys, traceback
 
 # Monkey patch based on https://github.com/kivy/python-for-android/issues/1866#issuecomment-927157780
 import ctypes
@@ -297,8 +297,9 @@ class NowalletApp(MDApp):
                         })
                 tag_details+="\nREC TYPES: "+str(recTypes)
         except Exception as err:
+            print(traceback.format_exc())
             print("ERROR: "+str(err))
-        print(tag_details)
+        self.show_snackbar(tag_details)
         return details
 
 
@@ -612,6 +613,7 @@ class NowalletApp(MDApp):
             connection = nowallet.Connection(self.loop, server, port, proto)
         except Exception as ex:
             print("excepted")
+            print(traceback.format_exc())
             logging.error("L442 {}".format(ex), exc_info=True)
             logging.info("{} {} {}".format(server, port, proto))
             await connection.do_connect()
@@ -679,6 +681,7 @@ class NowalletApp(MDApp):
                     self.update_balance_screen()
                     self.show_snackbar("Block {} found!".format(self.block_height))
             except Exception as err:
+                print(traceback.format_exc())
                 logging.error(err)
                 self.block_height = 0
             await asyncio.sleep(60)
@@ -792,6 +795,7 @@ class NowalletApp(MDApp):
                 self.wallet.private_BIP32_root_key
             self.root.ids.seed_qrcode.data = self.wallet.private_BIP32_root_key
         except Exception as ex:
+            print(traceback.format_exc())
             print(ex)
             self.root.ids.seed_label.text = ""
             self.root.ids.seed_qrcode.data = ""
