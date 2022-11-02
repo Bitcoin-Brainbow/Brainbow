@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys, traceback
 
 # Monkey patch based on https://github.com/kivy/python-for-android/issues/1866#issuecomment-927157780
