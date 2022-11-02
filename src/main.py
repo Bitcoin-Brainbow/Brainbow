@@ -296,7 +296,8 @@ class NowalletApp(MDApp):
                         'payload': ''.join(map(unichr, record.getPayload()))
                         })
                 tag_details+="\nREC TYPES: "+str(recTypes)
-            self.show_snackbar(tag_details)
+            print(tag_details)
+            #self.show_snackbar(tag_details)
         except Exception as err:
             print(traceback.format_exc())
             print("ERROR: "+str(err))
