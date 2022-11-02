@@ -78,7 +78,7 @@ from android.runnable import run_on_ui_thread
 from android import activity
 
 NfcAdapter = autoclass('android.nfc.NfcAdapter')
-PythonActivity = autoclass('org.renpy.android.PythonActivity')
+PythonActivity = autoclass('org.kivy.android.PythonActivity')
 Intent = autoclass('android.content.Intent')
 IntentFilter = autoclass('android.content.IntentFilter')
 PendingIntent = autoclass('android.app.PendingIntent')
@@ -96,7 +96,7 @@ NfcV = autoclass('android.nfc.tech.NfcV')
 
 
 # end NFC
- 
+
 __version__ = "0.0.1"
 if platform != "android":
     Window.size = (768/2, 1366/2)
