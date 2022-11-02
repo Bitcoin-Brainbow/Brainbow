@@ -314,7 +314,22 @@ class NowalletApp(MDApp):
         activity.bind(on_new_intent=self.on_new_intent)
         self.j_context = context = PythonActivity.mActivity
         self.nfc_adapter = NfcAdapter.getDefaultAdapter(context)
-        self.nfc_pending_intent = PendingIntent.getActivity(context, 0, Intent(context, context.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0)
+        """
+        PendingIntent pendingIntent = null;
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            pendingIntent = PendingIntent.getActivity
+                   (this, 0, notificationIntent, PendingIntent.FLAG_MUTABLE);
+        }
+        else
+        {
+             pendingIntent = PendingIntent.getActivity
+                    (this, 0, notificationIntent, PendingIntent.FLAG_ONE_SHOT);
+        }
+        """
+
+        #self.nfc_pending_intent = PendingIntent.getActivity(context, 0, Intent(context, context.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0)
+        self.nfc_pending_intent = PendingIntent.getActivity(context, 0, Intent(context, context.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), PendingIntent.FLAG_MUTABLE)
         self.enable_nfc_foreground_dispatch()
         return True
 
