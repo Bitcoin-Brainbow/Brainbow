@@ -270,19 +270,28 @@ class NowalletApp(MDApp):
         details = {}
         try:
             #print 'id'
-            tag_details= "UID: "+':'.join(['{:02x}'.format(bt & 0xff) for bt in tag.getId()])
+            tag_uid = ':'.join(['{:02x}'.format(bt & 0xff) for bt in tag.getId()])
+            tag_details= "UID: "+ tag_uid
+            details['uid'] = tag_uid
+
             #print 'technologies'
             tag_details+="\nTECH LIST: "+str(tag.getTechList())
+
             #print 'get NDEF tag details'
             ndefTag = cast('android.nfc.tech.Ndef', Ndef.get(tag))
+
             #print 'tag size'
             tag_details+="\nSIZE: "+str(ndefTag.getMaxSize())
+
             #print 'is tag writable?'
             tag_details+="\nWRITABLE: "+str(ndefTag.isWritable())
-            # get size of current records
-            ndefMesg = ndefTag.getCachedNdefMessage()
+
+
             #print 'tag type'
             tag_details+="\nTAG TYPE: "+str(ndefTag.getType())
+
+            # get size of current records
+            ndefMesg = ndefTag.getCachedNdefMessage()
             # check if tag is empty
             if not ndefMesg:
                 tag_details+="\nNDEF MESSAGE: NO NDEF MESSAGE"
@@ -297,7 +306,7 @@ class NowalletApp(MDApp):
                         })
                 tag_details+="\nREC TYPES: "+str(recTypes)
             print(tag_details)
-            #self.show_snackbar(tag_details)
+
         except Exception as err:
             print(traceback.format_exc())
             print("ERROR: "+str(err))
@@ -311,7 +320,8 @@ class NowalletApp(MDApp):
         print ('details, {}'.format(tag))
         details = self.get_ndef_details(tag)
         print ('details, {}'.format(details))
-
+        self.show_snackbar('details, {}'.format(tag))    
+        self.show_snackbar('details, {}'.format(details))
     def nfc_init(self):
         if platform == "android":
             activity.bind(on_new_intent=self.on_new_intent)
@@ -549,7 +559,7 @@ class NowalletApp(MDApp):
         - load main screen
         - unlock nav
         """
-        self.nfc_init()
+        self.nfc_init() #TODO: maybe move to build()
         self._wallet_ready = True
         print("_wallet_ready=True")
         self.root.ids.sm.current = "main"
