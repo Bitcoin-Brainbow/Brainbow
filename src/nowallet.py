@@ -1,5 +1,6 @@
 import logging
-import sys
+import sys, traceback
+
 import os
 FORMAT = "%(asctime)s %(levelname)s: %(message)s"  # type: str
 

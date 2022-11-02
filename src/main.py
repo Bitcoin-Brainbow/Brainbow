@@ -71,34 +71,37 @@ import concurrent.futures
 from aiosocks import SocksConnectionError
 from aiohttp.client_exceptions import ClientConnectorError
 
-# NFC
-
-from jnius import autoclass, cast
-from android.runnable import run_on_ui_thread
-from android import activity
-
-NfcAdapter = autoclass('android.nfc.NfcAdapter')
-PythonActivity = autoclass('org.kivy.android.PythonActivity')
-Intent = autoclass('android.content.Intent')
-IntentFilter = autoclass('android.content.IntentFilter')
-PendingIntent = autoclass('android.app.PendingIntent')
-NdefRecord = autoclass('android.nfc.NdefRecord')
-NdefMessage = autoclass('android.nfc.NdefMessage')
-Tag = autoclass('android.nfc.Tag')
-IsoDep = autoclass('android.nfc.tech.IsoDep')
-MifareClassic = autoclass('android.nfc.tech.MifareClassic')
-MifareUltralight = autoclass('android.nfc.tech.MifareUltralight')
-Ndef = autoclass('android.nfc.tech.Ndef')
-NfcA = autoclass('android.nfc.tech.NfcA')
-NfcB = autoclass('android.nfc.tech.NfcB')
-NfcF = autoclass('android.nfc.tech.NfcF')
-NfcV = autoclass('android.nfc.tech.NfcV')
-
-
-# end NFC
 
 __version__ = "0.0.1"
-if platform != "android":
+if platform == "android":
+    # NFC
+
+    from jnius import autoclass, cast
+    from android.runnable import run_on_ui_thread
+    from android import activity
+
+
+    NfcAdapter = autoclass('android.nfc.NfcAdapter')
+    PythonActivity = autoclass('org.kivy.android.PythonActivity')
+    Intent = autoclass('android.content.Intent')
+    IntentFilter = autoclass('android.content.IntentFilter')
+    PendingIntent = autoclass('android.app.PendingIntent')
+    NdefRecord = autoclass('android.nfc.NdefRecord')
+    NdefMessage = autoclass('android.nfc.NdefMessage')
+    Tag = autoclass('android.nfc.Tag')
+    IsoDep = autoclass('android.nfc.tech.IsoDep')
+    MifareClassic = autoclass('android.nfc.tech.MifareClassic')
+    MifareUltralight = autoclass('android.nfc.tech.MifareUltralight')
+    Ndef = autoclass('android.nfc.tech.Ndef')
+    NfcA = autoclass('android.nfc.tech.NfcA')
+    NfcB = autoclass('android.nfc.tech.NfcB')
+    NfcF = autoclass('android.nfc.tech.NfcF')
+    NfcV = autoclass('android.nfc.tech.NfcV')
+
+
+    # end NFC
+
+else:
     Window.size = (768/2, 1366/2)
 
 from utils import get_block_height
@@ -315,13 +318,15 @@ class NowalletApp(MDApp):
         self.enable_nfc_foreground_dispatch()
         return True
 
-    @run_on_ui_thread
-    def disable_nfc_foreground_dispatch(self):
-        self.nfc_adapter.disableForegroundDispatch(self.j_context)
 
-    @run_on_ui_thread
+    def disable_nfc_foreground_dispatch(self):
+        if platform == "android":
+            run_on_ui_thread(self.nfc_adapter.disableForegroundDispatch(self.j_context))
+
+
     def enable_nfc_foreground_dispatch(self):
-        self.nfc_adapter.enableForegroundDispatch(self.j_context, self.nfc_pending_intent, None,None)
+        if platform == "android":
+            run_on_ui_thread(self.nfc_adapter.enableForegroundDispatch(self.j_context, self.nfc_pending_intent, None,None))
 
     #def on_pause(self):
     #    self.disable_nfc_foreground_dispatch()
@@ -526,6 +531,7 @@ class NowalletApp(MDApp):
         - load main screen
         - unlock nav
         """
+        self.nfc_init()
         self._wallet_ready = True
         print("_wallet_ready=True")
         self.root.ids.sm.current = "main"
