@@ -230,6 +230,8 @@ class NowalletApp(MDApp):
     current_utxo = ObjectProperty()
     block_height = 0
     _wallet_ready = False  # is false until we can use the wallet
+    _nfc_is_on = False
+    _nfc_is_available = False
     def __init__(self, loop):
         self.chain = nowallet.TBTC
         self.loop = loop
@@ -317,10 +319,26 @@ class NowalletApp(MDApp):
         print ('on_new_intent(), {}'.format(intent.getAction()) )
         # get TAG details
         tag = cast('android.nfc.Tag', intent.getParcelableExtra(NfcAdapter.EXTRA_TAG))
+        try:
+            print("="*80)
+            if intent.getAction() != NfcAdapter.ACTION_NDEF_DISCOVERED:
+                return
+            rawmsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
+            if not rawmsgs:
+                return
+            for message in rawmsgs:
+                message = cast(NdefMessage, message)
+                payload = message.getRecords()[0].getPayload()
+                print ('payload: {}'.format(''.join(map(chr, payload))))
+            print("S="*40)
+        except Exception as err:
+            print(traceback.format_exc())
+            print("ERROR: "+str(err))
+            print("ERR="*20)
         print ('details, {}'.format(tag))
         details = self.get_ndef_details(tag)
         print ('details, {}'.format(details))
-        #self.show_snackbar('details, {}'.format(tag))    
+        #self.show_snackbar('details, {}'.format(tag))
         #self.show_snackbar('details, {}'.format(details))
 
     def nfc_init(self):
@@ -346,7 +364,7 @@ class NowalletApp(MDApp):
             self.nfc_pending_intent = PendingIntent.getActivity(context, 0, Intent(context, context.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), PendingIntent.FLAG_MUTABLE)
             self.enable_nfc_foreground_dispatch()
             return True
-
+        return False
 
     def disable_nfc_foreground_dispatch(self):
         if platform == "android":
@@ -356,6 +374,29 @@ class NowalletApp(MDApp):
     def enable_nfc_foreground_dispatch(self):
         if platform == "android":
             run_on_ui_thread(self.nfc_adapter.enableForegroundDispatch(self.j_context, self.nfc_pending_intent, None,None))
+
+    def nfc_enable(self):
+        if platform == "android":
+            if not self._nfc_is_on:
+                activity.bind(on_new_intent=self.on_new_intent)
+                self._nfc_is_on = True
+                self.show_snackbar("NFC enabled")
+        else:
+            self.show_snackbar("NFC not supported")
+                    
+    def nfc_disable(self):
+        if platform == "android":
+            if self._nfc_is_on:
+                activity.unbind(on_new_intent=self.on_new_intent)
+                self._nfc_is_on = False
+                self.show_snackbar("NFC disabled")
+        else:
+            self.show_snackbar("NFC not supported")
+    def nfc_toggle(self):
+        if not self._nfc_is_on:
+            self.nfc_enable()
+        elif self._nfc_is_on:
+            self.nfc_disable()
 
     #def on_pause(self):
     #    self.disable_nfc_foreground_dispatch()
@@ -403,7 +444,6 @@ class NowalletApp(MDApp):
                                        on_release=partial(self.close_dialog))
                                    ]
                                )
-
         self.dialog.open()
 
     def close_dialog(self, *args):
@@ -560,7 +600,9 @@ class NowalletApp(MDApp):
         - load main screen
         - unlock nav
         """
-        self.nfc_init() #TODO: maybe move to build()
+        self._nfc_is_available = self.nfc_init() #TODO: maybe move to build()
+        if self._nfc_is_available:
+            self._nfc_is_on = True
         self._wallet_ready = True
         print("_wallet_ready=True")
         self.root.ids.sm.current = "main"
