@@ -379,24 +379,29 @@ class NowalletApp(MDApp):
         if platform == "android":
             if not self._nfc_is_on:
                 activity.bind(on_new_intent=self.on_new_intent)
+                print ("bind NFC, NFC enable")
                 self._nfc_is_on = True
                 self.show_snackbar("NFC enabled")
         else:
             self.show_snackbar("NFC not supported")
-                    
+
     def nfc_disable(self):
         if platform == "android":
             if self._nfc_is_on:
                 activity.unbind(on_new_intent=self.on_new_intent)
+                print ("unbind NFC, NFC disable")
                 self._nfc_is_on = False
                 self.show_snackbar("NFC disabled")
         else:
             self.show_snackbar("NFC not supported")
+
     def nfc_toggle(self):
-        if not self._nfc_is_on:
-            self.nfc_enable()
-        elif self._nfc_is_on:
+        """ """ 
+        if self._nfc_is_on:
             self.nfc_disable()
+        else:
+            self.nfc_enable()
+
 
     #def on_pause(self):
     #    self.disable_nfc_foreground_dispatch()
