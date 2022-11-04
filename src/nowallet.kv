@@ -33,7 +33,7 @@ MDScreen:
             #background_hue: "500"
             type_height: "medium"
             headline_text: "Headline"
-            md_bg_color: "#4d4d4d"
+            md_bg_color: "#252525"
             #anchor_title: "center"
             #icon: "fingerprint"
             #left_action_items: [["menu", lambda x: app.menu_button_handler(self)]]
@@ -62,6 +62,7 @@ MDScreen:
                             color_mode: "accent"
                             write_tab: False
                             required: True
+                            font_size: '21sp'
                         MDTextField:
                             id: pass_field
                             hint_text: "Passphrase"
@@ -69,6 +70,7 @@ MDScreen:
                             write_tab: False
                             password: True
                             required: True
+                            font_size: '21sp'
                         MDTextField:
                             id: confirm_field
                             hint_text: "Repeat Passphrase"
@@ -76,6 +78,7 @@ MDScreen:
                             write_tab: False
                             password: True
                             required: True
+                            font_size: '21sp'
                         BoxLayout:
                             MDCheckbox:
                                 id: bech32_checkbox
@@ -88,13 +91,16 @@ MDScreen:
                             size_hint_x: 1
                             text: "Let's get started"
                             id: login_button
+                            md_bg_color: "#252525"
                             on_release: app.login()
+                            font_size: '18sp'
+
                         MDLabel:
                             size: self.size
                             opacity: 0.85
                             halign: 'center'
                             font_size: '12sp'
-                            text: "\n\n\n\n\n\n\n\n\n\n\nBrainbow is of course offered without any warranty of any kind; if you lose your bitcoin due to a bug in our software, your keystrokes being recorded on a malware-infested XP rig from 2003, a weak passphrase, or even a typo, we are sorry in the most respectful way, but we cannot help you.\n\nJust don't forget your password."
+                            text: "\n\n\n\n\n\n\n\n\n\n\nBrainbow is of course offered without any warranty of any kind; if you lose your bitcoin due to a bug in our software, your keystrokes being recorded on a malware-infested XP rig from 2003, a weak passphrase, or even a typo, we are sorry in the most respectful way, but we cannot help you.\n\nJust don't forget your passphrase."
 
 
             MainScreen:
@@ -102,6 +108,8 @@ MDScreen:
                 MDTabs
                     tab_display_mode: "icons"
                     on_tab_switch: app.give_current_tab_name(*args)
+                    background_color: "#4d4d4d"
+                    tab_bar_height:  dp(52)
                     Tab:
                         name: "balance"
                         title: "TRANSACTIONS"
@@ -115,7 +123,7 @@ MDScreen:
                                 theme_text_color: "Primary"
                                 halign: "center"
                                 size_hint_y: None
-                                height: self.texture_size[1] + dp(45)
+                                height: self.texture_size[1] + dp(48)
                                 on_release: app.toggle_balance_label()
                             RecycleView:
                                 id: recycleView
@@ -657,6 +665,9 @@ MDScreen:
                     icon: "twitter"
                     text: "Twitter"
 
+                MDNavigationDrawerLabel:
+                    text: "Version: 0.0.1.alpha"
+                    text_color: "#c9c9c9"
 
 
 
