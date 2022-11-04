@@ -320,8 +320,9 @@ class NowalletApp(MDApp):
         print ('details, {}'.format(tag))
         details = self.get_ndef_details(tag)
         print ('details, {}'.format(details))
-        self.show_snackbar('details, {}'.format(tag))    
-        self.show_snackbar('details, {}'.format(details))
+        #self.show_snackbar('details, {}'.format(tag))    
+        #self.show_snackbar('details, {}'.format(details))
+
     def nfc_init(self):
         if platform == "android":
             activity.bind(on_new_intent=self.on_new_intent)
