@@ -8,7 +8,8 @@
 #:import asyncio asyncio
 #:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
 #:import MDNavigationLayout kivymd.uix.navigationdrawer.navigationdrawer.MDNavigationLayout
-#
+#:import MDListBottomSheet kivymd.uix.bottomsheet
+
 # QR SCANNER
 # : import ZBarCam kivy_garden.zbarcam.ZBarCam
 
@@ -31,8 +32,9 @@ MDScreen:
             #md_bg_color: app.theme_cls.primary_color
             #background_palette: "Primary"
             #background_hue: "500"
-            type_height: "medium"
-            headline_text: "Headline"
+
+            #type_height: "medium"
+            #headline_text: "Headline"
             md_bg_color: "#252525"
             #anchor_title: "center"
             #icon: "fingerprint"
@@ -131,7 +133,7 @@ MDScreen:
                                 RecycleBoxLayout:
                                     default_size: None, dp(56)
                                     default_size_hint: 1, None
-                                    size_hint_y: None
+                                    size_hint_y: None  # redefinition?
                                     height: self.minimum_height
                                     orientation: "vertical"
 
@@ -448,8 +450,11 @@ MDScreen:
                 AnchorLayout:
                     MDSpinner:
                         size_hint: None, None
-                        size: dp(46), dp(46)
+                        size: dp(240), dp(240)
                         pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                        palette:
+                            [0, 0, 0, 1],
+                        line_width: dp(1.25)
                 MDLabel:
                     id: wait_text
                     text: "Loading..."
@@ -457,7 +462,8 @@ MDScreen:
                     font_style: "H4"
                     size_hint: 0.7, None
                     halign: "center"
-                    pos_hint: {"center_x": 0.5, "center_y": 0.66}
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+
                 MDLabel:
                     id: wait_text_small
                     size: self.size
@@ -633,50 +639,79 @@ MDScreen:
                     #spacing: "4dp"
                     padding: "12dp", 0, 0, "56dp"
 
-                MDNavigationDrawerLabel:
-                    text: "Wallet"
+                #MDNavigationDrawerLabel:
+                #    text: "Wallet"
 
                 MDNavigationDrawerItem:
                     icon: "database-eye"
                     right_text: "+99"
                     text_right_color: "#4a4939"
-                    text: "Inbox"
+                    text: "Transactions"
                     #text_color: "#c9c9c9"
                     #selected_color: "#c9c9c9"
                     id: nav_drawer_item_gmail
                     on_release: app.goto_screen('main', 'send')
 
                 MDNavigationDrawerItem:
-                    icon: "send"
-                    text: "Outbox"
-                    on_release: app.goto_screen('utxo')
+                    icon: "database-import"
+                    text: "Recieve"
+
+                MDNavigationDrawerItem:
+                    icon: "database-export"
+                    text: "Send"
+
+                MDNavigationDrawerDivider:
+
+                #MDNavigationDrawerItem:
+                #    icon: "cellphone-nfc"
+                #    text: "Test Bottom Sheed"
+                #    on_release: app.open_sheet()
+
+
+
+                MDNavigationDrawerItem:
+                    icon: "map-marker-multiple"
+                    text: "Addresses"
+                #    on_release: app.nfc_toggle()
+
+                MDNavigationDrawerItem:
+                    icon: "database-marker"
+                    text: "UTXOs (Coins)"
+                #    on_release: app.nfc_toggle()
+
+                #MDNavigationDrawerLabel:
+                #    text: "Labels"
+                #    spacing: "16dp"
+
+
+
+                MDNavigationDrawerDivider:
+
+                #MDNavigationDrawerLabel:
+                #    text: "Help and Feedback"
+                #MDNavigationDrawerItem:
+                #    icon: "twitter"
+                #    text: "Twitter @bitcoinbrainbow"
+
+                #MDNavigationDrawerLabel:
+                #    text: "Version: 0.0.1.testnet"
+                #    text_color: "#c9c9c9"
+
+                #MDNavigationDrawerDivider:
 
                 MDNavigationDrawerItem:
                     icon: "cellphone-nfc"
                     text: "NFC On/Off"
                     on_release: app.nfc_toggle()
 
-
-
-                MDNavigationDrawerDivider:
-
-                MDNavigationDrawerLabel:
-                    text: "Labels"
-                    spacing: "16dp"
-
-                MDNavigationDrawerDivider:
-
-                MDNavigationDrawerLabel:
-                    text: "Help and Feedback"
                 MDNavigationDrawerItem:
-                    icon: "twitter"
-                    text: "Twitter"
+                    icon: "cog"
+                    text: "Settings"
 
-                MDNavigationDrawerLabel:
-                    text: "Version: 0.0.1.alpha"
-                    text_color: "#c9c9c9"
-
-
+                MDNavigationDrawerItem:
+                    icon: "database-eye-off"
+                    text: "Disconnet Wallet and Exit"
+                    on_release: app.logoff()
 
 
 

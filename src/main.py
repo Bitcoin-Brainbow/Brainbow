@@ -51,6 +51,8 @@ from kivy.properties import StringProperty
 from kivy_garden.qrcode import QRCodeWidget
 
 from kivy.core.clipboard import Clipboard
+from kivy.core.text import LabelBase
+
 
 #from kivy_garden.zbarcam import ZBarCam
 
@@ -229,7 +231,7 @@ class NowalletApp(MDApp):
     current_fee = NumericProperty()
     current_utxo = ObjectProperty()
     block_height = 0
-    _wallet_ready = False  # is false until we can use the wallet
+    _wallet_ready = True  # is false until we can use the wallet
     _nfc_is_on = False
     _nfc_is_available = False
     def __init__(self, loop):
@@ -382,6 +384,7 @@ class NowalletApp(MDApp):
                 print ("bind NFC, NFC enable")
                 self._nfc_is_on = True
                 self.show_snackbar("NFC enabled")
+                #TODO: display icon ON
         else:
             self.show_snackbar("NFC not supported")
 
@@ -392,24 +395,19 @@ class NowalletApp(MDApp):
                 print ("unbind NFC, NFC disable")
                 self._nfc_is_on = False
                 self.show_snackbar("NFC disabled")
+                #TODO: display icon OFF
         else:
             self.show_snackbar("NFC not supported")
 
     def nfc_toggle(self):
-        """ """ 
+        """ """
         if self._nfc_is_on:
             self.nfc_disable()
         else:
             self.nfc_enable()
 
 
-    #def on_pause(self):
-    #    self.disable_nfc_foreground_dispatch()
-    #    return True
-    #
-    #def on_resume(self):
-    #    self.enable_nfc_foreground_dispatch()
-    # end NFC
+
 
     def give_current_tab_name(self, *args):
         self.current_tab_name = args[1].name
@@ -664,7 +662,7 @@ class NowalletApp(MDApp):
         task = asyncio.create_task(self.wallet.listen_to_addresses())
 
     async def do_login_tasks(self, email, passphrase):
-        self.root.ids.wait_text.text = "Connecting.."
+        self.root.ids.wait_text.text = "Connecting".upper()
         self.root.ids.wait_text_small.text = "Getting a random server for you."
         server, port, proto = await nowallet.get_random_server(self.loop)
         self.root.ids.wait_text_small.text = "Connected to {}.".format(server)
@@ -680,7 +678,7 @@ class NowalletApp(MDApp):
 
         await connection.do_connect()
 
-        self.root.ids.wait_text.text = "Deriving Keys.."
+        self.root.ids.wait_text.text = "Deriving\nKeys".upper()
         self.root.ids.wait_text_small.text = "This will take a moment.."
         # make run in a seperate thread
         # in executor runs but gets stuck
@@ -689,10 +687,10 @@ class NowalletApp(MDApp):
         self.wallet = nowallet.Wallet(email, passphrase, connection, self.loop, self.chain, self.bech32)
         self.set_wallet_fingetprint(self.wallet.fingerprint)
         self.root.ids.wait_text_small.text = "Wallet fingerprint is {}.".format(self.wallet.fingerprint)
-        self.root.ids.wait_text.text = "Fetching history.."
+        self.root.ids.wait_text.text = "Fetching\nhistory".upper()
         await self.wallet.discover_all_keys()
 
-        self.root.ids.wait_text.text = "Fetching exchange rates.."
+        self.root.ids.wait_text.text = "Fetching\nexchange\nrates".upper()
         # just await, but since the fetching url ruturns 403 make it anything
         try:
             self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
@@ -700,7 +698,7 @@ class NowalletApp(MDApp):
             self.exchange_rates = False
             self.show_snackbar("Failed fetching exchange rates. Starting without...")
 
-        self.root.ids.wait_text.text = "Getting fee estimate.."
+        self.root.ids.wait_text.text = "Getting\nfee\nestimate".upper()
         coinkb_fee = await self.wallet.get_fee_estimation()
         self.current_fee = self.estimated_fee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
         logging.info("Finished 'doing login tasks'")
@@ -859,9 +857,13 @@ class NowalletApp(MDApp):
             self.root.ids.seed_label.text = ""
             self.root.ids.seed_qrcode.data = ""
 
+    def open_address_bottom_sheet_callback(self, address, chunk_size=5):
+        from bottom_screens import open_address_bottom_sheet
+        chunked_address = [address[i:i+chunk_size] for i in range(0, len(address), chunk_size)]
+        open_address_bottom_sheet(address=" ".join(chunked_address))
+
     def update_addresses_screen(self):
         self.root.ids.addresses_recycle_view.data_model.data = []
-
         for address in self.wallet.get_all_known_addresses(addr=True, change=False):
             logging.info("Adding addr item to update_addresses_screen\n{}".format(address))
             self.root.ids.addresses_recycle_view.data_model.data.append({
@@ -872,7 +874,7 @@ class NowalletApp(MDApp):
                     self.wallet.derivation.get('account'),
                     0, #change
                     self.wallet.search_for_index(search=address, addr=True, change=False)),
-            #    "tertiary_text": "Value: XXX XXX sats"
+                    "on_release": lambda address=address: self.open_address_bottom_sheet_callback(address)
                 })
 
 
@@ -994,6 +996,8 @@ class NowalletApp(MDApp):
         self.explorer = self.config.get("nowallet", "explorer")
         self.set_price_api(self.config.get("nowallet", "price_api"))
 
+        LabelBase.register(name='RobotoMono',
+                            fn_regular='RobotoMono-Regular.ttf')
 
     def build_config(self, config):
         config.setdefaults("nowallet", {
@@ -1046,6 +1050,7 @@ class NowalletApp(MDApp):
             return True  # override the default behaviour
         else:           # the key now does nothing
             return False
+
 
     def on_pause(self):
         self.disable_nfc_foreground_dispatch()
@@ -1100,6 +1105,14 @@ class NowalletApp(MDApp):
             #if tab and name == "main":
             #    self.root.ids.switch_tab("send")
             self.root.ids.nav_drawer.set_state("close")
+
+
+    def open_sheet(self):
+        from booh import get_address_bottom_sheet
+        addr = "bc1q xy2k gdyg jrsq tzq2 n0yr f249 3p83 kkfj hx0w lh"
+        s = get_address_bottom_sheet(address=addr)
+        s.open()
+
 
 def open_url(url):
     if platform == 'android':
