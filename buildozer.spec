@@ -13,7 +13,7 @@ package.domain = org.brainbow
 source.dir = src
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,json
+source.include_exts = py,png,jpg,kv,atlas,json,ttf,
 
 
 # (list) Source files to exclude (let empty to not exclude anything)
