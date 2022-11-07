@@ -9,7 +9,6 @@
 #:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
 #:import MDNavigationLayout kivymd.uix.navigationdrawer.navigationdrawer.MDNavigationLayout
 #:import MDListBottomSheet kivymd.uix.bottomsheet
-
 # QR SCANNER
 # : import ZBarCam kivy_garden.zbarcam.ZBarCam
 
@@ -336,27 +335,28 @@ MDScreen:
                                 id: addresses_recycle_view
                                 viewclass: "TwoLineListItem" #TwoLineIconListItem
                                 RecycleBoxLayout:
-                                    default_size: None, None #dp(56)
+                                    default_size: None, None
                                     default_size_hint: 1, None
                                     size_hint_y: None
                                     height: self.minimum_height
                                     orientation: "vertical"
                     Tab:
                         name: "used-addresses"
-                        icon: "database-marker"
-                        title: "UTXOs"
+                        icon: "database-check"
+                        title: "UTXOs (Coins)"
                         title_icon_mode: "Top"
-                        title_is_capital: "True"
-                        AnchorLayout:
-                            BoxLayout:
-                                size_hint: 0.9, 0.8
-                                spacing: 3
-                                orientation: "vertical"
-                                MDLabel:
-                                    text: "My 'addresses', see self.wallet.get_all_known_addresses(addr=True) "
-                                MDLabel:
-                                    text: "xxxx right "
-
+                        tab_padding: [10, 0, 0,0]
+                        BoxLayout:
+                            orientation: "vertical"
+                            RecycleView:
+                                id: utxoRecycleView
+                                viewclass: "UTXOListItem"
+                                RecycleBoxLayout:
+                                    default_size: None, None
+                                    default_size_hint: 1, None
+                                    size_hint_y: None
+                                    height: self.minimum_height
+                                    orientation: "vertical"
                     # SETTINGS
                     Tab:
                         name: "information"
@@ -369,6 +369,7 @@ MDScreen:
                                 spacing: 3
                                 orientation: "vertical"
                                 MDLabel:
+                                    # IMPORTANT: NEVER SHARE YOUR PRIVATE SEED QR OR 12 WORD RECOVERY PHRASE WITH US OR ANYONE ELSE
                                     text: "View x/y/z pub and other wallet information (repeat fingerprint, .. )"
 
                     # SETTINGS
@@ -450,7 +451,7 @@ MDScreen:
                 AnchorLayout:
                     MDSpinner:
                         size_hint: None, None
-                        size: dp(240), dp(240)
+                        size: dp(242), dp(242)
                         pos_hint: {"center_x": 0.5, "center_y": 0.5}
                         palette:
                             [0, 0, 0, 1],
@@ -477,21 +478,30 @@ MDScreen:
 
             UTXOScreen:
                 name: "utxo"
-                RecycleView:
-                    id: utxoRecycleView
-                    viewclass: "UTXOListItem"
-                    RecycleBoxLayout:
-                        default_size: None, dp(56)
-                        default_size_hint: 1, None
-                        size_hint_y: None
-                        height: self.minimum_height
-                        orientation: "vertical"
-                MDRaisedButton:
-                    size_hint: 0.5, 0.07
-                    pos_hint: {"center_x": 0.5, "center_y": 0.13}
-                    text: "Go Back"
-                    id: utxo_back_button
-                    on_release: app.root.ids.sm.current = "main"
+
+                size_hint: 1,  1
+
+
+                MDTopAppBar:
+                    type: "top"
+                    title: "UTXOs (Coins)"
+                    #md_bg_color: "#ffffff"
+                    type_height: "medium"
+                    left_action_items: [["close", lambda x: app.navigation_handler(self, 'main')]]
+                #RecycleView:
+                #    id: utxoRecycleView
+                #    viewclass: "UTXOListItem"
+                #    RecycleBoxLayout:
+                #        default_size: None, dp(56)
+                #        default_size_hint: 1, None
+                #        size_hint_y: None
+                #        orientation: "vertical"
+                #MDRaisedButton:
+                #    size_hint: 0.5, 0.07
+                #    pos_hint: {"center_x": 0.5, "center_y": 0.13}
+                #    text: "Go Back"
+                #    id: utxo_back_button
+                #    on_release: app.root.ids.sm.current = "main"
 
 
             YPUBScreen:
@@ -506,7 +516,7 @@ MDScreen:
                 #    #background_hue: "500"
                 #    type_height: "medium"
                 #    headline_text: "Headline"
-                #    left_action_items: [["back", lambda x: app.navigation_handler(self)]]
+                #    left_action_items: [["back", lambda x: app.navigation_handler(self, 'main')]]
                 MDCard:
                     size_hint: None, None
                     size: dp(320), dp(360)
@@ -644,13 +654,14 @@ MDScreen:
 
                 MDNavigationDrawerItem:
                     icon: "database-eye"
-                    right_text: "+99"
+                    right_text: ""
                     text_right_color: "#4a4939"
                     text: "Transactions"
                     #text_color: "#c9c9c9"
                     #selected_color: "#c9c9c9"
-                    id: nav_drawer_item_gmail
+                    id: nav_drawer_item_transactions
                     on_release: app.goto_screen('main', 'send')
+
 
                 MDNavigationDrawerItem:
                     icon: "database-import"
@@ -675,7 +686,7 @@ MDScreen:
                 #    on_release: app.nfc_toggle()
 
                 MDNavigationDrawerItem:
-                    icon: "database-marker"
+                    icon: "database-check"
                     text: "UTXOs (Coins)"
                 #    on_release: app.nfc_toggle()
 
@@ -705,13 +716,29 @@ MDScreen:
                     on_release: app.nfc_toggle()
 
                 MDNavigationDrawerItem:
-                    icon: "cog"
+                    icon: "database-cog"
                     text: "Settings"
 
+                MDNavigationDrawerDivider:
+
+
+                MDNavigationDrawerLabel:
+                    text: "Wallet Information and Export"
+
                 MDNavigationDrawerItem:
-                    icon: "database-eye-off"
+                    icon: "database-arrow-down-outline"
+                    text: "Extended Public Key"
+
+                MDNavigationDrawerItem:
+                    icon: "database-arrow-down"
+                    text: "Wallet Import Format"
+
+                MDNavigationDrawerItem:
+                    icon: "database-off"
                     text: "Disconnet Wallet and Exit"
                     on_release: app.logoff()
+
+
 
 
 

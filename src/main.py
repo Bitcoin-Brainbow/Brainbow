@@ -231,7 +231,7 @@ class NowalletApp(MDApp):
     current_fee = NumericProperty()
     current_utxo = ObjectProperty()
     block_height = 0
-    _wallet_ready = True  # is false until we can use the wallet
+    _wallet_ready = False  # is false until we can use the wallet
     _nfc_is_on = False
     _nfc_is_available = False
     def __init__(self, loop):
@@ -496,7 +496,9 @@ class NowalletApp(MDApp):
         pass
 
     def navigation_handler(self, button):
-        print ("navigation_handler. button={}".format(button))
+        print ("navigation_handler. button={}".format(button), button)
+        #app.root.ids.sm.current = "main"
+        self.root.ids.sm.current = "main"
         pass
 
     def menu_item_handler(self, text):
@@ -787,10 +789,13 @@ class NowalletApp(MDApp):
         if self.chain  == nowallet.TBTC:
             self.root.ids.toolbar.title += " TESTNET"
 
+    #def total_wallet_tx_count(self):
+    #    return len(self.wallet.get_tx_history())
+
     def update_balance_screen(self):
         self.root.ids.balance_label.text = self.balance_str(fiat=self.fiat_balance)
         self.root.ids.recycleView.data_model.data = []
-
+        tx_counter = 0
         for hist in self.wallet.get_tx_history():
             logging.info("Adding history item to balance screen\n{}".format(hist))
             verb = "-" if hist.is_spend else "+"
@@ -802,6 +807,9 @@ class NowalletApp(MDApp):
 #            val = hist.value * self.unit_factor
             hist_str = "{}{} {}".format(verb, val, self.units)
             self.add_list_item(hist_str, hist)
+            tx_counter += 1
+        self.root.ids.nav_drawer_item_transactions.right_text = "{}".format(tx_counter)
+        self.root.ids.nav_drawer_item_transactions.size_hint_x = None
 
     def update_utxo_screen(self):
         self.root.ids.utxoRecycleView.data_model.data = []
@@ -864,6 +872,7 @@ class NowalletApp(MDApp):
 
     def update_addresses_screen(self):
         self.root.ids.addresses_recycle_view.data_model.data = []
+        print(dir(self.root.ids.addresses_recycle_view.viewclass.text))#.font_name = "RobotoMono"
         for address in self.wallet.get_all_known_addresses(addr=True, change=False):
             logging.info("Adding addr item to update_addresses_screen\n{}".format(address))
             self.root.ids.addresses_recycle_view.data_model.data.append({
