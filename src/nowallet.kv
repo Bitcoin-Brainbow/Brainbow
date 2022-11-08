@@ -115,7 +115,7 @@ MDScreen:
                         name: "balance"
                         title: "TRANSACTIONS"
                         title_icon_mode: "Top"
-                        icon: "database-eye"
+                        icon: "database-check"
                         BoxLayout:
                             orientation: "vertical"
                             BalanceLabel:
@@ -176,16 +176,6 @@ MDScreen:
                                 BoxLayout:
                                     size_hint: 1, 0.6
                                     spacing: 25
-                                    #BoxLayout:
-                                    #    size_hint: 1, 0.6
-                                    #    spacing: 5
-                                    #    FloatInput:
-                                    #        id: donation_input
-                                    #        helper_text: "Donation amount"
-                                    #        helper_text_mode: "persistent"
-                                    #        color_mode: "accent"
-                                    #        text: "0.0005"
-                                    #        #on_text: app.fee_input_handler()
                                     FloatInput:
                                         id: fee_input
                                         helper_text: "Miner Fee: sat/byte"
@@ -200,19 +190,6 @@ MDScreen:
                                         #size_hint_x: 1
                                         text: "Normal Fee"
                                         on_release: app.fee_button_handler()
-                                #BoxLayout:
-                                #    size_hint: 1, 0.6
-                                #    spacing: 5
-                                #    BoxLayout:
-                                #        size_hint: 1, 0.6
-                                #        spacing: 5
-                                #        FloatInput:
-                                #            id: donation_input
-                                #            helper_text: "Donation amount"
-                                #            helper_text_mode: "persistent"
-                                #            color_mode: "accent"
-                                #            text: "0.0005"
-                                #            #on_text: app.fee_input_handler()
                                 BoxLayout:
                                     size_hint: 1, 0.6
                                     spacing: 5
@@ -291,37 +268,13 @@ MDScreen:
                                         on_touch_down: app.copy_current_address_to_clipboard()
                                         MDLabel:
                                             id: addr_label
-    #                                        theme_text_color: "Primary"
-                                            theme_text_color: "ContrastParentBackground"
+                                            text_color: "#000000"
                                             font_style:"Body2"
                                             size_hint_y: None
                                             height: dp(40)
                                         QRCodeWidget:
                                             id: addr_qrcode
                                             show_border: False
-
-                    # For later....
-                    #
-                    #Tab:
-                    #    name: "import-psbt"
-                    #    icon: "database-arrow-up-outline"
-                    #    AnchorLayout:
-                    #        BoxLayout:
-                    #            size_hint: 0.9, 0.8
-                    #            spacing: 3
-                    #            orientation: "vertical"
-                    #            MDLabel:
-                    #                text: "PSBT Import Tab"
-                    #Tab:
-                    #    name: "export-psbt"
-                    #    icon: "database-arrow-down-outline"
-                    #    AnchorLayout:
-                    #        BoxLayout:
-                    #            size_hint: 0.9, 0.8
-                    #            spacing: 3
-                    #            orientation: "vertical"
-                    #            MDLabel:
-                    #                text: "PSBT Export Tab"
 
                     Tab:
                         name: "addresses"
@@ -341,8 +294,8 @@ MDScreen:
                                     height: self.minimum_height
                                     orientation: "vertical"
                     Tab:
-                        name: "used-addresses"
-                        icon: "database-check"
+                        name: "utxos"
+                        icon: "database-marker"
                         title: "UTXOs (Coins)"
                         title_icon_mode: "Top"
                         tab_padding: [10, 0, 0,0]
@@ -357,94 +310,6 @@ MDScreen:
                                     size_hint_y: None
                                     height: self.minimum_height
                                     orientation: "vertical"
-                    # SETTINGS
-                    Tab:
-                        name: "information"
-                        icon: "information"
-                        title: "INFO"
-                        title_icon_mode: "Top"
-                        AnchorLayout:
-                            BoxLayout:
-                                size_hint: 0.9, 0.8
-                                spacing: 3
-                                orientation: "vertical"
-                                MDLabel:
-                                    # IMPORTANT: NEVER SHARE YOUR PRIVATE SEED QR OR 12 WORD RECOVERY PHRASE WITH US OR ANYONE ELSE
-                                    text: "View x/y/z pub and other wallet information (repeat fingerprint, .. )"
-
-                    # SETTINGS
-                    Tab:
-                        name: "settings"
-                        icon: "cog"
-                        title: "SETTINGS"
-                        title_icon_mode: "Top"
-                        #AnchorLayout:
-                            #BoxLayout:
-                            #    orientation: 'vertical'
-                            #    ZBarCam:
-                            #        id: zbarcam
-                            #        # optional, by default checks all types
-                            #        code_types: 'QRCODE'
-                            #    Label:
-                            #        size_hint: None, None
-                            #        size: self.texture_size[0], 50
-                            #        text: ', '.join([str(symbol.data) for symbol in zbarcam.symbols])
-                            #BoxLayout:
-                            #    size_hint: 0.9, 0.8
-                            #    spacing: 3
-                            #    orientation: "vertical"
-                            #    MDLabel:
-                            #        text: "Move settings to this tab."
-                        AnchorLayout:
-                            BoxLayout:
-                                orientation: "vertical"
-                                MDLabel:
-                                    #size_hint: None, None
-                                    size: self.texture_size[0], self.texture_size[1]
-                                    text: "Move settings to this tab."
-                                    pos_hint: {'center_x': .5, 'center_y': .8}
-                                MDSwitch:
-                                    width: dp(64)
-                                    pos_hint: {'center_x': .8, 'center_y': .8}
-                                MDLabel:
-                                    #size_hint: None, None
-                                    size: self.texture_size[0], self.texture_size[1]
-                                    text: "Replace by Fee (BIP-1xx)"
-                                    pos_hint: {'center_x': .5, 'center_y': .7}
-                                MDSwitch:
-                                    width: dp(64)
-                                    pos_hint: {'center_x': .8, 'center_y': .7}
-
-                    # LOGOUT /LOCKING
-                    Tab:
-                        name: "logout"
-                        icon: "database-eye-off"
-                        title: "CONNECTION"
-                        title_icon_mode: "Top"
-                        AnchorLayout:
-                            BoxLayout:
-                                size_hint: 0.9, 0.8
-                                spacing: 3
-                                orientation: "vertical"
-                                MDLabel:
-                                    text: "Move disconnect (logout) "
-                                MDLabel:
-                                    text: "Move lock Brainbow with pin to this tab"
-
-    #        ZbarScreen:
-    #            name: "zbar"
-    ##            ZbarQrcodeDetector:
-    ##                id: detector
-    ##               on_symbols: app.qrcode_handler(self.symbols)
-    #            BoxLayout:
-    #                orientation: 'vertical'
-    #                ZBarCam:
-    #                    id: zbarcam
-    #                    code_types: 'QRCODE'
-    #                Label:
-    #                   size_hint: None, None
-    #                    size: self.texture_size[0], 50
-    #                    text: ', '.join([str(symbol.data) for symbol in zbarcam.symbols])
 
             WaitScreen:
                 name: "wait"
@@ -476,47 +341,10 @@ MDScreen:
                     pos_hint: {"center_x": 0.5, "center_y": 0.95}
 
 
-            UTXOScreen:
-                name: "utxo"
-
-                size_hint: 1,  1
-
-
-                MDTopAppBar:
-                    type: "top"
-                    title: "UTXOs (Coins)"
-                    #md_bg_color: "#ffffff"
-                    type_height: "medium"
-                    left_action_items: [["close", lambda x: app.navigation_handler(self, 'main')]]
-                #RecycleView:
-                #    id: utxoRecycleView
-                #    viewclass: "UTXOListItem"
-                #    RecycleBoxLayout:
-                #        default_size: None, dp(56)
-                #        default_size_hint: 1, None
-                #        size_hint_y: None
-                #        orientation: "vertical"
-                #MDRaisedButton:
-                #    size_hint: 0.5, 0.07
-                #    pos_hint: {"center_x": 0.5, "center_y": 0.13}
-                #    text: "Go Back"
-                #    id: utxo_back_button
-                #    on_release: app.root.ids.sm.current = "main"
 
 
             YPUBScreen:
                 name: "ypub"
-                #MDTopAppBar:
-                #    type: "top"
-                #    id: toolbar2
-                #    title: "WIF"
-                #    pos_hint: {"top": 1}
-                #    #md_bg_color: app.theme_cls.primary_color
-                #    #background_palette: "Primary"
-                #    #background_hue: "500"
-                #    type_height: "medium"
-                #    headline_text: "Headline"
-                #    left_action_items: [["back", lambda x: app.navigation_handler(self, 'main')]]
                 MDCard:
                     size_hint: None, None
                     size: dp(320), dp(360)
@@ -527,9 +355,8 @@ MDScreen:
                         spacing: 5
                         MDLabel:
                             id: ypub_label
-    #                        theme_text_color: "Primary"
                             theme_text_color: "ContrastParentBackground"
-                            font_style:"Body2"
+                            font_style: "Body2"
                             size_hint_y: None
                             height: dp(70)
                         QRCodeWidget:
@@ -554,7 +381,6 @@ MDScreen:
                         spacing: 5
                         MDLabel:
                             id: seed_label
-    #                        theme_text_color: "Primary"
                             theme_text_color: "ContrastParentBackground"
                             font_style:"Body2"
                             size_hint_y: None
@@ -570,65 +396,7 @@ MDScreen:
                     on_release: app.root.ids.sm.current = "main"
 
 
-            PINScreen:
-                name: "pin"
-                AnchorLayout:
-                    size_hint: 0.8, 0.8
-                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
-                    BoxLayout:
-                        spacing: 5
-                        orientation: "vertical"
-                        FloatInput:
-                            id: pin_input
-                            helper_text: "Enter a PIN"
-                            helper_text_mode: "persistent"
-                            password: True
-                        GridLayout:
-                            cols: 3
-                            spacing: 5
-                            PINButton:
-                                text: "1"
-                                on_release: app.update_pin_input(self.text)
-                            PINButton:
-                                text: "2"
-                                on_release: app.update_pin_input(self.text)
-                            PINButton:
-                                text: "3"
-                                on_release: app.update_pin_input(self.text)
-                            PINButton:
-                                text: "4"
-                                on_release: app.update_pin_input(self.text)
-                            PINButton:
-                                text: "5"
-                                on_release: app.update_pin_input(self.text)
-                            PINButton:
-                                text: "6"
-                                on_release: app.update_pin_input(self.text)
-                            PINButton:
-                                text: "7"
-                                on_release: app.update_pin_input(self.text)
-                            PINButton:
-                                text: "8"
-                                on_release: app.update_pin_input(self.text)
-                            PINButton:
-                                text: "9"
-                                on_release: app.update_pin_input(self.text)
-                            PINButton:
-                                text: "clear"
-                                on_release: app.update_pin_input(self.text)
-                            PINButton:
-                                text: "0"
-                                on_release: app.update_pin_input(self.text)
-                            PINButton:
-                                id: lock_button
-                                text: "lock"
-                                on_release: app.update_pin_input(self.text)
-                MDRaisedButton:
-                    id: pin_back_button
-                    size_hint: 0.5, 0.07
-                    pos_hint: {"center_x": 0.5, "center_y": 0.13}
-                    text: "Go Back"
-                    on_release: app.root.ids.sm.current = "main"
+
 
     MDNavigationLayout:
         MDNavigationDrawer:
@@ -653,7 +421,7 @@ MDScreen:
                 #    text: "Wallet"
 
                 MDNavigationDrawerItem:
-                    icon: "database-eye"
+                    icon: "database-check"
                     right_text: ""
                     text_right_color: "#4a4939"
                     text: "Transactions"
@@ -686,7 +454,7 @@ MDScreen:
                 #    on_release: app.nfc_toggle()
 
                 MDNavigationDrawerItem:
-                    icon: "database-check"
+                    icon: "database-marker"
                     text: "UTXOs (Coins)"
                 #    on_release: app.nfc_toggle()
 
@@ -742,7 +510,7 @@ MDScreen:
 
 
 
-<ListItem>:
-    on_release: self.on_release()
-    IconLeftSampleWidget:
-        icon: self.parent.parent.icon
+#<ListItem>:
+#    on_release: self.on_release()
+#    IconLeftSampleWidget:
+#        icon: self.parent.parent.icon

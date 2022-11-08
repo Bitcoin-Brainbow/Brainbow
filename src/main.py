@@ -129,9 +129,6 @@ class WaitScreen(Screen):
     pass
 
 
-class UTXOScreen(Screen):
-    pass
-
 
 class YPUBScreen(Screen):
     pass
@@ -155,8 +152,8 @@ class TXReviewScreen(Screen):
 
 
 # Declare custom widgets
-class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
-    pass
+#class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
+#    pass
 
 
 class BalanceLabel(ButtonBehavior, MDLabel):
