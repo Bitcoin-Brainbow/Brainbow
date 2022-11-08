@@ -8,7 +8,6 @@
 #:import asyncio asyncio
 #:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
 #:import MDNavigationLayout kivymd.uix.navigationdrawer.navigationdrawer.MDNavigationLayout
-#:import MDListBottomSheet kivymd.uix.bottomsheet
 
 # QR SCANNER
 # : import ZBarCam kivy_garden.zbarcam.ZBarCam
@@ -98,11 +97,14 @@ MDScreen:
 
             MainScreen:
                 name: "main"
+                id: main
                 MDTabs
                     tab_display_mode: "icons"
                     on_tab_switch: app.give_current_tab_name(*args)
+                    #on_slide_progress: print('hello')
                     background_color: "#4d4d4d"
                     tab_bar_height:  dp(52)
+                    id: main_tabs
                     Tab:
                         name: "balance"
                         title: "TRANSACTIONS"
@@ -270,6 +272,7 @@ MDScreen:
 
                     Tab:
                         name: "addresses"
+                        id: addresses
                         icon: "map-marker-multiple"
                         title: "ADDRESSES"
                         title_icon_mode: "Top"
@@ -420,16 +423,17 @@ MDScreen:
                     #text_color: "#c9c9c9"
                     #selected_color: "#c9c9c9"
                     id: nav_drawer_item_transactions
-                    on_release: app.goto_screen('main', 'send')
-
+                    on_release: app.goto_screen('main', 'TRANSACTIONS')
 
                 MDNavigationDrawerItem:
                     icon: "database-import"
                     text: "Recieve"
+                    on_release: app.goto_screen('main', 'RECIEVE')
 
                 MDNavigationDrawerItem:
                     icon: "database-export"
                     text: "Send"
+                    on_release: app.goto_screen('main', 'SEND')
 
                 MDNavigationDrawerDivider:
 
@@ -443,12 +447,14 @@ MDScreen:
                 MDNavigationDrawerItem:
                     icon: "map-marker-multiple"
                     text: "Addresses"
-                #    on_release: app.nfc_toggle()
+                    on_release: app.goto_screen('main', 'ADDRESSES')
 
                 MDNavigationDrawerItem:
                     icon: "database-marker"
                     text: "UTXOs (Coins)"
-                #    on_release: app.nfc_toggle()
+                    on_release: app.goto_screen('main', "UTXOs (Coins)")
+
+                    # on_release: app.nfc_toggle()
 
                 #MDNavigationDrawerLabel:
                 #    text: "Labels"
@@ -488,6 +494,7 @@ MDScreen:
                 MDNavigationDrawerItem:
                     icon: "database-arrow-down-outline"
                     text: "Extended Public Key"
+                    on_release: app.get_tab_list()
 
                 MDNavigationDrawerItem:
                     icon: "database-arrow-down"

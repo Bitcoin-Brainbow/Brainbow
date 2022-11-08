@@ -109,12 +109,9 @@ else:
 from utils import get_block_height
 
 
-
 class Tab(MDFloatLayout, MDTabsBase):
-    """Class implementing content for a tab."""
     content_text = StringProperty()
     pass
-
 
 # Declare screens
 class LoginScreen(Screen):
@@ -224,7 +221,7 @@ class NowalletApp(MDApp):
         self.bech32 = False
         self.exchange_rates = None
         self.current_tab_name = "balance"
-        """
+
         # class MyMenuItem(MDMenuItem):
         class MyMenuItem(OneLineListItem):
             pass
@@ -242,11 +239,12 @@ class NowalletApp(MDApp):
                             "text": "Settings",
                             "on_release": lambda x="Settings": app.menu_item_handler(x)},
                            ]
+        """
         self.utxo_menu_items = [{"viewclass": "MyMenuItem",
                                  "text": "View Private key"},
                                 {"viewclass": "MyMenuItem",
                                  "text": "View Redeem script"}]
-        """                         
+        """
         super().__init__()
 
     # NFC
@@ -997,6 +995,24 @@ class NowalletApp(MDApp):
         coin = self.chain.chain_1209k.upper()
         #settings.add_json_panel("Settings", self.config, data=settings_json(coin))
 
+    #def switch_tab_by_name(self, name):
+    #    '''Switching the tab by name.'''
+    #    try:
+    #        x = next(self.iter_list_names)
+    ##        print("Switch slide by name, next element to show: [{}]".format(x))
+     #       self.root.ids.main_tabs.switch_tab(name)
+    #    except StopIteration:
+    ##        # Reset the iterator an begin again.
+    # #       self.iter_list_names = iter(list(self.icons))
+    #        self.switch_tab_by_name()
+
+    def get_tab_list(self):
+        '''Prints a list of tab objects.'''
+        aa = self.root.ids.main_tabs.get_tab_list()
+        print (dir(aa[0]))
+        for a in aa:
+            print("a {}".format(a.text))
+
     def on_config_change(self, config, section, key, value):
         if key == "rbf":
             self.rbf = value in [1, '1', True]
@@ -1083,11 +1099,10 @@ class NowalletApp(MDApp):
 
     def goto_screen(self, name, tab=None):
         if self._wallet_ready:
-            self.root.ids.sm.current = name
-            # TODO: allow to jump to random tab, instead of starting using the first
-            #if tab and name == "main":
-            #    self.root.ids.switch_tab("send")
             self.root.ids.nav_drawer.set_state("close")
+            self.root.ids.sm.current = name
+            if tab and name == "main":
+                self.root.ids.main_tabs.switch_tab(tab, search_by="title")
 
 
     def open_sheet(self):
