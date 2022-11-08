@@ -108,10 +108,10 @@ else:
 
 from utils import get_block_height
 
-LOG_OFF_WALLET = "Disconnect and clear wallet"
+
 
 class Tab(MDFloatLayout, MDTabsBase):
-    '''Class implementing content for a tab.'''
+    """Class implementing content for a tab."""
     content_text = StringProperty()
     pass
 
@@ -149,24 +149,12 @@ class TXReviewScreen(Screen):
     pass
 
 
-
-
-# Declare custom widgets
-#class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
-#    pass
-
-
 class BalanceLabel(ButtonBehavior, MDLabel):
     pass
 
 
-class PINButton(MDRaisedButton):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.height = dp(50)
-
-
 class UTXOListItem(TwoLineListItem):
+    """ """
     utxo = ObjectProperty()
 
     def open_utxo_menu(self):
@@ -182,9 +170,6 @@ class UTXOListItem(TwoLineListItem):
         logging.info("open_utxo_menu utxo > {}".format(app.utxo.as_dict))
 
 
-# class MyMenuItem(MDMenuItem):
-class MyMenuItem(OneLineListItem):
-    pass
 
 class ListItem(TwoLineIconListItem):
     icon = StringProperty("check-circle")
@@ -239,6 +224,11 @@ class NowalletApp(MDApp):
         self.bech32 = False
         self.exchange_rates = None
         self.current_tab_name = "balance"
+        """
+        # class MyMenuItem(MDMenuItem):
+        class MyMenuItem(OneLineListItem):
+            pass
+
         self.menu_items = [{"viewclass": "MyMenuItem",
                             "text": "View YPUB",
                             "on_release": lambda x="View YPUB": app.menu_item_handler(x)},
@@ -246,22 +236,17 @@ class NowalletApp(MDApp):
                             "text": "View BIP32 Root Key (WIF)",
                             "on_release": lambda x="View BIP32 Root Key (WIF)": app.menu_item_handler(x)},
                            {"viewclass": "MyMenuItem",
-                            "text": "Lock with PIN",
-                            "on_release": lambda x="Lock with PIN": app.menu_item_handler(x)},
-                           {"viewclass": "MyMenuItem",
                             "text": "Manage UTXOs",
                             "on_release": lambda x="Manage UTXOs": app.menu_item_handler(x)},
                            {"viewclass": "MyMenuItem",
                             "text": "Settings",
                             "on_release": lambda x="Settings": app.menu_item_handler(x)},
-                           {"viewclass": "MyMenuItem",
-                            "text": LOG_OFF_WALLET,
-                            "on_release": lambda x=LOG_OFF_WALLET: app.menu_item_handler(x)},
                            ]
         self.utxo_menu_items = [{"viewclass": "MyMenuItem",
                                  "text": "View Private key"},
                                 {"viewclass": "MyMenuItem",
                                  "text": "View Redeem script"}]
+        """                         
         super().__init__()
 
     # NFC
@@ -504,14 +489,6 @@ class NowalletApp(MDApp):
             self.root.ids.sm.current = "ypub"
         if "BIP32" in text:
             self.root.ids.sm.current = "seed"
-        elif "PIN" in text:
-            self.root.ids.sm.current = "pin"
-        elif "UTXO" in text:
-            self.root.ids.sm.current = "utxo"
-        elif "Settings" in text:
-            self.open_settings()
-        elif LOG_OFF_WALLET in text:
-            self.logoff()
         elif self.root.ids.sm.current == "utxo": # UTXO menu items
             addr = self.utxo.address(self.chain.netcode)
             key = self.wallet.search_for_key(addr)
