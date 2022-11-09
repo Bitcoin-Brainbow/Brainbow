@@ -103,8 +103,7 @@ if platform == "android":
 
     # end NFC
 
-    Window.keyboard_anim_args = {'d': .2, 't': 'in_out_expo'}
-    Window.softinput_mode = "below_target"
+
 
 else:
     Window.size = (768/2, 1366/2)
@@ -952,6 +951,7 @@ class NowalletApp(MDApp):
 
     def build(self):
         """ """
+        Window.softinput_mode = "below_target"
         self.title = 'Brainbow'
         self.theme_cls.material_style = "M2"
         """
@@ -983,6 +983,7 @@ class NowalletApp(MDApp):
         LabelBase.register(name='RobotoMono',
                             fn_regular='RobotoMono-Regular.ttf')
 
+
     def build_config(self, config):
         config.setdefaults("nowallet", {
             "rbf": True,
@@ -993,6 +994,7 @@ class NowalletApp(MDApp):
             "price_api": "CoinGecko",
             })
         Window.bind(on_keyboard=self.key_input)
+
 
     def build_settings(self, settings):
         coin = self.chain.chain_1209k.upper()
