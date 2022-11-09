@@ -92,7 +92,7 @@ MDScreen:
                             opacity: 0.85
                             halign: 'center'
                             font_size: '12sp'
-                            text: "\n\n\n\n\n\n\n\n\n\n\nBrainbow is of course offered without any warranty of any kind; if you lose your bitcoin due to a bug in our software, your keystrokes being recorded on a malware-infested XP rig from 2003, a weak passphrase, or even a typo, we are sorry in the most respectful way, but we cannot help you.\n\nJust don't forget your salt and passphrase."
+                            text: "\n\n\n\n\n\n\n\n\n\n\nBrainbow is of course offered without any warranty of any kind; if you lose your bitcoin due to a bug in our software, your keystrokes being recorded on a malware-infested device from 2003, a weak passphrase, or even a typo, we are sorry in the most respectful way, but we cannot help you.\n\nJust don't forget your salt and passphrase."
 
 
             MainScreen:
@@ -416,6 +416,16 @@ MDScreen:
                 #    text: "Wallet"
 
                 MDNavigationDrawerItem:
+                    icon: "database-import"
+                    text: "Recieve"
+                    on_release: app.goto_screen('main', 'RECIEVE')
+
+                MDNavigationDrawerItem:
+                    icon: "database-export"
+                    text: "Send"
+                    on_release: app.goto_screen('main', 'SEND')
+
+                MDNavigationDrawerItem:
                     icon: "database-check"
                     right_text: ""
                     text_right_color: "#4a4939"
@@ -425,15 +435,7 @@ MDScreen:
                     id: nav_drawer_item_transactions
                     on_release: app.goto_screen('main', 'TRANSACTIONS')
 
-                MDNavigationDrawerItem:
-                    icon: "database-import"
-                    text: "Recieve"
-                    on_release: app.goto_screen('main', 'RECIEVE')
 
-                MDNavigationDrawerItem:
-                    icon: "database-export"
-                    text: "Send"
-                    on_release: app.goto_screen('main', 'SEND')
 
                 MDNavigationDrawerDivider:
 
@@ -494,7 +496,6 @@ MDScreen:
                 MDNavigationDrawerItem:
                     icon: "database-arrow-down-outline"
                     text: "Extended Public Key"
-                    on_release: app.get_tab_list()
 
                 MDNavigationDrawerItem:
                     icon: "database-arrow-down"

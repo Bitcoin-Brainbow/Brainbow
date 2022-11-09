@@ -103,6 +103,9 @@ if platform == "android":
 
     # end NFC
 
+    Window.keyboard_anim_args = {'d': .2, 't': 'in_out_expo'}
+    Window.softinput_mode = "below_target"
+
 else:
     Window.size = (768/2, 1366/2)
 
@@ -994,24 +997,6 @@ class NowalletApp(MDApp):
     def build_settings(self, settings):
         coin = self.chain.chain_1209k.upper()
         #settings.add_json_panel("Settings", self.config, data=settings_json(coin))
-
-    #def switch_tab_by_name(self, name):
-    #    '''Switching the tab by name.'''
-    #    try:
-    #        x = next(self.iter_list_names)
-    ##        print("Switch slide by name, next element to show: [{}]".format(x))
-     #       self.root.ids.main_tabs.switch_tab(name)
-    #    except StopIteration:
-    ##        # Reset the iterator an begin again.
-    # #       self.iter_list_names = iter(list(self.icons))
-    #        self.switch_tab_by_name()
-
-    def get_tab_list(self):
-        '''Prints a list of tab objects.'''
-        aa = self.root.ids.main_tabs.get_tab_list()
-        print (dir(aa[0]))
-        for a in aa:
-            print("a {}".format(a.text))
 
     def on_config_change(self, config, section, key, value):
         if key == "rbf":
