@@ -77,11 +77,9 @@ from aiohttp.client_exceptions import ClientConnectorError
 __version__ = "0.0.1"
 if platform == "android":
     # NFC
-
     from jnius import autoclass, cast
     from android.runnable import run_on_ui_thread
     from android import activity
-
 
     NfcAdapter = autoclass('android.nfc.NfcAdapter')
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
@@ -99,17 +97,16 @@ if platform == "android":
     NfcB = autoclass('android.nfc.tech.NfcB')
     NfcF = autoclass('android.nfc.tech.NfcF')
     NfcV = autoclass('android.nfc.tech.NfcV')
-
-
     # end NFC
-
-
-
+    Window.softinput_mode = "below_target"
 else:
     Window.size = (768/2, 1366/2)
 
 from utils import get_block_height
 
+
+class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
+    pass
 
 class Tab(MDFloatLayout, MDTabsBase):
     content_text = StringProperty()
@@ -951,7 +948,6 @@ class NowalletApp(MDApp):
 
     def build(self):
         """ """
-        Window.softinput_mode = "below_target"
         self.title = 'Brainbow'
         self.theme_cls.material_style = "M2"
         """
@@ -1069,7 +1065,7 @@ class NowalletApp(MDApp):
         data.append({"text": text,
                     "secondary_text": history.tx_obj.id(),
                     "history": history,
-                    "icon": icon})
+                    "icon": icon })
 
     def add_utxo_list_item(self, text, utxo):
         data = self.root.ids.utxoRecycleView.data_model.data
@@ -1092,11 +1088,11 @@ class NowalletApp(MDApp):
                 self.root.ids.main_tabs.switch_tab(tab, search_by="title")
 
 
-    def open_sheet(self):
-        from booh import get_address_bottom_sheet
-        addr = "bc1q xy2k gdyg jrsq tzq2 n0yr f249 3p83 kkfj hx0w lh"
-        s = get_address_bottom_sheet(address=addr)
-        s.open()
+#    def open_sheet(self):
+#        from booh import get_address_bottom_sheet
+#        addr = "bc1q xy2k gdyg jrsq tzq2 n0yr f249 3p83 kkfj hx0w lh"
+#        s = get_address_bottom_sheet(address=addr)
+#        s.open()
 
 
 def open_url(url):
