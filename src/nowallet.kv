@@ -53,22 +53,27 @@ MDScreen:
                     use_pagination: True
                     on_current_slide: app.current_slide(self.index)
                     MDFloatLayout:
-                        Image:
+                        FitImage:
                             source: "onboarding-01.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
-                            size_hint: .66, .66
+                            size_hint: .42, .42
                         MDLabel:
-                            text: "Welcome to Brainbow"
+                            text: "[b]Welcome to Brainbow[/b]"
+                            markup: True
                             pos_hint: {"center_y": .485}
                             halign: "center"
-                            font_size: "25px"
+                            font_size: "25sp"
                             color: rgba(1, 3, 23, 225)
                         MDLabel:
+                            margin: "8dp"
                             pos_hint: {"center_y": .31}
-                            size: self.size
+                            #size: self.size
                             opacity: 0.95
                             halign: 'center'
-                            font_size: '14sp'
+                            font_size: '16sp'
+
+                            #size: self.texture_size*.9
+
                             text: "Brainbow is a stateless, non-custodial, deterministic\nBitcoin client (also known as \"Bitcoin Wallet\").\n\nStateless means, that Brainbow does not save or\n store your private key or wallet information anywhere.\n\nTo connect and use Bitcoin, just generate your own\nwallet using a salt and a really good passphrase."
                         MDTextButton:
                             text: "SKIP AND CONNECT TO BITCOIN"
@@ -76,14 +81,14 @@ MDScreen:
                             text_color: "black"
                             pos_hint: {"center_x": .5, "center_y": .115}
                             halign: "center"
-                            color: rgba(135, 143, 158, 200)
-                            #color: "#c9c9c9"
+                            color: "#c9c9c9"
+                            on_release: app.root.ids.sm.current = "login"
                         MDLabel:
                             text: "1 of 3"
                             pos_hint: {"center_y": .055}
                             halign: "center"
                             font_size: "14sp"
-                            color: rgba(135, 143, 158, 200)
+                            color: "#c9c9c9"
                     MDFloatLayout:
                         Image:
                             source: "onboarding-10.png"
@@ -93,7 +98,7 @@ MDScreen:
                             text: "Generate and access a wallet"
                             pos_hint: {"center_y": .485}
                             halign: "center"
-                            font_size: "25px"
+                            font_size: "25sp"
                             color: rgba(1, 3, 23, 225)
                         MDLabel:
                             pos_hint: {"center_y": .31}
@@ -125,7 +130,7 @@ MDScreen:
                             text: "Protect your wallet"
                             pos_hint: {"center_y": .485}
                             halign: "center"
-                            font_size: "25px"
+                            font_size: "25sp"
                             color: rgba(1, 3, 23, 225)
                         MDLabel:
                             pos_hint: {"center_y": .31}
