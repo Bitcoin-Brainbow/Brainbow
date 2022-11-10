@@ -1086,6 +1086,14 @@ class NowalletApp(MDApp):
     #        self.root.ids.nav_drawer_item_gmail.text_color = "000000"
     #        self.root.ids.nav_drawer_item_gmail.selected_color: "#ff0000"
 
+    def goto_slide(self, name):
+        print("looking for slide name={}".format(name))
+        for i in app.root.ids.caraousel.slides:
+            print(i.name == name)
+            if i.name == name:
+                app.root.ids.caraousel.load_slide(i)
+                return
+
     def goto_screen(self, name, tab=None):
         if self._wallet_ready:
             self.root.ids.nav_drawer.set_state("close")
