@@ -49,13 +49,13 @@ MDScreen:
                 MDFloatLayout:
                     md_bg_color : 1, 1, 1, 1
                 Carousel:
-                    name: "caraousel"
+                    #name: "caraousel"
                     id: caraousel
                     use_pagination: True
                     on_current_slide: app.current_slide(self.index)
                     MDFloatLayout:
                         FitImage:
-                            source: "onboarding-01.png"
+                            source: "onboarding_00.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .42, .42
                         MDLabel:
@@ -68,14 +68,10 @@ MDScreen:
                         MDLabel:
                             margin: "8dp"
                             pos_hint: {"center_y": .31}
-                            #size: self.size
                             opacity: 0.95
                             halign: 'center'
                             font_size: '16sp'
-
-                            #size: self.texture_size*.9
-
-                            text: "Brainbow is a stateless, non-custodial, deterministic\nBitcoin client (also known as \"Bitcoin Wallet\").\n\nStateless means, that Brainbow does not save or\n store your private key or wallet information anywhere.\n\nTo connect and use Bitcoin, just generate your own\nwallet using a salt and a really good passphrase."
+                            text: "Brainbow is a stateless, non-custodial, deterministic Bitcoin client (also known as \"Bitcoin Wallet\").\n\nStateless means, that Brainbow does not save or store your private key or wallet information anywhere.\n\nTo connect and use Bitcoin, just generate your own\nwallet using a salt and a really good passphrase."
                         MDTextButton:
                             text: "SKIP AND CONNECT TO BITCOIN"
                             font_size: '18sp'
@@ -83,32 +79,31 @@ MDScreen:
                             pos_hint: {"center_x": .5, "center_y": .115}
                             halign: "center"
                             color: "#c9c9c9"
-#                            on_release: print(dir(app.root.ids.caraousel))
                             on_release: app.goto_slide('login')
-
                         MDLabel:
-                            text: "1 of 3"
+                            text: "– of –"
                             pos_hint: {"center_y": .055}
                             halign: "center"
                             font_size: "14sp"
                             color: "#c9c9c9"
                     MDFloatLayout:
-                        Image:
-                            source: "onboarding-10.png"
+                        FitImage:
+                            source: "onboarding_00.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
-                            size_hint: .66, .66
+                            size_hint: .42, .42
                         MDLabel:
-                            text: "Generate and access a wallet"
+                            text: "[b]Access your wallet[/b]"
+                            markup: True
                             pos_hint: {"center_y": .485}
                             halign: "center"
                             font_size: "25sp"
                             color: rgba(1, 3, 23, 225)
                         MDLabel:
+                            margin: "8dp"
                             pos_hint: {"center_y": .31}
-                            size: self.size
                             opacity: 0.95
                             halign: 'center'
-                            font_size: '14sp'
+                            font_size: '16sp'
                             text: "Accessing a wallet requires a salt and a passphrase.\n\nAs passphrase you can choose many random words\nor a sentence. Never use it for anything else.\n\nSuitable salts are names, nicknames, phone\nnumbers, email addresses, ... ideally with an extension.\n\nExamples: satoshin@gmx.com, run-away-hal, HoneyBadger21, Xavier Fiechter, gutenberg, ..."
                         MDTextButton:
                             text: "SKIP AND CONNECT TO BITCOIN"
@@ -116,14 +111,16 @@ MDScreen:
                             text_color: "black"
                             pos_hint: {"center_x": .5, "center_y": .115}
                             halign: "center"
-                            color: rgba(135, 143, 158, 200)
-                            #color: "#c9c9c9"
+                            color: "#c9c9c9"
+                            on_release: app.goto_slide('login')
                         MDLabel:
-                            text: "2 of 8"
+                            text: "– of –"
                             pos_hint: {"center_y": .055}
                             halign: "center"
                             font_size: "14sp"
-                            color: rgba(135, 143, 158, 200)
+                            color: "#c9c9c9"
+
+                     
                     MDFloatLayout:
                         Image:
                             source: "onboarding-11.png"
