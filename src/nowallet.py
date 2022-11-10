@@ -778,7 +778,7 @@ class Wallet:
 
     async def listen_to_addresses(self) -> None:
         """ Coroutine, adds all known addresses to the subscription queue, and
-        begins consuming the queue so we can recieve new tx histories from
+        begins consuming the queue so we can receive new tx histories from
         the server asynchronously.
         """
         logging.debug("Listening for updates involving any known address...")

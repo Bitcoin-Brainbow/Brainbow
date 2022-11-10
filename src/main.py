@@ -105,7 +105,7 @@ else:
 from utils import get_block_height
 
 
-class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
+class IconLeftConfirmationWidget(ILeftBodyTouch, MDIconButton):
     pass
 
 class Tab(MDFloatLayout, MDTabsBase):
@@ -113,6 +113,10 @@ class Tab(MDFloatLayout, MDTabsBase):
     pass
 
 # Declare screens
+class WelcomeScreen(Screen):
+    pass
+
+
 class LoginScreen(Screen):
     pass
 
@@ -167,7 +171,7 @@ class UTXOListItem(TwoLineListItem):
 
 
 
-class ListItem(TwoLineIconListItem):
+class BalanceListItem(TwoLineIconListItem):
     icon = StringProperty("check-circle")
     history = ObjectProperty()
 
@@ -213,7 +217,7 @@ class NowalletApp(MDApp):
     _nfc_is_on = False
     _nfc_is_available = False
     def __init__(self, loop):
-        self.chain = nowallet.TBTC
+        self.chain = nowallet.BTC
         self.loop = loop
         self.is_amount_inputs_locked = False
         self.fiat_balance = False
@@ -385,7 +389,9 @@ class NowalletApp(MDApp):
         else:
             self.nfc_enable()
 
-
+    def current_slide(self, index):
+        print("current_slide {} ".format(index))
+        pass
 
 
     def give_current_tab_name(self, *args):
