@@ -119,7 +119,39 @@ MDScreen:
                             halign: "center"
                             font_size: "14sp"
                             color: "#c9c9c9"
-
+                    MDFloatLayout:
+                        FitImage:
+                            source: "onboarding_unlimited_wallets.png"
+                            pos_hint: {"center_x": .5, "center_y": .75}
+                            size_hint: .42, .42
+                        MDLabel:
+                            text: "[b]Unlimited Wallets[/b]"
+                            markup: True
+                            pos_hint: {"center_y": .55}
+                            halign: "center"
+                            font_size: "25sp"
+                            color: rgba(1, 3, 23, 225)
+                        MDLabel:
+                            margin: "8dp"
+                            pos_hint: {"center_y": .34}
+                            opacity: 0.95
+                            halign: 'center'
+                            font_size: '16sp'
+                            text: "Accessing a wallet requires a salt and a passphrase.\n\nAs passphrase you can choose many random words\nor a sentence. Never use it for anything else.\n\nSuitable salts are names, nicknames, phone\nnumbers, email addresses, ... ideally with an extension.\n\nExamples: satoshin@gmx.com, run-away-hal, HoneyBadger21, Xavier Fiechter, gutenberg, ..."
+                        MDTextButton:
+                            text: "SKIP AND CONNECT TO BITCOIN"
+                            font_size: '18sp'
+                            text_color: "black"
+                            pos_hint: {"center_x": .5, "center_y": .115}
+                            halign: "center"
+                            color: "#c9c9c9"
+                            on_release: app.goto_slide('login')
+                        MDLabel:
+                            text: "– of –"
+                            pos_hint: {"center_y": .055}
+                            halign: "center"
+                            font_size: "14sp"
+                            color: "#c9c9c9"
 
                     MDFloatLayout:
                         Image:
