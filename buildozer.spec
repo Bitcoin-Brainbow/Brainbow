@@ -159,7 +159,8 @@ fullscreen = 0
 #icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
 
 # (list) Permissions
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA,NFC,WAKE_LOCK
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA,NFC
+#,WAKE_LOCK
 
 #, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 
@@ -308,8 +309,7 @@ android.entrypoint = org.kivy.android.PythonActivity
 
 # (bool) Indicate whether the screen should stay on
 # Don't forget to add the WAKE_LOCK permission if you set this to True
-android.wakelock = True
-
+#android.wakelock = False
 
 # (list) Android application meta-data to set (key=value format)
 #android.meta_data =
