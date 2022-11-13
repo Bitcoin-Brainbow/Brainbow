@@ -54,8 +54,9 @@ MDScreen:
                     use_pagination: True
                     on_current_slide: app.current_slide(self.index)
                     MDFloatLayout:
+
                         FitImage:
-                            source: "onboarding_00.png"
+                            source: "assets/onboarding_00.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .42, .42
                         MDLabel:
@@ -86,15 +87,19 @@ MDScreen:
                             halign: "center"
                             font_size: "14sp"
                             color: "#c9c9c9"
+
+
                     MDFloatLayout:
-                        FitImage:
-                            source: "onboarding_00.png"
-                            pos_hint: {"center_x": .5, "center_y": .75}
-                            size_hint: .42, .42
+                        Image:
+                            source: "assets/onboarding_10.png"
+                            pos_hint: {"center_x": .5, "center_y": .7}
+                            size_hint: .66, .66
+                            #size_hint: .42, .42
                         MDLabel:
                             text: "[b]Access your wallet[/b]"
                             markup: True
-                            pos_hint: {"center_y": .55}
+                            #pos_hint: {"center_y": .58}
+                            pos_hint: {"center_y": .485}
                             halign: "center"
                             font_size: "25sp"
                             color: rgba(1, 3, 23, 225)
@@ -104,12 +109,12 @@ MDScreen:
                             opacity: 0.95
                             halign: 'center'
                             font_size: '16sp'
-                            text: "Accessing a wallet requires a salt and a passphrase.\n\nAs passphrase you can choose many random words\nor a sentence. Never use it for anything else.\n\nSuitable salts are names, nicknames, phone\nnumbers, email addresses, ... ideally with an extension.\n\nExamples: satoshin@gmx.com, run-away-hal, HoneyBadger21, Xavier Fiechter, gutenberg, ..."
+                            text: "To access a wallet, it requires credentials.\n\nOne part of the credentials is a salt and the\nother part is a really good passphrase."
                         MDTextButton:
                             text: "SKIP AND CONNECT TO BITCOIN"
                             font_size: '18sp'
                             text_color: "black"
-                            pos_hint: {"center_x": .5, "center_y": .115}
+                            pos_hint: {"center_x": .5, "center_y": .136}
                             halign: "center"
                             color: "#c9c9c9"
                             on_release: app.goto_slide('login')
@@ -119,15 +124,19 @@ MDScreen:
                             halign: "center"
                             font_size: "14sp"
                             color: "#c9c9c9"
+
+
                     MDFloatLayout:
-                        FitImage:
-                            source: "onboarding_unlimited_wallets.png"
-                            pos_hint: {"center_x": .5, "center_y": .75}
-                            size_hint: .42, .42
+                        Image:
+                            source: "assets/onboarding_20.png"
+                            pos_hint: {"center_x": .5, "center_y": .7}
+                            size_hint: .66, .66
+                            #size_hint: .42, .42
                         MDLabel:
-                            text: "[b]Unlimited Wallets[/b]"
+                            text: "[b]Protect your wallet[/b]"
                             markup: True
-                            pos_hint: {"center_y": .55}
+                            #pos_hint: {"center_y": .58}
+                            pos_hint: {"center_y": .485}
                             halign: "center"
                             font_size: "25sp"
                             color: rgba(1, 3, 23, 225)
@@ -137,12 +146,12 @@ MDScreen:
                             opacity: 0.95
                             halign: 'center'
                             font_size: '16sp'
-                            text: "Accessing a wallet requires a salt and a passphrase.\n\nAs passphrase you can choose many random words\nor a sentence. Never use it for anything else.\n\nSuitable salts are names, nicknames, phone\nnumbers, email addresses, ... ideally with an extension.\n\nExamples: satoshin@gmx.com, run-away-hal, HoneyBadger21, Xavier Fiechter, gutenberg, ..."
+                            text: "Everybody who knows the credentials has\naccess to the wallet and can spend your funds."
                         MDTextButton:
                             text: "SKIP AND CONNECT TO BITCOIN"
                             font_size: '18sp'
                             text_color: "black"
-                            pos_hint: {"center_x": .5, "center_y": .115}
+                            pos_hint: {"center_x": .5, "center_y": .136}
                             halign: "center"
                             color: "#c9c9c9"
                             on_release: app.goto_slide('login')
@@ -155,47 +164,119 @@ MDScreen:
 
                     MDFloatLayout:
                         Image:
-                            source: "onboarding-11.png"
+                            source: "assets/what-salt-is.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .66, .66
+
+
+                            #size_hint: .42, .42
                         MDLabel:
-                            text: "Protect your wallet"
+                            text: "[b]What salt is[/b]"
+                            markup: True
+                            #pos_hint: {"center_y": .58}
                             pos_hint: {"center_y": .485}
                             halign: "center"
                             font_size: "25sp"
                             color: rgba(1, 3, 23, 225)
                         MDLabel:
-                            pos_hint: {"center_y": .31}
-                            size: self.size
+                            margin: "8dp"
+                            pos_hint: {"center_y": .34}
                             opacity: 0.95
                             halign: 'center'
-                            font_size: '14sp'
-                            text: "Everybody who knows your salt and passphrase\nhas access to your wallet and can spend your bitcoin."
+                            font_size: '16sp'
+                            #text: "Accessing a wallet requires a salt and a passphrase.\n\n
+                            # As passphrase you can choose many random words\nor a sentence. Never use it for anything else.
+                            text: "As salt can be names, email addresses, nick-\nnames, identifiers, … ideally with an extension.\n\nExamples: satoshin@gmx.com, run-away-hal,\nHoneyBadger21, Xavier Fiechter, gutenberg, …"
                         MDTextButton:
                             text: "SKIP AND CONNECT TO BITCOIN"
                             font_size: '18sp'
                             text_color: "black"
-                            pos_hint: {"center_x": .5, "center_y": .115}
+                            pos_hint: {"center_x": .5, "center_y": .136}
                             halign: "center"
-                            color: rgba(135, 143, 158, 200)
-                            #color: "#c9c9c9"
+                            color: "#c9c9c9"
+                            on_release: app.goto_slide('login')
                         MDLabel:
-                            text: "2 of 8"
+                            text: "– of –"
                             pos_hint: {"center_y": .055}
                             halign: "center"
                             font_size: "14sp"
-                            color: rgba(135, 143, 158, 200)
+                            color: "#c9c9c9"
+
                     MDFloatLayout:
-                        #Image:
-                        #    source: "Assets/2.jpg"
-                        #    pos_hint: {"center_x": .5, "center_y": .7}
-                        #    size_hint: .8, .8
+                        Image:
+                            source: "assets/strong_passphrase.png"
+                            pos_hint: {"center_x": .5, "center_y": .7}
+                            size_hint: .66, .66
+                            #size_hint: .42, .42
                         MDLabel:
-                            text: "Slide 2"
-                            pos_hint: {"center_y": .47}
+                            text: "[b]What a passphrase is[/b]"
+                            markup: True
+                            #pos_hint: {"center_y": .58}
+                            pos_hint: {"center_y": .485}
                             halign: "center"
-                            font_size: "25px"
+                            font_size: "25sp"
                             color: rgba(1, 3, 23, 225)
+                        MDLabel:
+                            margin: "8dp"
+                            pos_hint: {"center_y": .34}
+                            opacity: 0.95
+                            halign: 'center'
+                            font_size: '16sp'
+                            text: "As passphrase you can choose many\nrandom words or a sentence.\n\nNever use it for anything else.\n\nExamples: correct horse battery staple, …"
+                        MDTextButton:
+                            text: "SKIP AND CONNECT TO BITCOIN"
+                            font_size: '18sp'
+                            text_color: "black"
+                            pos_hint: {"center_x": .5, "center_y": .136}
+                            halign: "center"
+                            color: "#c9c9c9"
+                            on_release: app.goto_slide('login')
+                        MDLabel:
+                            text: "– of –"
+                            pos_hint: {"center_y": .055}
+                            halign: "center"
+                            font_size: "14sp"
+                            color: "#c9c9c9"
+
+                    MDFloatLayout:
+                        Image:
+                            source: "assets/onboarding_unlimited_wallets.png"
+                            pos_hint: {"center_x": .5, "center_y": .7}
+                            size_hint: .66, .66
+                            #size_hint: .42, .42
+                        MDLabel:
+                            text: "[b]Unlimited wallets[/b]"
+                            markup: True
+                            #pos_hint: {"center_y": .58}
+                            pos_hint: {"center_y": .485}
+                            halign: "center"
+                            font_size: "25sp"
+                            color: rgba(1, 3, 23, 225)
+                        MDLabel:
+                            margin: "8dp"
+                            pos_hint: {"center_y": .34}
+                            opacity: 0.95
+                            halign: 'center'
+                            font_size: '16sp'
+                            text: "Unlimited wallets can be accessed.\n\nAny combination of salt and a passphrase\nwill result in a new, independent wallet."
+                        MDTextButton:
+                            text: "SKIP AND CONNECT TO BITCOIN"
+                            font_size: '18sp'
+                            text_color: "black"
+                            pos_hint: {"center_x": .5, "center_y": .136}
+                            halign: "center"
+                            color: "#c9c9c9"
+                            on_release: app.goto_slide('login')
+                        MDLabel:
+                            text: "– of –"
+                            pos_hint: {"center_y": .055}
+                            halign: "center"
+                            font_size: "14sp"
+                            color: "#c9c9c9"
+
+
+
+
                     MDFloatLayout:
                         name: "login"
                         id: id_login
@@ -519,7 +600,7 @@ MDScreen:
                 AnchorLayout:
                     MDSpinner:
                         size_hint: None, None
-                        size: dp(242), dp(242)
+                        size: dp(248), dp(248)
                         pos_hint: {"center_x": 0.5, "center_y": 0.5}
                         palette:
                             [0, 0, 0, 1],

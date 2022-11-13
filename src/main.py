@@ -983,7 +983,7 @@ class NowalletApp(MDApp):
         self.set_price_api(self.config.get("nowallet", "price_api"))
 
         LabelBase.register(name='RobotoMono',
-                            fn_regular='RobotoMono-Regular.ttf')
+                            fn_regular='assets/RobotoMono-Regular.ttf')
 
 
     def build_config(self, config):
