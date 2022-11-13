@@ -217,7 +217,7 @@ class NowalletApp(MDApp):
     _nfc_is_on = False
     _nfc_is_available = False
     def __init__(self, loop):
-        self.chain = nowallet.BTC
+        self.chain = nowallet.TBTC
         self.loop = loop
         self.is_amount_inputs_locked = False
         self.fiat_balance = False
