@@ -179,28 +179,17 @@ class TxDetailInfo(MDGridLayout):
         """
         btn_box.add_widget(broadcast_btn_dl)
         btn_box.add_widget(broadcast_btn)
-
-
         overview_box.add_widget(btn_box)
-
         overview_tab.add_widget(overview_box)
-###
-
         tabs.add_widget(overview_tab)
         tabs.add_widget(DetailTab(title="Inputs/UTXOs"))
         tabs.add_widget(DetailTab(title="Outputs"))
         tabs.add_widget(DetailTab(title="Miner Fee"))
-
         self.add_widget(tabs)
 
 
 
-
-
-
-
 def open_tx_preview_bottom_sheet(signed_tx):
-
     screen_box = MDBoxLayout()
     #screen_box.md_bg_color = "#fafafa"
     screen_box.orientation = "vertical"
