@@ -84,6 +84,8 @@ requirements =
   android,
   pyjnius==1.4.2,
   embit==0.5.0,
+  numpy==1.22.3,
+
 
 # These are used to see decrypt TX
 #
@@ -93,7 +95,7 @@ requirements =
 
 # QR SCANNER BELOW:
 # (numpy is also used to compute std dev for currency/exchange rates)
-numpy==1.22.3,
+# numpy==1.22.3,
 #  android,
 #  hostpython3==3.9.9,
 #  libiconv,
