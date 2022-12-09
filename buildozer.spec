@@ -83,6 +83,7 @@ requirements =
   bitcoin==1.1.39,
   android,
   pyjnius==1.4.2,
+  embit==0.5.0,
 
 # These are used to see decrypt TX
 #
@@ -91,8 +92,8 @@ requirements =
 # bitcoin==1.1.39,
 
 # QR SCANNER BELOW:
-#
-#  numpy==1.22.3,
+# (numpy is also used to compute std dev for currency/exchange rates)
+numpy==1.22.3,
 #  android,
 #  hostpython3==3.9.9,
 #  libiconv,

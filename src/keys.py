@@ -7,7 +7,6 @@ import pbkdf2
 from Crypto.Protocol.KDF import scrypt
 
 
-
 def and_split(bytes_: bytes) -> Tuple[bytes, bytes]:
     ba1 = bytearray()  # type: bytearray
     ba2 = bytearray()  # type: bytearray
@@ -28,13 +27,8 @@ def xor_merge(bytes1: bytes, bytes2: bytes) -> bytes:
     return bytes(byte_array)
 
 
-def derive_key(salt: str, passphrase: str, hd: bool = True) -> \
-        Union[int, Tuple[int, bytes]]:
-    key_length = 64 if hd else 32  # type: int
-
-    print("key_length: {}".format(key_length))
-    print("hd: {}".format(hd))
-
+def derive_key(salt: str, passphrase: str) -> Union[int, Tuple[int, bytes]]:
+    key_length = 64  # type: int
     t1 = and_split(bytes(salt, "utf-8"))  # type: Tuple[bytes, bytes]
     salt1, salt2 = t1
     t2 = and_split(bytes(passphrase, "utf-8"))  # type: Tuple[bytes, bytes]
@@ -56,14 +50,11 @@ def derive_key(salt: str, passphrase: str, hd: bool = True) -> \
         pass2, salt2,
         iterations=1 << 16,
         digestmodule=SHA256).read(key_length)  # type: bytes
-    merged = xor_merge(scrypt_key, pbkdf2_key)  # type: bytes
+    keypair = xor_merge(scrypt_key, pbkdf2_key)  # type: bytes
+    secret_exp = int(keypair[0:32].hex(), 16)  # type: int / a number in the range [1, curve_order].
+    chain_code = keypair[32:]  # type: bytes
+    return secret_exp, chain_code
 
-    if hd:
-        secret_exp = int(merged[0:32].hex(), 16)  # type: int
-        chain_code = merged[32:]  # type: bytes
-        return secret_exp, chain_code
-
-    return int(merged.hex(), 16)
 
 
 def main():

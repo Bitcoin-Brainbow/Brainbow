@@ -52,6 +52,8 @@ from kivy_garden.qrcode import QRCodeWidget
 
 from kivy.core.clipboard import Clipboard
 from kivy.core.text import LabelBase
+from kivy.properties import StringProperty
+from kivymd.uix.relativelayout import MDRelativeLayout
 
 
 #from kivy_garden.zbarcam import ZBarCam
@@ -63,8 +65,11 @@ from pycoin.serialize import b2h
 #import __init__  as nowallet
 import nowallet
 
+from electrum_servers import get_random_server
 from exchange_rate import fetch_exchange_rates
+from fee_estimate import fetch_fee_estimate
 from settings_json import settings_json
+from wallet_alias import wallet_alias
 from functools import partial
 #import asynckivy as ak
 import threading
@@ -73,6 +78,8 @@ import concurrent.futures
 from aiosocks import SocksConnectionError
 from aiohttp.client_exceptions import ClientConnectorError
 
+from passphrase import entropy_bits
+from utils import utxo_deduplication
 
 __version__ = "0.0.1"
 if platform == "android":
@@ -128,8 +135,6 @@ class MainScreen(Screen):
 class WaitScreen(Screen):
     pass
 
-
-
 class YPUBScreen(Screen):
     pass
 
@@ -144,6 +149,8 @@ class PINScreen(Screen):
 class ZbarScreen(Screen):
     pass
 
+class ExchangeRateScreen(Screen):
+    pass
 
 class TXReviewScreen(Screen):
     pass
@@ -151,6 +158,13 @@ class TXReviewScreen(Screen):
 
 class BalanceLabel(ButtonBehavior, MDLabel):
     pass
+
+
+
+class PassphraseControlField(MDRelativeLayout):
+    text = StringProperty()
+    hint_text = StringProperty()
+
 
 
 class UTXOListItem(TwoLineListItem):
@@ -166,7 +180,7 @@ class UTXOListItem(TwoLineListItem):
             try:
                 print("{} -> {}".format(d, getattr(app.utxo, d)))
             except:
-                pass
+                print("{} -> {}".format(d, getattr(app.utxo, d)))()
         logging.info("open_utxo_menu utxo > {}".format(app.utxo.as_dict))
 
 
@@ -205,7 +219,7 @@ class FloatInput(MDTextField):
         return super(FloatInput, self).insert_text(s, from_undo=from_undo)
 
 
-class NowalletApp(MDApp):
+class BrainbowApp(MDApp):
     units = StringProperty()
     currency = StringProperty()
     current_coin = StringProperty("0")
@@ -217,14 +231,17 @@ class NowalletApp(MDApp):
     _nfc_is_on = False
     _nfc_is_available = False
     def __init__(self, loop):
-        self.chain = nowallet.TBTC
+        self.chain = nowallet.TBTC # TBTC
         self.loop = loop
         self.is_amount_inputs_locked = False
         self.fiat_balance = False
         self.bech32 = False
         self.exchange_rates = None
         self.current_tab_name = "balance"
-
+        self.spend_tuple = None # Holds a tuple (signed Tx ready to broadcast, chg_vout, decimal_fee, tx_vsize, del_utxo_candidates) or None
+        self.tx_btm_sheet = None
+        self.current_fee = 1
+        self.mempool_recommended_fees = None
         # class MyMenuItem(MDMenuItem):
         class MyMenuItem(OneLineListItem):
             pass
@@ -242,13 +259,29 @@ class NowalletApp(MDApp):
                             "text": "Settings",
                             "on_release": lambda x="Settings": app.menu_item_handler(x)},
                            ]
-        """
-        self.utxo_menu_items = [{"viewclass": "MyMenuItem",
-                                 "text": "View Private key"},
-                                {"viewclass": "MyMenuItem",
-                                 "text": "View Redeem script"}]
-        """
+
+        self.utxo_menu_items = [{"viewclass": "MyMenuItem", "text": "View Private key"},
+                                {"viewclass": "MyMenuItem", "text": "View Redeem script"}]
+
+        self.fee_preset_items = [{"viewclass": "MyMenuItem",
+                                    "on_release": lambda x="fastestFee": self.fee_select_callback(x),
+                                    "text": "High Priority"},
+                                 {"viewclass": "MyMenuItem",
+                                    "on_release": lambda x="halfHourFee": self.fee_select_callback(x),
+                                    "text": "Normal Transaction"},
+                                 {"viewclass": "MyMenuItem",
+                                    "on_release": lambda x="economyFee": self.fee_select_callback(x),
+                                    "text": "Low Priority"},
+                                 {"viewclass": "MyMenuItem",
+                                    "on_release": lambda x="minimumFee": self.fee_select_callback(x),
+                                    "text": "Unfairly Cheap"},
+                                 {"viewclass": "MyMenuItem",
+                                    "on_release": lambda x="custom": self.fee_select_callback(x),
+                                    "text": "Custom Fee"},
+                                ]
         super().__init__()
+
+
 
     # NFC
     def get_ndef_details(self, tag):
@@ -388,6 +421,7 @@ class NowalletApp(MDApp):
             self.nfc_disable()
         else:
             self.nfc_enable()
+    # end NFC
 
     def current_slide(self, index):
         print("current_slide {} ".format(index))
@@ -397,7 +431,23 @@ class NowalletApp(MDApp):
     def give_current_tab_name(self, *args):
         self.current_tab_name = args[1].name
         print ("current_tab_name: {}".format(self.current_tab_name))
-    # end NFC
+        # DEBUGGING, REMOVE LATER
+        if self.current_tab_name == "utxos":
+            self.update_utxo_screen()
+
+
+    def on_exchange_rate_switch_active(self, switch, on_off):
+        if on_off:
+            self.currency = "USD"
+            self.root.ids.current_btc_exchange_rate.text = "1 BTC = ... {}".format(self.currency)
+            if self.exchange_rates in [None, False] and self.get_rate() > Decimal(0):
+                self.root.ids.current_btc_exchange_rate.text = \
+                    "Rates will be available within a few seconds."
+        else:
+            self.currency = "BTC"
+            self.root.ids.current_btc_exchange_rate.text = "1 BTC = 1 BTC"
+        self.update_balance_screen()
+
     def show_snackbar(self, text):
         snackbar = Snackbar(text=text,
                             snackbar_x="8dp",
@@ -486,6 +536,59 @@ class NowalletApp(MDApp):
         self.root.ids.sm.current = "main"
         pass
 
+    def download_prv(self):
+        """ """
+        print(self.wallet.private_BIP32_root_key)
+        self.show_snackbar("xpriv dumped!")
+
+    def close_wallet_context_view(self):
+        """
+        Used for settings and wallet mechanics, not transactions.
+        """
+        self.root.ids.toolbar.left_action_items = [["menu", lambda x: self.nav_drawer_handler()]]
+        self.root.ids.toolbar.right_action_items = []
+        app.root.ids.sm.current = "main"
+
+    def load_seed_view(self):
+        self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
+        self.root.ids.toolbar.right_action_items = [["file-download-outline", lambda x: self.download_prv()]]
+        self.root.ids.nav_drawer.set_state("close")
+        self.root.ids.sm.current = "seed"
+
+    def load_pubkey_view(self):
+        self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
+        self.root.ids.nav_drawer.set_state("close")
+        self.root.ids.sm.current = "ypub"
+
+    def load_exchangerate_view(self):
+        self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
+        self.root.ids.nav_drawer.set_state("close")
+        self.root.ids.sm.current = "exchangerate"
+
+    def check_entropy(self):
+        """ Update entropy hint. Aim for 128+ bits """
+        passphrase_entropy_bits = entropy_bits(self.root.ids.pass_field.text)
+        print(passphrase_entropy_bits)
+        self.root.ids.pass_progress.set_norm_value(passphrase_entropy_bits/128.)
+        if passphrase_entropy_bits >= 128:
+            self.root.ids.passphrase_hint.text = ""
+            self.root.ids.pass_progress.color = "green"
+        else:
+            if passphrase_entropy_bits >= 128/3*2:
+                self.root.ids.pass_progress.color = "orange"
+            elif passphrase_entropy_bits >= 128/2:
+                self.root.ids.pass_progress.color = "#DD6E0F"
+            else:
+                self.root.ids.pass_progress.color = "red"
+            self.root.ids.passphrase_hint.color = "red"
+            self.root.ids.passphrase_hint.text = "WARNING: Use a better passphrase!"
+        if int(passphrase_entropy_bits) >= 128:
+            self.root.ids.passphrase_hint.color = "black"
+            self.root.ids.passphrase_hint.text = "~{} bits of entropy".format(int(passphrase_entropy_bits))
+
+
+
+
     def menu_item_handler(self, text):
         # Main menu items
         if "PUB" in text:
@@ -506,26 +609,47 @@ class NowalletApp(MDApp):
                 script = b2h(key.p2wpkh_script())
                 self.show_dialog("Redeem script", "", qrdata=script)
 
-    def fee_button_handler(self):
-        fee_input = self.root.ids.fee_input
-        fee_button = self.root.ids.fee_button
-        fee_input.disabled = not fee_input.disabled
-        if not fee_input.disabled:
-            fee_button.text = "Custom Fee"
+
+    def fee_select_callback(self, selected_fee):
+
+        """mempool_recommended_fees = {  "fastestFee": 5,
+                                      "halfHourFee": 4,
+                                      "hourFee": 3,
+                                      "economyFee": 2,
+                                      "minimumFee": 1
+                                    }
+        """
+        if selected_fee == "custom":
+            # We are setting minimum fee as inital value to prevent that the Tx
+            # will be dropped out of the mempool. Can be overwritten in the UI.
+            selected_fee = "minimumFee"
+        if self.mempool_recommended_fees:
+            chosen_fee = self.mempool_recommended_fees.get(selected_fee, 1)
         else:
-            fee_button.text = "Normal Fee"
-            fee_input.text = str(self.estimated_fee)
-            self.current_fee = self.estimated_fee
+            chosen_fee = 1
+        self.root.ids.fee_input.text = str(chosen_fee)
+        self.current_fee = chosen_fee
+        self.fee_selection.dismiss()
 
     def fee_input_handler(self):
         text = self.root.ids.fee_input.text
         if text:
             self.current_fee = int(float(text))
+        self.fee_selection.dismiss()
 
     def set_address_error(self, addr):
         netcode = self.chain.netcode
         is_valid = addr.strip() and validate.is_address_valid(
             addr.strip(), ["address", "pay_to_script"], [netcode]) == netcode
+        if not is_valid:
+            # maybe it's a bech32 address
+            from embit import bech32 as embit_bech32
+            hrp = addr.split("1")[0]
+            ver, prog = embit_bech32.decode(hrp, addr)
+            print ("{} {}".format(ver, prog))
+            if ver is not None:
+                if 0 <= ver <= 16 and prog:
+                    is_valid = True
         self.root.ids.address_input.error = not is_valid
 
     def set_amount_error(self, amount):
@@ -537,8 +661,48 @@ class NowalletApp(MDApp):
         self.root.ids.spend_amount_input.error = not is_valid
 
     async def do_spend(self, address, amount, fee_rate):
-        self.spend_tuple = await self.wallet.spend(
-            address, amount, fee_rate, rbf=self.rbf, broadcast=self.broadcast_tx)
+        self.spend_tuple = await self.wallet.spend(address,
+                                                    amount,
+                                                    fee_rate,
+                                                    rbf=self.rbf)
+
+    async def do_broadcast(self):
+        if self.spend_tuple:
+            tx, chg_vout, decimal_fee, tx_vsize, del_utxo_candidates = self.spend_tuple
+            chg_out = tx.txs_out[chg_vout]  # type: TxOut
+            txid, exception = await self.wallet.broadcast(tx.as_hex(), chg_out)  # type: str
+            if txid:
+                # remove UTXOs once broadcasted
+                self.wallet.utxos = []
+                for i, utxo in enumerate(self.wallet.utxos):
+                    if i not in del_utxo_candidates and utxo not in self.wallet.utxos:
+                        self.wallet.utxos.append(utxo)
+                self.update_screens()
+                self.goto_screen('main', 'TRANSACTIONS')
+                if self.tx_btm_sheet:
+                    self.tx_btm_sheet.dismiss()
+                    self.tx_btm_sheet = None
+                self.show_snackbar("Transaction {}..{} sent.".format(txid[:11],txid[-11:]))
+            else:
+                try:
+                    error_message = str(exception).split("[")[0]
+                    _, error_message = error_message.split("'message': '")
+                    if error_message.startswith("'"):
+                        error_message = error_message[1:]
+                    if error_message.endswith("'"):
+                        error_message = error_message[:-1]
+                    error_message = error_message.replace("\n", " ")
+                except Exception as ex:
+                    error_message = "An error occurred. \n\n{}".format(ex)
+
+                self.show_dialog("Error", error_message)
+                self.tx_btm_sheet.dismiss()
+                self.show_snackbar("Failed to broadcast transaction!")
+
+
+
+        else:
+            self.show_snackbar("No transaction to broadcast.")
 
     async def send_button_handler(self):
         addr_input = self.root.ids.address_input
@@ -560,14 +724,19 @@ class NowalletApp(MDApp):
         fee_rate_sat = int(Decimal(self.current_fee))
         fee_rate = nowallet.Wallet.satb_to_coinkb(fee_rate_sat)
         await self.do_spend(address, amount, fee_rate)
-        logging.info("Finished doing spend")
+        logging.info("Finished doing TX")
 
-        txid, decimal_fee = self.spend_tuple[:2]
+        tx, chg_vout, decimal_fee, tx_vsize, del_utxo_candidates = self.spend_tuple
 
         message = "Added a miner fee of: {} {}".format(
             decimal_fee, self.chain.chain_1209k.upper())
-        message += "\nTxID: {}...{}".format(txid[:13], txid[-13:])
-        self.show_dialog("Transaction sent!", message)
+    #    message += "\nTxID: {}...{}".format(txid[:13], txid[-13:])
+        #if self.broadcast_tx:
+        #    self.show_dialog("Transaction sent!", message)
+        #else:
+            #self.show_dialog("Transaction ready!", message)
+        from bottom_screens_signed_tx import open_tx_preview_bottom_sheet
+        self.tx_btm_sheet = open_tx_preview_bottom_sheet(signed_tx=tx)
 
     def check_new_history(self):
         if self.wallet.new_history:
@@ -633,7 +802,11 @@ class NowalletApp(MDApp):
 
     def logoff(self):
         self.show_dialog("Disconnected.","")
-        MDApp.get_running_app().stop()
+        try:
+            MDApp.get_running_app().stop()
+        except:
+            pass
+        sys.exit(1)
 
 
     async def do_listen_task(self):
@@ -643,7 +816,7 @@ class NowalletApp(MDApp):
     async def do_login_tasks(self, email, passphrase):
         self.root.ids.wait_text.text = "Connecting".upper()
         self.root.ids.wait_text_small.text = "Getting a random server for you."
-        server, port, proto = await nowallet.get_random_server(self.loop)
+        server, port, proto = await get_random_server(self.loop)
         self.root.ids.wait_text_small.text = "Connected to {}.".format(server)
         try:
             connection = nowallet.Connection(self.loop, server, port, proto)
@@ -665,21 +838,59 @@ class NowalletApp(MDApp):
             # connection, self.loop, self.chain, self.bech32))
         self.wallet = nowallet.Wallet(email, passphrase, connection, self.loop, self.chain, self.bech32)
         self.set_wallet_fingetprint(self.wallet.fingerprint)
-        self.root.ids.wait_text_small.text = "Wallet fingerprint is {}.".format(self.wallet.fingerprint)
+        self.root.ids.wait_text_small.text = \
+                "Wallet fingerprint is {}.\n\n".format(
+                        self.wallet.fingerprint,
+                        wallet_alias(self.wallet.fingerprint[0:2],
+                                self.wallet.fingerprint[2:4]))
         self.root.ids.wait_text.text = "Fetching\nhistory".upper()
         await self.wallet.discover_all_keys()
 
-        self.root.ids.wait_text.text = "Fetching\nexchange\nrates".upper()
-        # just await, but since the fetching url ruturns 403 make it anything
-        try:
-            self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
-        except:
-            self.exchange_rates = False
-            self.show_snackbar("Failed fetching exchange rates. Starting without...")
+        # For future compatibility - currently it's initialized with "BTC" so this is a no-op.
+        if self.currency != "BTC":
+            self.root.ids.wait_text.text = "Fetching\nexchange\nrates".upper()
+            # just await, but since the fetching url ruturns 403 make it anything
+            try:
+                self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
+            except:
+                self.exchange_rates = False
+                self.show_snackbar("Failed fetching exchange rates. Starting without...")
 
         self.root.ids.wait_text.text = "Getting\nfee\nestimate".upper()
-        coinkb_fee = await self.wallet.get_fee_estimation()
-        self.current_fee = self.estimated_fee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
+
+        coinkb_fee = await self.wallet.get_fee_estimation(6)
+        self.current_fee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
+
+        coinkb_fee = await self.wallet.get_relayfee()
+        relayfee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
+
+        print("fee {} relay {}".format(self.current_fee, relayfee))
+
+        self.mempool_recommended_fees = {}
+        if self.current_fee == relayfee:
+            self.mempool_recommended_fees = {
+                "fastestFee": self.current_fee,
+                "halfHourFee": self.current_fee,
+                "hourFee": self.current_fee,
+                "economyFee": self.current_fee,
+                "minimumFee": relayfee
+            }
+        else:
+            coinkb_fee = await self.wallet.get_fee_estimation(3)
+            halfHourFee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
+
+            coinkb_fee = await self.wallet.get_fee_estimation(1)
+            fastestFee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
+
+            self.mempool_recommended_fees = {
+                "fastestFee": fastestFee,
+                "halfHourFee": halfHourFee,
+                "hourFee": self.current_fee,
+                "economyFee": relayfee,
+                "minimumFee": relayfee
+            }
+
+        print(self.mempool_recommended_fees)
         logging.info("Finished 'doing login tasks'")
 
         logging.info("all known addreses {}".format(self.wallet.get_all_known_addresses(addr=True)))
@@ -724,10 +935,10 @@ class NowalletApp(MDApp):
 
     async def update_exchange_rates(self):
         while True:
-            await asyncio.sleep(60)
+            await asyncio.sleep(5)
             logging.info("run fetch_exchange_rates")
             if self.currency != "BTC" or \
-                (self.currency == "BTC" and Decimal(self.get_rate()) != Decimal(1)):
+                (self.currency == "BTC" and Decimal(self.get_rate()) > Decimal(0)):
                 old_rates = self.exchange_rates
                 try:
                     self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
@@ -735,8 +946,8 @@ class NowalletApp(MDApp):
                     self.exchange_rates = old_rates or False
                     logging.info("Restoring exchange rates using old_rates.")
                 self.update_balance_screen()
-                if self.currency != "BTC":
-                    self.show_snackbar("Exchange rates updated. {}".format(self.get_rate()))
+                #if self.currency != "BTC":
+                #    self.show_snackbar("Exchange rates updated. {}".format(self.get_rate()))
 
     def toggle_balance_label(self):
         self.fiat_balance = not self.fiat_balance
@@ -761,8 +972,10 @@ class NowalletApp(MDApp):
         return "{} {}".format(balance.rstrip("0").rstrip("."), units)
 
     def set_wallet_fingetprint(self, fingerprint):
-        print("set fingerprint to {}".format(fingerprint))
-        self.root.ids.toolbar.title = fingerprint.upper()
+        walias = wallet_alias(fingerprint[0:2], fingerprint[2:4])
+        self.root.ids.toolbar.title = walias
+        self.root.ids.active_wallet_alias.text = "{} ({})".format(walias, fingerprint)
+        #self.root.ids.toolbar.title = fingerprint.upper()
         if self.chain  == nowallet.TBTC:
             self.root.ids.toolbar.title += " TESTNET"
 
@@ -774,7 +987,6 @@ class NowalletApp(MDApp):
         self.root.ids.recycleView.data_model.data = []
         tx_counter = 0
         for hist in self.wallet.get_tx_history():
-            logging.info("Adding history item to balance screen\n{}".format(hist))
             verb = "-" if hist.is_spend else "+"
             #if self.units.startswith("sats"):
             val = self.unit_precision.format(hist.value * self.unit_factor)
@@ -787,14 +999,28 @@ class NowalletApp(MDApp):
             tx_counter += 1
         self.root.ids.nav_drawer_item_transactions.right_text = "{}".format(tx_counter)
         self.root.ids.nav_drawer_item_transactions.size_hint_x = None
+        try:
+            if self.currency == "BTC":
+                rate = "1"
+            else:
+                rate = "{:.2f}".format(self.get_rate())
+            self.root.ids.current_btc_exchange_rate.text = \
+                "1 BTC = {} {}".format(rate, self.currency)
+        except Exception as ex:
+            print (ex)
+            pass
 
     def update_utxo_screen(self):
         self.root.ids.utxoRecycleView.data_model.data = []
+        self.wallet.utxos = utxo_deduplication(self.wallet.utxos)
+
         for utxo in self.wallet.utxos:
             value = Decimal(str(utxo.coin_value / nowallet.Wallet.COIN))
-            utxo_str = (self.unit_precision + " {}").format(
-                value * self.unit_factor, self.units)
-            self.add_utxo_list_item(utxo_str, utxo)
+            utxo_str = (self.unit_precision + " {}").format(value * self.unit_factor, self.units)
+            _utxo = {"text": utxo_str,
+                     "secondary_text": "{}....{}:{}".format(str(utxo.tx_hash)[:19], str(utxo.tx_hash)[-19:], utxo.tx_out_index),  #Spendable
+                     "utxo": utxo}
+            self.root.ids.utxoRecycleView.data_model.data.append(_utxo)
         self.update_addresses_screen()
 
     def update_send_screen(self):
@@ -830,11 +1056,8 @@ class NowalletApp(MDApp):
 
     def update_seed_screen(self):
         try:
-            #self.root.ids.seed_label.text = "BIP39 Seed:\n"   +  self.wallet.bip39_seed
-            #self.root.ids.seed_qrcode.data = self.wallet.bip39_seed
             self.root.ids.seed_label.text = \
-                "BIP32 Root Key (WIF):\n" + \
-                self.wallet.private_BIP32_root_key
+                "BIP32 Root Key (WIF):\n" + self.wallet.private_BIP32_root_key
             self.root.ids.seed_qrcode.data = self.wallet.private_BIP32_root_key
         except Exception as ex:
             print(traceback.format_exc())
@@ -843,15 +1066,14 @@ class NowalletApp(MDApp):
             self.root.ids.seed_qrcode.data = ""
 
     def open_address_bottom_sheet_callback(self, address, chunk_size=5):
-        from bottom_screens import open_address_bottom_sheet
+        from bottom_screens_address import open_address_bottom_sheet
         chunked_address = [address[i:i+chunk_size] for i in range(0, len(address), chunk_size)]
         open_address_bottom_sheet(address=" ".join(chunked_address))
 
     def update_addresses_screen(self):
         self.root.ids.addresses_recycle_view.data_model.data = []
-        print(dir(self.root.ids.addresses_recycle_view.viewclass.text))#.font_name = "RobotoMono"
         for address in self.wallet.get_all_known_addresses(addr=True, change=False):
-            logging.info("Adding addr item to update_addresses_screen\n{}".format(address))
+            #logging.info("Adding addr item to update_addresses_screen\n{}".format(address))
             self.root.ids.addresses_recycle_view.data_model.data.append({
                 "text": address,
                 "secondary_text": "Derivation: m{}'/{}'/{}'/{}/{}".format(
@@ -904,14 +1126,14 @@ class NowalletApp(MDApp):
 
     def get_rate(self):
         try:
-            rate = self.exchange_rates[self.price_api][self.currency]
+            rate = self.exchange_rates[self.currency]
             return Decimal(str(rate))
         except:
             self.exchange_rates = False
-            return Decimal(str(1))
+            return Decimal(str(0))
 
     def copy_current_address_to_clipboard(self):
-        if self.current_tab_name == "recieve":
+        if self.current_tab_name == "receive":
             try:
                 current_address = self.root.ids.addr_qrcode.data.replace("bitcoin:","").split("?")[0] # "bitcoin:{}?amount={}"
                 Clipboard.copy(current_address)
@@ -969,31 +1191,28 @@ class NowalletApp(MDApp):
 
         self.icon = "brain.png"
         self.use_kivy_settings = False
-        self.rbf = self.config.getboolean("nowallet", "rbf")
-        self.units = self.config.get("nowallet", "units")
+        self.rbf = self.config.getboolean("brainbow", "rbf")
+        self.units = self.config.get("brainbow", "units")
         self.update_unit()
-        self.broadcast_tx = self.config.getboolean("nowallet", "broadcast_tx")
-        if self.broadcast_tx:
-            self.root.ids.send_button.text = 'Send TX'
-        else:
-            self.root.ids.send_button.text = 'Preview TX'
-
-        self.currency = self.config.get("nowallet", "currency")
-        self.explorer = self.config.get("nowallet", "explorer")
-        self.set_price_api(self.config.get("nowallet", "price_api"))
+        self.currency = "BTC"# disable by default self.config.get("brainbow", "currency")
+        self.explorer = self.config.get("brainbow", "explorer")
 
         LabelBase.register(name='RobotoMono',
                             fn_regular='assets/RobotoMono-Regular.ttf')
 
+        self.fee_selection = MDDropdownMenu(items=self.fee_preset_items,
+                                            width_mult=3,
+                                            caller=self.root.ids.fee_input,
+                                            max_height=dp(250)
+                                            )
 
     def build_config(self, config):
-        config.setdefaults("nowallet", {
+        config.setdefaults("brainbow", {
             "rbf": True,
-            "broadcast_tx": True,
+        #    "broadcast_tx": False,
             "units": self.chain.chain_1209k.upper(),
-            "currency": "BTC",
+            "currency": "USD",
             "explorer": "blockcypher",
-            "price_api": "CoinGecko",
             })
         Window.bind(on_keyboard=self.key_input)
 
@@ -1003,14 +1222,11 @@ class NowalletApp(MDApp):
         #settings.add_json_panel("Settings", self.config, data=settings_json(coin))
 
     def on_config_change(self, config, section, key, value):
+        print("on_config_change {} {} {} {}".format(config, section, key, value))
         if key == "rbf":
             self.rbf = value in [1, '1', True]
-        elif key == "broadcast_tx":
-            self.broadcast_tx = value in [1, '1', True]
-            if self.broadcast_tx:
-                self.root.ids.send_button.text = 'Send TX'
-            else:
-                self.root.ids.send_button.text = 'Preview TX'
+        #elif key == "broadcast_tx":
+        #    self.broadcast_tx = value in [1, '1', True]
         elif key == "units":
             self.units = value
             self.update_unit()
@@ -1023,15 +1239,7 @@ class NowalletApp(MDApp):
             self.update_amounts()
         elif key == "explorer":
             self.explorer = value
-        elif key == "price_api":
-            self.set_price_api(value)
-            self.update_amounts()
 
-    def set_price_api(self, val):
-        if val == "CoinGecko":
-            self.price_api = "coingecko"
-        elif val == "CryptoCompare":
-            self.price_api = "ccomp"
 
     def key_input(self, window, key, scancode, codepoint, modifier):
         if key == 27:   # the back button / ESC
@@ -1073,11 +1281,7 @@ class NowalletApp(MDApp):
                     "history": history,
                     "icon": icon })
 
-    def add_utxo_list_item(self, text, utxo):
-        data = self.root.ids.utxoRecycleView.data_model.data
-        data.append({"text": text,
-                     "secondary_text": utxo.as_dict()["tx_hash_hex"],
-                     "utxo": utxo})
+
 
 
     #def _unlock_nav_drawer(self):
@@ -1130,6 +1334,6 @@ def open_url(url):
 
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
-    app = NowalletApp(loop)
+    app = BrainbowApp(loop)
     loop.run_until_complete(app.async_run())
     loop.close()

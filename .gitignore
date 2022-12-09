@@ -1,5 +1,6 @@
 *.log
 nowallet.ini
+brainbow.ini
 *.egg-info
 .buildozer
 .eric6project
@@ -9,6 +10,8 @@ __pycache__
 .pytest_cache
 bin
 nowallet.e4p
+brainbow.e4p
+
 lint.txt
 type.txt
 .tox

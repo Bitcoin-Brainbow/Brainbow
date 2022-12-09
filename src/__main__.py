@@ -27,14 +27,6 @@ async def main() -> None:
     """ Builds a wallet object, discovers keys and listens to addresses.
     Also handles all user IO with help from the print_loop() coroutine function.
     """
-    # VERTCOIN SUPPORT
-    # from pycoin.networks.network import Network
-    # from pycoin.networks import register_network
-    # vtc_net = Network('VTC', 'Vertcoin', 'mainnet',
-    #                   wif=b'\x80', address=b'\x47', pay_to_script=b'\x05',
-    #                   prv32=b'\x04358394', pub32=b'\x043587cf')  # type: Network
-    # register_network(vtc_net)
-
     chain = nowallet.TBTC
     loop = asyncio.get_event_loop()  # type: asyncio.AbstractEventLoop
 
@@ -108,8 +100,7 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         # Optionally show a message if the shutdown may take a while
-        print("\nAttempting graceful shutdown, press Ctrl+C again to exit...",
-              flush=True)
+        print("\nAttempting graceful shutdown, press Ctrl+C again to exit...", flush=True)
 
         # Do not show `asyncio.CancelledError` exceptions during shutdown
         # (a lot of these may be generated, skip this if you prefer to see them)
