@@ -9,7 +9,6 @@ from typing import Callable
 BLOCK_CYPHER_TOKEN = "2ae45fa90753473bb2b40c56f062bf80"
 BLOCK_CYPHER_COIN = 'btc-testnet' # 'btc' #
 
-
 def utxo_deduplication(utxos):
     dedup_utxos_text = []
     dedup_utxos = []
@@ -17,7 +16,7 @@ def utxo_deduplication(utxos):
         if spendable.as_text() not in dedup_utxos_text:
             dedup_utxos_text.append(spendable.as_text())
             dedup_utxos.append(spendable)
-    return dedup_utxos # type: pycoin.tx.Spendable.Spendable 
+    return dedup_utxos # type: pycoin.tx.Spendable.Spendable
 
 def log_time_elapsed(func: Callable) -> Callable:
     """ Decorator. Times completion of function and logs at level INFO. """
