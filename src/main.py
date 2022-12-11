@@ -84,7 +84,8 @@ from utils import utxo_deduplication
 from bottom_screens_signed_tx import open_tx_preview_bottom_sheet
 
 
-__version__ = "0.0.1"
+__version__ = "0.1.2"
+
 if platform == "android":
     # NFC
     from jnius import autoclass, cast
