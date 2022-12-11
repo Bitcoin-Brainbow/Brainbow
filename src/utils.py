@@ -6,8 +6,15 @@ import json
 import blockcypher
 from functools import wraps
 from typing import Callable
+
 BLOCK_CYPHER_TOKEN = "2ae45fa90753473bb2b40c56f062bf80"
 BLOCK_CYPHER_COIN = 'btc-testnet' # 'btc' #
+
+def is_txid(txid):
+    """ Quick and dirty check if this is a txid. """ 
+    if type(txid) == type("") and len(txid) == 64:
+        return True
+    return False
 
 def utxo_deduplication(utxos):
     dedup_utxos_text = []

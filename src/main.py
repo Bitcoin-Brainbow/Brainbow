@@ -81,6 +81,9 @@ from aiohttp.client_exceptions import ClientConnectorError
 from passphrase import entropy_bits
 from utils import utxo_deduplication
 
+from bottom_screens_signed_tx import open_tx_preview_bottom_sheet
+
+
 __version__ = "0.0.1"
 if platform == "android":
     # NFC
@@ -185,27 +188,14 @@ class UTXOListItem(TwoLineListItem):
 
 
 
+
 class BalanceListItem(TwoLineIconListItem):
     icon = StringProperty("check-circle")
     history = ObjectProperty()
 
     def on_press(self):
-        app = MDApp.get_running_app()
-        base_url, chain = None, app.chain.chain_1209k
-        txid = self.history.tx_obj.id()
-        if app.explorer == "blockcypher":
-            base_url = "https://live.blockcypher.com/{}/tx/{}/"
-            if app.chain == nowallet.TBTC:
-                chain = "btc-testnet"
-        elif app.explorer == "smartbit":
-            base_url = "https://{}.smartbit.com.au/tx/{}/"
-            if app.chain == nowallet.BTC:
-                chain = "www"
-            elif app.chain == nowallet.TBTC:
-                chain = "testnet"
-        url = base_url.format(chain, txid)
-        open_url(url)
-
+        print(dir(self.history))
+        open_tx_preview_bottom_sheet(self.history.tx_obj, self.history)
 
 class FloatInput(MDTextField):
     pat = re.compile('[^0-9]')
@@ -735,7 +725,6 @@ class BrainbowApp(MDApp):
         #    self.show_dialog("Transaction sent!", message)
         #else:
             #self.show_dialog("Transaction ready!", message)
-        from bottom_screens_signed_tx import open_tx_preview_bottom_sheet
         self.tx_btm_sheet = open_tx_preview_bottom_sheet(signed_tx=tx)
 
     def check_new_history(self):
@@ -1212,7 +1201,7 @@ class BrainbowApp(MDApp):
         #    "broadcast_tx": False,
             "units": self.chain.chain_1209k.upper(),
             "currency": "USD",
-            "explorer": "blockcypher",
+            "explorer": "mempool.space",
             })
         Window.bind(on_keyboard=self.key_input)
 
@@ -1313,23 +1302,7 @@ class BrainbowApp(MDApp):
 #        s.open()
 
 
-def open_url(url):
-    if platform == 'android':
-        ''' Open a webpage in the default Android browser.  '''
-        from jnius import autoclass, cast
-        context = autoclass('org.kivy.android.PythonActivity').mActivity
-        Uri = autoclass('android.net.Uri')
-        Intent = autoclass('android.content.Intent')
 
-        intent = Intent()
-        intent.setAction(Intent.ACTION_VIEW)
-        intent.setData(Uri.parse(url))
-        currentActivity = cast('android.app.Activity', context)
-        currentActivity.startActivity(intent)
-    else:
-        import webbrowser
-        #webbrowser.open(url)
-        webbrowser.open_new(url)
 
 
 if __name__ == "__main__":

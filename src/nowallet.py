@@ -29,6 +29,7 @@ from connectrum import ElectrumErrorResponse
 from bip49 import SegwitBIP32Node
 from keys import derive_key
 from utils import decodetx
+from utils import is_txid
 from utils import log_time_elapsed
 from history import History
 from app import update_loading_small_text
@@ -889,7 +890,7 @@ class Wallet:
 
     async def broadcast(self, tx_hex: str, chg_out: TxOut) -> str:
         txid = await self.connection.listen_rpc(self.connection.methods["broadcast"], [tx_hex])  # type: str
-        if type(txid) == type("") and len(txid) == 64:
+        if is_txid(txid):
             change_address = chg_out.address(netcode=self.chain.netcode)  # type:str
             change_key = self.search_for_key(change_address, change=True)
             scripthash = self.get_address(change_key)
