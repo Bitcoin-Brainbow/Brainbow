@@ -42,17 +42,15 @@ from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.tab import MDTabsBase
 from kivymd.uix.snackbar import Snackbar
 
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
+#from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.button import ButtonBehavior
-from kivy.uix.boxlayout import BoxLayout
+#from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty
 
-#from kivy.garden.qrcode import QRCodeWidget
 from kivy_garden.qrcode import QRCodeWidget
 
 from kivy.core.clipboard import Clipboard
 from kivy.core.text import LabelBase
-from kivy.properties import StringProperty
 from kivymd.uix.relativelayout import MDRelativeLayout
 
 
@@ -84,7 +82,7 @@ from utils import utxo_deduplication
 from bottom_screens_signed_tx import open_tx_preview_bottom_sheet
 
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 if platform == "android":
     # NFC
@@ -171,6 +169,8 @@ class PassphraseControlField(MDRelativeLayout):
 
 
 
+
+
 class UTXOListItem(TwoLineListItem):
     """ """
     utxo = ObjectProperty()
@@ -185,7 +185,7 @@ class UTXOListItem(TwoLineListItem):
                 print("{} -> {}".format(d, getattr(app.utxo, d)))
             except:
                 print("{} -> {}".format(d, getattr(app.utxo, d)))()
-        logging.info("open_utxo_menu utxo > {}".format(app.utxo.as_dict))
+        #logging.info("open_utxo_menu utxo > {}".format(app.utxo.as_dict))
 
 
 
@@ -195,7 +195,10 @@ class BalanceListItem(TwoLineIconListItem):
     history = ObjectProperty()
 
     def on_press(self):
-        print(dir(self.history))
+        print(self.history.as_dict)
+        print(self.history.value)
+        print(dir(self.history.tx_obj))
+
         open_tx_preview_bottom_sheet(self.history.tx_obj, self.history)
 
 class FloatInput(MDTextField):
@@ -924,11 +927,13 @@ class BrainbowApp(MDApp):
             await asyncio.sleep(60)
 
     async def update_exchange_rates(self):
+        sleep_time = 3
         while True:
-            await asyncio.sleep(5)
+            await asyncio.sleep(sleep_time)
             logging.info("run fetch_exchange_rates")
             if self.currency != "BTC" or \
                 (self.currency == "BTC" and Decimal(self.get_rate()) > Decimal(0)):
+                sleep_time = 60
                 old_rates = self.exchange_rates
                 try:
                     self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
@@ -959,7 +964,7 @@ class BrainbowApp(MDApp):
             else:
                 balance = "{:.2f}".format(self.wallet.balance * self.get_rate())
             units = self.currency
-        return "{} {}".format(balance.rstrip("0").rstrip("."), units)
+        return "{} {}".format(balance, units)
 
     def set_wallet_fingetprint(self, fingerprint):
         walias = wallet_alias(fingerprint[0:2], fingerprint[2:4])
@@ -980,17 +985,13 @@ class BrainbowApp(MDApp):
             verb = "-" if hist.is_spend else "+"
             #if self.units.startswith("sats"):
             val = self.unit_precision.format(hist.value * self.unit_factor)
-            val = val.rstrip("0").rstrip(".")
-#
-#            else:
-#            val = hist.value * self.unit_factor
             hist_str = "{}{} {}".format(verb, val, self.units)
             self.add_list_item(hist_str, hist)
             tx_counter += 1
         self.root.ids.nav_drawer_item_transactions.right_text = "{}".format(tx_counter)
         self.root.ids.nav_drawer_item_transactions.size_hint_x = None
         try:
-            if self.currency == "BTC":
+            if self.currency in ["BTC", "TBTC"]:
                 rate = "1"
             else:
                 rate = "{:.2f}".format(self.get_rate())
@@ -1003,7 +1004,6 @@ class BrainbowApp(MDApp):
     def update_utxo_screen(self):
         self.root.ids.utxoRecycleView.data_model.data = []
         self.wallet.utxos = utxo_deduplication(self.wallet.utxos)
-
         for utxo in self.wallet.utxos:
             value = Decimal(str(utxo.coin_value / nowallet.Wallet.COIN))
             utxo_str = (self.unit_precision + " {}").format(value * self.unit_factor, self.units)

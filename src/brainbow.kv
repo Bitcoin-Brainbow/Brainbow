@@ -1,4 +1,4 @@
-#:kivy 1.10.0
+# :kivy 1.10.0
 
 #:import SlideTransition kivy.uix.screenmanager.SlideTransition
 #:import RecycleView kivy.uix.recycleview
@@ -20,6 +20,11 @@
 
 <UTXOListItem>:
     on_release: self.open_utxo_menu()
+
+<TxInputListItem>:
+    on_release: print("TxInputListItem")
+
+
 
 <BalanceListItem>:
     on_release: self.on_release()
