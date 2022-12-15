@@ -13,8 +13,7 @@ package.domain = org.brainbow
 source.dir = src
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,json,ttf,
-
+source.include_exts = py,png,jpg,kv,atlas,json,ttf,xml
 
 # (list) Source files to exclude (let empty to not exclude anything)
 source.exclude_exts = spec
@@ -86,6 +85,12 @@ requirements =
   embit==0.5.0,
   numpy==1.22.3,
 
+  camera4kivy==0.1.0,
+  gestures4kivy==0.1.0,
+  pillow==8.4.0,
+  libiconv,
+  libzbar,
+  pyzbar==0.1.7,
 
 # These are used to see decrypt TX
 #
@@ -390,7 +395,7 @@ p4a.branch = master
 p4a.local_recipes = %(source.dir)s/python-for-android/recipes/
 
 # (str) Filename to the hook for p4a
-#p4a.hook =
+p4a.hook = camerax_provider/gradle_options.py
 
 # (str) Bootstrap to use for android builds
 # p4a.bootstrap = sdl2
