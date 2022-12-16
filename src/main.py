@@ -23,6 +23,9 @@ from kivy.compat import unichr
 from kivy.metrics import dp
 from kivy.properties import NumericProperty, StringProperty, ObjectProperty
 from kivy.uix.screenmanager import Screen
+from kivymd.uix.screen import MDScreen
+
+
 from kivy.uix.behaviors import ButtonBehavior
 
 from kivymd.app import MDApp
@@ -80,6 +83,10 @@ from passphrase import entropy_bits
 from utils import utxo_deduplication
 
 from bottom_screens_signed_tx import open_tx_preview_bottom_sheet
+
+from camera4kivy import Preview
+from PIL import Image
+from pyzbar.pyzbar import decode
 
 
 __version__ = "0.1.126"
@@ -148,11 +155,47 @@ class PINScreen(Screen):
     pass
 
 
-class ZbarScreen(Screen):
-    pass
+
+from kivy.clock import mainthread
+
+
+class ScanScreen(MDScreen):
+
+    def on_kv_post(self, obj):
+        print("*** on_kv_post *** {}".format(obj))
+        app = MDApp.get_running_app()
+        if app and app.root:
+            app.root.ids.preview.connect_camera(enable_analyze_pixels = True, default_zoom=0.0)
+
+    @mainthread
+    def got_result(self, result):
+        print("*** got_result = {} *** ".format(result))
+        app = MDApp.get_running_app()
+        if app:
+            app.root.ids.ti.text = str(result)
+
+"""
+ScanAnalyze:
+    name: "preview"
+"""
+
+class ScanAnalyze(Preview):
+    """ """
+    extracted_data=ObjectProperty(None)
+    def analyze_pixels_callback(self, pixels, image_size, image_pos, scale, mirror):
+        pimage=Image.frombytes(mode='RGBA',size=image_size,data=pixels)
+        list_of_all_barcodes=decode(pimage)
+        if list_of_all_barcodes:
+            if self.extracted_data:
+                self.extracted_data(list_of_all_barcodes[0])
+            else:
+                print("Not found")
+
+
 
 class ExchangeRateScreen(Screen):
     pass
+
 
 class TXReviewScreen(Screen):
     pass
@@ -160,7 +203,6 @@ class TXReviewScreen(Screen):
 
 class BalanceLabel(ButtonBehavior, MDLabel):
     pass
-
 
 
 class PassphraseControlField(MDRelativeLayout):
@@ -482,12 +524,13 @@ class BrainbowApp(MDApp):
         self.dialog.dismiss()
 
     def start_zbar(self):
-        if platform != "android":
-            snackbar_msg = "Scanning is not supported on {}.".format(platform)
-            self.show_snackbar(snackbar_msg)
-            return
-        self.root.ids.sm.current = "zbar"
-        self.root.ids.detector.start()
+        #if platform != "android":
+        #    snackbar_msg = "Scanning is not supported on {}.".format(platform)
+        #    self.show_snackbar(snackbar_msg)
+        #    return
+        #self.root.ids.sm.current = "zbar"
+        # ?? self.root.ids.detector.start()
+        return ScanScreen()
 
     def start_nfc_tap(self):
         #if platform != "android":
@@ -1166,6 +1209,10 @@ class BrainbowApp(MDApp):
 
     def build(self):
         """ """
+        if platform =='android':
+            from android.permissions import request_permissions, Permission
+            request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.CAMERA, Permission.RECORD_AUDIO])
+
         self.title = 'Brainbow'
         self.theme_cls.material_style = "M2"
         """

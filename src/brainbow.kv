@@ -31,6 +31,19 @@
     IconLeftConfirmationWidget:
         icon: self.parent.parent.icon
 
+<ScanScreen>:
+	BoxLayout:
+		orientation: 'vertical'
+		ScanAnalyze:
+			id:preview
+			aspect_ratio: '16:9'
+			extracted_data:root.got_result
+
+		MDLabel:
+			size_hint_y: None
+			height:'130dp'
+			id:ti
+
 
 <PassphraseControlField>:
     size_hint_y: None
@@ -480,13 +493,15 @@ MDScreen:
                                         on_release: asyncio.create_task(app.send_button_handler())
 
                                 # Camera not working right now
-                                #MDFloatingActionButton:
-                                #    icon: "qrcode-scan"
-                                #    opposite_colors: True
-                                #    elevation_normal: 8
-                                #    pos_hint: {"center_x": 0.5, "center_y": 0.2}
-                                #    id: camera_button
-                                #    on_release: app.start_zbar()
+                                MDFloatingActionButton:
+                                    icon: "qrcode-scan"
+                                    opposite_colors: True
+                                    elevation_normal: 8
+                                    pos_hint: {"center_x": 0.5, "center_y": 0.2}
+                                    id: camera_button
+                                    on_release: app.start_zbar()
+
+
 
                                 MDFloatingActionButton:
                                     md_bg_color: "#252525"
@@ -663,6 +678,8 @@ MDScreen:
                             show_border: False
 
 
+
+             
 
             SeedScreen:
                 name: "seed"

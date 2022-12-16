@@ -395,7 +395,7 @@ p4a.branch = master
 p4a.local_recipes = %(source.dir)s/python-for-android/recipes/
 
 # (str) Filename to the hook for p4a
-p4a.hook = camerax_provider/gradle_options.py
+p4a.hook = ./src/camerax_provider/gradle_options.py
 
 # (str) Bootstrap to use for android builds
 # p4a.bootstrap = sdl2
