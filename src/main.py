@@ -84,9 +84,8 @@ from utils import utxo_deduplication
 
 from bottom_screens_signed_tx import open_tx_preview_bottom_sheet
 
-#from camera4kivy import Preview
-#from PIL import Image
-#from pyzbar.pyzbar import decode
+from camera4kivy import Preview
+from qrreader import QRReader
 
 
 __version__ = "0.1.128"
@@ -278,6 +277,10 @@ class BrainbowApp(MDApp):
         self.tx_btm_sheet = None
         self.current_fee = 1
         self.mempool_recommended_fees = None
+        # for QR code reading UX
+        self._qrreader = None
+        self._qrr_snackbar = None
+
         # class MyMenuItem(MDMenuItem):
         class MyMenuItem(OneLineListItem):
             pass
@@ -490,6 +493,7 @@ class BrainbowApp(MDApp):
                             snackbar_y="8dp")
         snackbar.size_hint_x = (Window.width - (snackbar.snackbar_x * 2)) / Window.width
         snackbar.open()
+        return snackbar
 
     def show_dialog(self, title, message, qrdata=None, cb=None):
         if qrdata:
@@ -523,25 +527,54 @@ class BrainbowApp(MDApp):
     def close_dialog(self, *args):
         self.dialog.dismiss()
 
+
+    def qrreader_release(self, *args):
+        if self._qrreader:
+            self._qrreader.disconnect_camera()
+            self._qrreader = None
+
+        if self._qrr_snackbar:
+            self._qrr_snackbar.dismiss()
+            self._qrr_snackbar = None
+
+    def qrreader_snackbar(self):
+        self._qrr_snackbar = Snackbar(text="NOW SCANNING QR W/O PREVIEW",
+                                        duration=3600,
+                                        snackbar_x="8dp",
+                                        snackbar_y="8dp",
+                                        snackbar_animation_dir = "Top",
+                                        buttons = [
+                                        MDFlatButton(
+                                            text = "CANCEL",
+                                            text_color = "orange",
+                                            on_release=self.qrreader_release,
+                                        ),])
+        self._qrr_snackbar.size_hint_x = (Window.width - (self._qrr_snackbar.snackbar_x * 2)) / Window.width
+        self._qrr_snackbar.snackbar_y = self.root.height - self.root.ids.toolbar.height - self._qrr_snackbar.snackbar_y
+        self._qrr_snackbar.open()
+
+
+    def zbar_cb(self, qrcode):
+        self.root.ids.address_input.text = qrcode
+        if self._qrr_snackbar:
+            self._qrr_snackbar.dismiss()
+            self._qrr_snackbar = None
+        self.show_snackbar("Found {}..{}".format(qrcode[:11], qrcode[-11:]))
+
     def start_zbar(self):
-        from kivy.clock import Clock
-        from qrreader import QRReader
-        #if platform != "android":
-        #    snackbar_msg = "Scanning is not supported on {}.".format(platform)
-        #    self.show_snackbar(snackbar_msg)
-        #    return
-        #self.root.ids.sm.current = "zbar"
-        # ?? self.root.ids.detector.start()
-        #return ScanScreen()
-        self.qrreader = QRReader(letterbox_color = 'steelblue',
-                                 aspect_ratio = '16:9')
+        if not self._qrreader:
+            print("qrreader start")
+            self._qrreader = QRReader(letterbox_color = 'steelblue', aspect_ratio = '16:9', cb=self.zbar_cb)
+            self._qrreader.connect_camera(analyze_pixels_resolution = 640, enable_analyze_pixels = True)
+            self.qrreader_snackbar()
+        else:
+            print("qrreader_release")
+            self.qrreader_release()
 
-        self.qrreader.connect_camera(analyze_pixels_resolution = 640,
-                                     enable_analyze_pixels = True)
-
-
-        return self.qrreader
-
+        """
+        [INFO   ] run fetch_exchange_rates
+['_ALT', '_CTRL', '_DOUBLE_TAP_DISTANCE', '_DOUBLE_TAP_TIME', '_LONG_MOVE_THRESHOLD', '_LONG_PRESS', '_MOVE_VELOCITY_SAMPLE', '_SHIFT', '_SWIPE_TIME', '_SWIPE_VELOCITY', '_TWO_FINGER_SWIPE_END', '_TWO_FINGER_SWIPE_START', '_WHEEL_SENSITIVITY', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__events__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__metaclass__', '__module__', '__ne__', '__new__', '__proxy_getter', '__proxy_setter', '__pyx_vtable__', '__reduce__', '__reduce_ex__', '__repr__', '__self__', '__setattr__', '__setstate__', '__sizeof__', '__str__', '__subclasshook__', '_apply_transform', '_busy', '_context', '_disabled_count', '_disabled_value', '_fbo', '_find_index_in_motion_filter', '_finger_angle', '_finger_distance', '_finished', '_gesture_state', '_image_available', '_kwargs_applied_init', '_long_press_event', '_long_press_schedule', '_modifier_key_down', '_modifier_key_up', '_new_gesture', '_not_long_press', '_not_single_tap', '_persistent_pos', '_pos_to_widget', '_possible_swipe', '_previous_wheel_time', '_proxy_ref', '_remove_gesture', '_scale_angle', '_scale_distance', '_scale_midpoint', '_single_tap_event', '_single_tap_schedule', '_swipe_schedule', '_touches', '_trigger_layout', '_update_motion_filter', '_velocity', '_velocity_now', '_velocity_schedule', '_velocity_start', '_walk', '_walk_reverse', '_wheel_enabled', 'add_widget', 'analyze_image_callback_schedule', 'analyze_imageproxy_callback', 'analyze_pixels_callback', 'analyze_resolution', 'anchor_x', 'anchor_y', 'annotations', 'apply_class_lang_rules', 'apply_property', 'aspect_ratio', 'auto_analyze_resolution', 'bind', 'camera_connected', 'canvas', 'canvas_instructions_callback', 'capture_photo', 'capture_screenshot', 'capture_video', 'cb', 'center', 'center_x', 'center_y', 'cg_ctrl_wheel', 'cg_double_tap', 'cg_long_press', 'cg_long_press_end', 'cg_long_press_move_end', 'cg_long_press_move_start', 'cg_long_press_move_to', 'cg_move_end', 'cg_move_start', 'cg_move_to', 'cg_scale', 'cg_scale_end', 'cg_scale_start', 'cg_shift_wheel', 'cg_swipe_horizontal', 'cg_swipe_vertical', 'cg_tap', 'cg_two_finger_tap', 'cg_wheel', 'cgb_drag', 'cgb_horizontal_page', 'cgb_long_press_end', 'cgb_pan', 'cgb_primary', 'cgb_rotate', 'cgb_scroll', 'cgb_secondary', 'cgb_select', 'cgb_vertical_page', 'cgb_zoom', 'children', 'clear_widgets', 'cls', 'collide_point', 'collide_widget', 'connect_camera', 'create_property', 'dec_disabled', 'disabled', 'disconnect_camera', 'dispatch', 'dispatch_children', 'dispatch_generic', 'do_layout', 'events', 'export_as_image', 'export_to_png', 'fbind', 'filepath_callback', 'flash', 'focus', 'funbind', 'get_center_x', 'get_center_y', 'get_disabled', 'get_parent_window', 'get_property_observers', 'get_right', 'get_root_window', 'get_top', 'get_window_matrix', 'getter', 'height', 'ids', 'im_size', 'image_scheduler', 'inc_disabled', 'is_event_type', 'label', 'layout_hint_with_bounds', 'letterbox_color', 'make_qrcode_decoded_thread_safe', 'make_thread_safe', 'mirror', 'mobile', 'motion_filter', 'on_aspect_ratio', 'on_kv_post', 'on_motion', 'on_opacity', 'on_orientation', 'on_size', 'on_touch_down', 'on_touch_move', 'on_touch_up', 'opacity', 'open_browser', 'orientation', 'padding', 'parent', 'pixels', 'pos', 'pos_hint', 'preview', 'properties', 'property', 'proxy_ref', 'qrcode_decoded', 'register_event_type', 'register_for_motion_event', 'remove_widget', 'right', 'scale', 'select_camera', 'set_center_x', 'set_center_y', 'set_disabled', 'set_right', 'set_top', 'setter', 'size', 'size_hint', 'size_hint_max', 'size_hint_max_x', 'size_hint_max_y', 'size_hint_min', 'size_hint_min_x', 'size_hint_min_y', 'size_hint_x', 'size_hint_y', 'stop_capture_video', 'to_local', 'to_parent', 'to_widget', 'to_window', 'top', 'touch_horizontal', 'touch_vertical', 'tpos', 'uid', 'unbind', 'unbind_uid', 'unregister_event_type', 'unregister_event_types', 'unregister_for_motion_event', 'walk', 'walk_reverse', 'width', 'x', 'y', 'zoom']
+[INFO   ] run fetch_exchange_rates"""
 
 
     def start_nfc_tap(self):
@@ -1222,10 +1255,8 @@ class BrainbowApp(MDApp):
     def build(self):
         """ """
         if platform =='android':
-            # These lines are for the camera / QR scanner
-            # TODO: Verify ifl storge and audio us really required!
             from android.permissions import request_permissions, Permission
-            request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.CAMERA, Permission.RECORD_AUDIO])
+            request_permissions([Permission.CAMERA])
 
         self.title = 'Brainbow'
         self.theme_cls.material_style = "M2"

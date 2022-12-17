@@ -71,6 +71,10 @@
             pass_field.password = False if pass_field.password is True else True
 
 MDScreen:
+    Preview:
+        id: preview
+        aspect_ratio: '16:9'
+
     BoxLayout:
         orientation: "vertical"
         MDTopAppBar:
@@ -499,7 +503,7 @@ MDScreen:
                                     elevation_normal: 8
                                     pos_hint: {"center_x": 0.5, "center_y": 0.2}
                                     id: camera_button
-                                    #on_release: app.start_zbar()
+                                    on_release: app.start_zbar()
 
 
 
@@ -680,9 +684,7 @@ MDScreen:
 
 
 
-            Preview:
-                id: preview
-                aspect_ratio: '16:9'
+
 
 
             SeedScreen:
