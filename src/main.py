@@ -89,7 +89,7 @@ from PIL import Image
 from pyzbar.pyzbar import decode
 
 
-__version__ = "0.1.126"
+__version__ = "0.1.128"
 
 if platform == "android":
     # NFC
@@ -155,7 +155,7 @@ class PINScreen(Screen):
     pass
 
 
-
+"""
 from kivy.clock import mainthread
 
 
@@ -173,12 +173,12 @@ class ScanScreen(MDScreen):
         app = MDApp.get_running_app()
         if app:
             app.root.ids.ti.text = str(result)
-
+"""
 """
 ScanAnalyze:
     name: "preview"
 """
-
+"""
 class ScanAnalyze(Preview):
     """ """
     extracted_data=ObjectProperty(None)
@@ -191,7 +191,7 @@ class ScanAnalyze(Preview):
             else:
                 print("Not found")
 
-
+"""
 
 class ExchangeRateScreen(Screen):
     pass
@@ -524,13 +524,25 @@ class BrainbowApp(MDApp):
         self.dialog.dismiss()
 
     def start_zbar(self):
+        from kivy.clock import Clock
+        from qrreader import QRReader
         #if platform != "android":
         #    snackbar_msg = "Scanning is not supported on {}.".format(platform)
         #    self.show_snackbar(snackbar_msg)
         #    return
         #self.root.ids.sm.current = "zbar"
         # ?? self.root.ids.detector.start()
-        return ScanScreen()
+        #return ScanScreen()
+        self.qrreader = QRReader(letterbox_color = 'steelblue',
+                                 aspect_ratio = '16:9')
+
+        self.qrreader.connect_camera(analyze_pixels_resolution = 640,
+                                     enable_analyze_pixels = True)
+
+
+        return self.qrreader
+
+
 
     def start_nfc_tap(self):
         #if platform != "android":
@@ -1210,20 +1222,13 @@ class BrainbowApp(MDApp):
     def build(self):
         """ """
         if platform =='android':
+            # These lines are for the camera / QR scanner
+            # TODO: Verify ifl storge and audio us really required!
             from android.permissions import request_permissions, Permission
             request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.CAMERA, Permission.RECORD_AUDIO])
 
         self.title = 'Brainbow'
         self.theme_cls.material_style = "M2"
-        """
-<resources>
-  <color name="primaryColor">#4d4d4d</color>
-  <color name="primaryLightColor">#797979</color>
-  <color name="primaryDarkColor">#252525</color>
-  <color name="primaryTextColor">#ffffff</color>
-</resources>
-
-        """
         self.theme_cls.theme_style = "Light"
 
         self.icon = "brain.png"
