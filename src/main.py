@@ -84,9 +84,9 @@ from utils import utxo_deduplication
 
 from bottom_screens_signed_tx import open_tx_preview_bottom_sheet
 
-from camera4kivy import Preview
-from PIL import Image
-from pyzbar.pyzbar import decode
+#from camera4kivy import Preview
+#from PIL import Image
+#from pyzbar.pyzbar import decode
 
 
 __version__ = "0.1.128"
