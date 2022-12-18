@@ -45,6 +45,7 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.tab import MDTabsBase
 from kivymd.uix.snackbar import Snackbar
+from kivy.uix.modalview import ModalView
 
 #from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.button import ButtonBehavior
@@ -532,39 +533,6 @@ class BrainbowApp(MDApp):
         if self._dialog:
             self._dialog.dismiss()
 
-    # QR code reading preview
-    def show_preview_dialog(self):
-        dialog_height = 450
-        """"
-        prev  = Preview(aspect_ratio = '16:9')
-        prev.connect_camera()
-        prev.size_hint = (1, 0.75)
-        prev.anchor_x = 'left'
-        prev.anchor_y = 'top'
-        """
-
-        content =  MDBoxLayout(
-                         MDLabel(text="Preview not available yet, but the camera is scanning for QR code right now." )
-
-                    )
-
-
-        self._qr_preview_dialog = MDDialog(title='Preview is not available',
-                                           #type = "custom",
-                                          # content_cls=content if content else None,
-                                           text="Camera preview is not available, but Brainbow is scanning for QR code right now.",
-                                           size_hint=(.8, None),
-                                           height=dp(dialog_height),
-                                           auto_dismiss=False,
-                                           on_dismiss=partial(self.qrreader_release),
-                                           buttons=[
-                                               MDFlatButton(
-                                                   text="Dismiss scanner".upper(),
-                                                   on_release=partial(self.close_preview_dialog))
-                                               ]
-                                           )
-        self._qr_preview_dialog.open()
-        #self._qrreader.connect_camera(analyze_pixels_resolution = 640, enable_analyze_pixels = True)
 
 
 
@@ -577,30 +545,42 @@ class BrainbowApp(MDApp):
         if self._qrreader:
             self._qrreader.disconnect_camera()
             self._qrreader = None
+        if self._qr_preview_dialog:
+            self._qr_preview_dialog = None
 
 
+
+
+    def show_preview_modal(self):
+        self._qr_preview_dialog = ModalView(size_hint=(None, None), size=(480, 640))
+        self._qr_preview_dialog.add_widget(self._qrreader)
+        self._qr_preview_dialog.on_pre_dismiss = partial(self.qrreader_release)
+        self._qr_preview_dialog.open()
+        self._qrreader.connect_camera(analyze_pixels_resolution = 640, enable_analyze_pixels = True)
 
 
     def zbar_cb(self, qrcode):
-        self.root.ids.address_input.text = qrcode
         self.close_preview_dialog()
-        self.show_snackbar("Found {}..{}".format(qrcode[:11], qrcode[-11:]))
+        address = None
+        try:
+            address, amount = nowallet.get_payable_from_BIP21URI(qrcode)
+            self.root.ids.address_input.text = str(address)
+            if amount:
+                self.root.ids.spend_amount_input.text = str(amount)
+        except ValueError as ve:
+            self.show_dialog("Error", str(ve))
+        if address:
+            self.show_snackbar("Found {}..{}".format(address[:11], address[-11:]))
 
     def start_zbar(self):
         if not self._qrreader:
             print("qrreader start")
-            self._qrreader = QRReader(letterbox_color='steelblue', aspect_ratio='16:9', cb=self.zbar_cb)
-            self._qrreader.connect_camera(analyze_pixels_resolution = 640, enable_analyze_pixels = True)
-
-            self.show_preview_dialog()
+            self._qrreader = QRReader(letterbox_color='steelblue', aspect_ratio='4:3', cb=self.zbar_cb)
+            self.show_preview_modal()
         else:
             print("qrreader_release")
             self.qrreader_release()
 
-        """
-        [INFO   ] run fetch_exchange_rates
-['_ALT', '_CTRL', '_DOUBLE_TAP_DISTANCE', '_DOUBLE_TAP_TIME', '_LONG_MOVE_THRESHOLD', '_LONG_PRESS', '_MOVE_VELOCITY_SAMPLE', '_SHIFT', '_SWIPE_TIME', '_SWIPE_VELOCITY', '_TWO_FINGER_SWIPE_END', '_TWO_FINGER_SWIPE_START', '_WHEEL_SENSITIVITY', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__events__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__metaclass__', '__module__', '__ne__', '__new__', '__proxy_getter', '__proxy_setter', '__pyx_vtable__', '__reduce__', '__reduce_ex__', '__repr__', '__self__', '__setattr__', '__setstate__', '__sizeof__', '__str__', '__subclasshook__', '_apply_transform', '_busy', '_context', '_disabled_count', '_disabled_value', '_fbo', '_find_index_in_motion_filter', '_finger_angle', '_finger_distance', '_finished', '_gesture_state', '_image_available', '_kwargs_applied_init', '_long_press_event', '_long_press_schedule', '_modifier_key_down', '_modifier_key_up', '_new_gesture', '_not_long_press', '_not_single_tap', '_persistent_pos', '_pos_to_widget', '_possible_swipe', '_previous_wheel_time', '_proxy_ref', '_remove_gesture', '_scale_angle', '_scale_distance', '_scale_midpoint', '_single_tap_event', '_single_tap_schedule', '_swipe_schedule', '_touches', '_trigger_layout', '_update_motion_filter', '_velocity', '_velocity_now', '_velocity_schedule', '_velocity_start', '_walk', '_walk_reverse', '_wheel_enabled', 'add_widget', 'analyze_image_callback_schedule', 'analyze_imageproxy_callback', 'analyze_pixels_callback', 'analyze_resolution', 'anchor_x', 'anchor_y', 'annotations', 'apply_class_lang_rules', 'apply_property', 'aspect_ratio', 'auto_analyze_resolution', 'bind', 'camera_connected', 'canvas', 'canvas_instructions_callback', 'capture_photo', 'capture_screenshot', 'capture_video', 'cb', 'center', 'center_x', 'center_y', 'cg_ctrl_wheel', 'cg_double_tap', 'cg_long_press', 'cg_long_press_end', 'cg_long_press_move_end', 'cg_long_press_move_start', 'cg_long_press_move_to', 'cg_move_end', 'cg_move_start', 'cg_move_to', 'cg_scale', 'cg_scale_end', 'cg_scale_start', 'cg_shift_wheel', 'cg_swipe_horizontal', 'cg_swipe_vertical', 'cg_tap', 'cg_two_finger_tap', 'cg_wheel', 'cgb_drag', 'cgb_horizontal_page', 'cgb_long_press_end', 'cgb_pan', 'cgb_primary', 'cgb_rotate', 'cgb_scroll', 'cgb_secondary', 'cgb_select', 'cgb_vertical_page', 'cgb_zoom', 'children', 'clear_widgets', 'cls', 'collide_point', 'collide_widget', 'connect_camera', 'create_property', 'dec_disabled', 'disabled', 'disconnect_camera', 'dispatch', 'dispatch_children', 'dispatch_generic', 'do_layout', 'events', 'export_as_image', 'export_to_png', 'fbind', 'filepath_callback', 'flash', 'focus', 'funbind', 'get_center_x', 'get_center_y', 'get_disabled', 'get_parent_window', 'get_property_observers', 'get_right', 'get_root_window', 'get_top', 'get_window_matrix', 'getter', 'height', 'ids', 'im_size', 'image_scheduler', 'inc_disabled', 'is_event_type', 'label', 'layout_hint_with_bounds', 'letterbox_color', 'make_qrcode_decoded_thread_safe', 'make_thread_safe', 'mirror', 'mobile', 'motion_filter', 'on_aspect_ratio', 'on_kv_post', 'on_motion', 'on_opacity', 'on_orientation', 'on_size', 'on_touch_down', 'on_touch_move', 'on_touch_up', 'opacity', 'open_browser', 'orientation', 'padding', 'parent', 'pixels', 'pos', 'pos_hint', 'preview', 'properties', 'property', 'proxy_ref', 'qrcode_decoded', 'register_event_type', 'register_for_motion_event', 'remove_widget', 'right', 'scale', 'select_camera', 'set_center_x', 'set_center_y', 'set_disabled', 'set_right', 'set_top', 'setter', 'size', 'size_hint', 'size_hint_max', 'size_hint_max_x', 'size_hint_max_y', 'size_hint_min', 'size_hint_min_x', 'size_hint_min_y', 'size_hint_x', 'size_hint_y', 'stop_capture_video', 'to_local', 'to_parent', 'to_widget', 'to_window', 'top', 'touch_horizontal', 'touch_vertical', 'tpos', 'uid', 'unbind', 'unbind_uid', 'unregister_event_type', 'unregister_event_types', 'unregister_for_motion_event', 'walk', 'walk_reverse', 'width', 'x', 'y', 'zoom']
-[INFO   ] run fetch_exchange_rates"""
 
 
     def start_nfc_tap(self):
