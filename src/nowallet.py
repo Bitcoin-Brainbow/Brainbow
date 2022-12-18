@@ -32,7 +32,9 @@ from utils import decodetx
 from utils import is_txid
 from utils import log_time_elapsed
 from history import History
+
 from app import update_loading_small_text
+from app import update_waiting_texts
 
 from connection import Connection
 
@@ -81,6 +83,7 @@ class Wallet:
             :param passphrase: a string containing a secure passphrase
             :param account: account number, defaults to 0
             """
+            update_waiting_texts(text="Deriving\nKeys", small_text="Deriving keys will take some time to complete.\nPlease wait..") 
             logging.info("Deriving keys...")
             t = derive_key(
                 salt, passphrase

@@ -41,6 +41,7 @@ class QRReader(Preview, CommonGestures):
             #    self.cb(barcodes[0].data.decode('utf-8'))
             self.make_qrcode_decoded_thread_safe(barcodes[0].data.decode('utf-8'))
             return
+        """
         for barcode in barcodes:
             text = barcode.data.decode('utf-8')
             if 'https://' in text or 'http://' in text:
@@ -55,6 +56,7 @@ class QRReader(Preview, CommonGestures):
                 w = round(w * scale)
                 h = round(h * scale)
                 found.append({'x':x, 'y':y, 'w':w, 'h':h, 't':text})
+        """
         self.make_thread_safe(list(found)) ## A COPY of the list
 
     @mainthread

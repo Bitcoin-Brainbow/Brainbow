@@ -24,6 +24,7 @@ from kivy.metrics import dp
 from kivy.properties import NumericProperty, StringProperty, ObjectProperty
 from kivy.uix.screenmanager import Screen
 from kivymd.uix.screen import MDScreen
+from kivymd.uix.boxlayout import MDBoxLayout
 
 
 from kivy.uix.behaviors import ButtonBehavior
@@ -279,7 +280,10 @@ class BrainbowApp(MDApp):
         self.mempool_recommended_fees = None
         # for QR code reading UX
         self._qrreader = None
-        self._qrr_snackbar = None
+
+
+        self._qr_preview_dialog = None
+        self._dialog = None # generic dialog
 
         # class MyMenuItem(MDMenuItem):
         class MyMenuItem(OneLineListItem):
@@ -510,9 +514,9 @@ class BrainbowApp(MDApp):
             #                   size_hint_y=None,
             #                   valign='top')
             # content.bind(texture_size=content.setter('size'))
-        self.dialog = MDDialog(title=title,
+        self._dialog = MDDialog(title=title,
                                content_cls=content if content else None,
-                               text=message if not content else None,
+                               text=message if not content else "",
                                size_hint=(.8, None),
                                height=dp(dialog_height),
                                auto_dismiss=False,
@@ -522,51 +526,73 @@ class BrainbowApp(MDApp):
                                        on_release=partial(self.close_dialog))
                                    ]
                                )
-        self.dialog.open()
+        self._dialog.open()
 
     def close_dialog(self, *args):
-        self.dialog.dismiss()
+        if self._dialog:
+            self._dialog.dismiss()
 
+    # QR code reading preview
+    def show_preview_dialog(self):
+        dialog_height = 450
+        """"
+        prev  = Preview(aspect_ratio = '16:9')
+        prev.connect_camera()
+        prev.size_hint = (1, 0.75)
+        prev.anchor_x = 'left'
+        prev.anchor_y = 'top'
+        """
+
+        content =  MDBoxLayout(
+                         MDLabel(text="Preview not available yet, but the camera is scanning for QR code right now." )
+
+                    )
+
+
+        self._qr_preview_dialog = MDDialog(title='Preview is not available',
+                                           #type = "custom",
+                                          # content_cls=content if content else None,
+                                           text="Camera preview is not available, but Brainbow is scanning for QR code right now.",
+                                           size_hint=(.8, None),
+                                           height=dp(dialog_height),
+                                           auto_dismiss=False,
+                                           on_dismiss=partial(self.qrreader_release),
+                                           buttons=[
+                                               MDFlatButton(
+                                                   text="Dismiss scanner".upper(),
+                                                   on_release=partial(self.close_preview_dialog))
+                                               ]
+                                           )
+        self._qr_preview_dialog.open()
+        #self._qrreader.connect_camera(analyze_pixels_resolution = 640, enable_analyze_pixels = True)
+
+
+
+    def close_preview_dialog(self, *args):
+        if self._qr_preview_dialog:
+            self._qr_preview_dialog.dismiss()
+        self.qrreader_release()
 
     def qrreader_release(self, *args):
         if self._qrreader:
             self._qrreader.disconnect_camera()
             self._qrreader = None
 
-        if self._qrr_snackbar:
-            self._qrr_snackbar.dismiss()
-            self._qrr_snackbar = None
 
-    def qrreader_snackbar(self):
-        self._qrr_snackbar = Snackbar(text="NOW SCANNING QR W/O PREVIEW",
-                                        duration=3600,
-                                        snackbar_x="8dp",
-                                        snackbar_y="8dp",
-                                        snackbar_animation_dir = "Top",
-                                        buttons = [
-                                        MDFlatButton(
-                                            text = "CANCEL",
-                                            text_color = "orange",
-                                            on_release=self.qrreader_release,
-                                        ),])
-        self._qrr_snackbar.size_hint_x = (Window.width - (self._qrr_snackbar.snackbar_x * 2)) / Window.width
-        self._qrr_snackbar.snackbar_y = self.root.height - self.root.ids.toolbar.height - self._qrr_snackbar.snackbar_y
-        self._qrr_snackbar.open()
 
 
     def zbar_cb(self, qrcode):
         self.root.ids.address_input.text = qrcode
-        if self._qrr_snackbar:
-            self._qrr_snackbar.dismiss()
-            self._qrr_snackbar = None
+        self.close_preview_dialog()
         self.show_snackbar("Found {}..{}".format(qrcode[:11], qrcode[-11:]))
 
     def start_zbar(self):
         if not self._qrreader:
             print("qrreader start")
-            self._qrreader = QRReader(letterbox_color = 'steelblue', aspect_ratio = '16:9', cb=self.zbar_cb)
+            self._qrreader = QRReader(letterbox_color='steelblue', aspect_ratio='16:9', cb=self.zbar_cb)
             self._qrreader.connect_camera(analyze_pixels_resolution = 640, enable_analyze_pixels = True)
-            self.qrreader_snackbar()
+
+            self.show_preview_dialog()
         else:
             print("qrreader_release")
             self.qrreader_release()
@@ -912,7 +938,7 @@ class BrainbowApp(MDApp):
         await connection.do_connect()
 
         self.root.ids.wait_text.text = "Deriving\nKeys".upper()
-        self.root.ids.wait_text_small.text = "This will take a moment.."
+        self.root.ids.wait_text_small.text = "Deriving keys will take some time to complete."
         # make run in a seperate thread
         # in executor runs but gets stuck
         # wallet = await asyncio.gather(self.loop.run_in_executor(None, nowallet.Wallet, email, passphrase,
@@ -1322,6 +1348,8 @@ class BrainbowApp(MDApp):
 
 
     def on_pause(self):
+        if self._qrreader:
+            self._qrreader.disconnect_camera()
         self.disable_nfc_foreground_dispatch()
         print ("on_pause called")
         return True
@@ -1332,6 +1360,8 @@ class BrainbowApp(MDApp):
         return True
 
     def on_stop(self):
+        if self._qrreader:
+            self._qrreader.disconnect_camera()
         self.disable_nfc_foreground_dispatch()
         print ("on_stop called")
         return True
@@ -1354,15 +1384,6 @@ class BrainbowApp(MDApp):
                     "history": history,
                     "icon": icon })
 
-
-
-
-    #def _unlock_nav_drawer(self):
-    #    if self._wallet_ready:
-    #        print("wallet-ready-unlock-")
-    #        self.root.ids.nav_drawer_item_gmail.text_color = "000000"
-    #        self.root.ids.nav_drawer_item_gmail.selected_color: "#ff0000"
-
     def goto_slide(self, name):
         print("looking for slide name={}".format(name))
         for i in app.root.ids.caraousel.slides:
@@ -1377,15 +1398,6 @@ class BrainbowApp(MDApp):
             self.root.ids.sm.current = name
             if tab and name == "main":
                 self.root.ids.main_tabs.switch_tab(tab, search_by="title")
-
-
-#    def open_sheet(self):
-#        from booh import get_address_bottom_sheet
-#        addr = "bc1q xy2k gdyg jrsq tzq2 n0yr f249 3p83 kkfj hx0w lh"
-#        s = get_address_bottom_sheet(address=addr)
-#        s.open()
-
-
 
 
 
