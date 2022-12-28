@@ -22,7 +22,7 @@ source.exclude_exts = spec
 source.exclude_dirs = tests, bin, venv, old-sources, multisig
 
 # (str) Application versioning (method 1)
-version = 0.1.128
+version = 0.1.130 
 
 # (str) Application versioning (method 2)
 #version.regex = __version__ = ['"](.*)['"]
@@ -82,7 +82,7 @@ requirements =
   bitcoin==1.1.39,
   android,
   pyjnius==1.4.2,
-  embit==0.5.0,
+  embit,
   numpy==1.22.3,
 
   camera4kivy==0.1.0,

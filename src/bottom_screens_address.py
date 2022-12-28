@@ -5,6 +5,7 @@ from kivymd.uix.label import MDLabel
 from kivy.core.window import Window
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.bottomsheet import MDCustomBottomSheet
+from kivy_garden.qrcode import QRCodeWidget
 
 class AddressDetailInfo(MDGridLayout):
     def __init__(self, address, **var_args):
@@ -12,6 +13,7 @@ class AddressDetailInfo(MDGridLayout):
         self.cols = 1
         self.col_default_width = Window.width
         self.col_width = Window.width
+        self.background_color = "#fafafa"
 
         #self.md_bg_color: '#00ffff'
         self.height = "400dp"
@@ -32,7 +34,9 @@ class AddressDetailInfo(MDGridLayout):
         lbl1.bold = True
         self.add_widget(lbl1)
 
-        lbl2 = MDLabel(text = address)
+        chunk_size = 5
+        chunked_address = [address[i:i+chunk_size] for i in range(0, len(address), chunk_size)]
+        lbl2 = MDLabel(text = " ".join(chunked_address))
         lbl2.size_hint_y = 1.65
         lbl2.size_hint_x = Window.width
         lbl2.color: "#000000"
@@ -43,7 +47,21 @@ class AddressDetailInfo(MDGridLayout):
         spacer = MDBoxLayout()
         spacer.add_widget(lbl2)
         spacer.padding = ["42dp", 0, "42dp", 0]
+
         self.add_widget(spacer)
+
+        qrcode_widget = QRCodeWidget()
+        qrcode_widget.id = "addr_qrcode_list_btm_screen"
+        qrcode_widget.show_border = False
+        qrcode_widget.background_color = (0.98, 0.98, 0.98, 1)  # = #fafafa
+        qrcode_widget.data = "bitcoin:{}".format(address)
+
+        spacer_btm = MDBoxLayout()
+        spacer_btm.add_widget(qrcode_widget)
+        spacer_btm.padding = [0, 0, 0, "42dp"]
+        self.add_widget(spacer_btm)
+
+
 
 
 def open_address_bottom_sheet(address, qr=False):

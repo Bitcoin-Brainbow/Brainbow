@@ -213,7 +213,6 @@ class PassphraseControlField(MDRelativeLayout):
 
 
 
-
 class UTXOListItem(TwoLineListItem):
     """ """
     utxo = ObjectProperty()
@@ -221,14 +220,13 @@ class UTXOListItem(TwoLineListItem):
     def open_utxo_menu(self):
         app = MDApp.get_running_app()
         app.utxo = self.utxo
-        self.utxo_menu = MDDropdownMenu(items=app.utxo_menu_items, width_mult=4, caller=self, max_height=dp(100))
-        self.utxo_menu.open()
-        for d in dir(app.utxo):
-            try:
-                print("{} -> {}".format(d, getattr(app.utxo, d)))
-            except:
-                print("{} -> {}".format(d, getattr(app.utxo, d)))()
-        #logging.info("open_utxo_menu utxo > {}".format(app.utxo.as_dict))
+        app.utxo_menu = MDDropdownMenu(items=app.utxo_menu_items,
+                                        width_mult=6,
+                                        caller=self,
+                                        max_height=0,
+                                        )
+        app.utxo_menu.open()
+
 
 
 
@@ -236,13 +234,12 @@ class UTXOListItem(TwoLineListItem):
 class BalanceListItem(TwoLineIconListItem):
     icon = StringProperty("check-circle")
     history = ObjectProperty()
-
+    app = MDApp.get_running_app()
     def on_press(self):
         print(self.history.as_dict)
         print(self.history.value)
         print(dir(self.history.tx_obj))
-
-        open_tx_preview_bottom_sheet(self.history.tx_obj, self.history)
+        open_tx_preview_bottom_sheet(self.history.tx_obj, self.history, app.wallet)
 
 class FloatInput(MDTextField):
     pat = re.compile('[^0-9]')
@@ -283,7 +280,7 @@ class BrainbowApp(MDApp):
         self._qrreader = None
 
 
-        self._qr_preview_dialog = None
+        self._qr_preview_modal = None
         self._dialog = None # generic dialog
 
         # class MyMenuItem(MDMenuItem):
@@ -304,8 +301,25 @@ class BrainbowApp(MDApp):
                             "on_release": lambda x="Settings": app.menu_item_handler(x)},
                            ]
 
-        self.utxo_menu_items = [{"viewclass": "MyMenuItem", "text": "View Private key"},
-                                {"viewclass": "MyMenuItem", "text": "View Redeem script"}]
+        self.utxo_menu_items = [{"viewclass": "MyMenuItem",
+                                 "on_release": lambda x="view-address": self.utxo_menu_callback(self, x),
+                                 "text": "View Address"},
+
+                                {"viewclass": "MyMenuItem",
+                                 "on_release": lambda x="Sign Message": self.utxo_menu_callback(self, x),
+                                 "text": "Sign Message" },
+
+
+                                {"viewclass": "MyMenuItem",
+                                 "on_release": lambda x="View Private Key": self.utxo_menu_callback(self, x),
+                                 "text": "View Private Key"},
+
+                                {"viewclass": "MyMenuItem",
+                                 "on_release": lambda x="View Redeem Script": self.utxo_menu_callback(self, x),
+                                 "text": "View Redeem Script"},
+
+
+                                ]
 
         self.fee_preset_items = [{"viewclass": "MyMenuItem",
                                     "on_release": lambda x="fastestFee": self.fee_select_callback(x),
@@ -325,6 +339,14 @@ class BrainbowApp(MDApp):
                                 ]
         super().__init__()
 
+
+    def utxo_menu_callback(self, cls, x):
+        print("menu_callback: {} {}".format( cls.utxo.address(netcode="XTN"), x))
+        #print ("352 {}".format(dir(cls)))
+        app.utxo_menu.dismiss()
+
+        if x == "view-address":
+            self.open_address_bottom_sheet_callback(address=cls.utxo.address(netcode="XTN"))
 
 
     # NFC
@@ -480,6 +502,33 @@ class BrainbowApp(MDApp):
             self.update_utxo_screen()
 
 
+    def _hide_fiat_fields(self):
+        print("_hide_fiat_fields")
+        for widget_btc, widget_fiat in [
+            (self.root.ids.spend_amount_input, self.root.ids.spend_amount_input_fiat),
+            (self.root.ids.receive_amount_input, self.root.ids.receive_amount_input_fiat)]:
+            widget_btc.size_hint_x = 1
+            widget_btc.width = 1
+            widget_fiat.size_hint_x = None
+            widget_fiat.disabled = True
+            widget_fiat.opacity = 0
+            widget_fiat.height = 0
+            widget_fiat.width = 0
+
+    def _show_fiat_fields(self):
+        print("_show_fiat_fields")
+        for widget_btc, widget_fiat in [
+            (self.root.ids.spend_amount_input, self.root.ids.spend_amount_input_fiat),
+            (self.root.ids.receive_amount_input, self.root.ids.receive_amount_input_fiat)]:
+            widget_btc.size_hint_x = 0.5
+            widget_btc.width = 0.5
+            widget_fiat.size_hint_x = 0.5
+            widget_fiat.disabled = False
+            widget_fiat.opacity = 1
+            widget_fiat.height = widget_btc.height
+            widget_fiat.width = 0.5
+            self.update_amounts(widget_btc.text, "coin")
+
     def on_exchange_rate_switch_active(self, switch, on_off):
         if on_off:
             self.currency = "USD"
@@ -487,9 +536,12 @@ class BrainbowApp(MDApp):
             if self.exchange_rates in [None, False] and self.get_rate() > Decimal(0):
                 self.root.ids.current_btc_exchange_rate.text = \
                     "Rates will be available within a few seconds."
+            self._show_fiat_fields()
         else:
             self.currency = "BTC"
             self.root.ids.current_btc_exchange_rate.text = "1 BTC = 1 BTC"
+            self._hide_fiat_fields()
+
         self.update_balance_screen()
 
     def show_snackbar(self, text):
@@ -536,31 +588,31 @@ class BrainbowApp(MDApp):
 
 
 
-    def close_preview_dialog(self, *args):
-        if self._qr_preview_dialog:
-            self._qr_preview_dialog.dismiss()
+    def close_preview_modal(self, *args):
+        if self._qr_preview_modal:
+            self._qr_preview_modal.dismiss()
         self.qrreader_release()
 
     def qrreader_release(self, *args):
         if self._qrreader:
             self._qrreader.disconnect_camera()
             self._qrreader = None
-        if self._qr_preview_dialog:
-            self._qr_preview_dialog = None
+        if self._qr_preview_modal:
+            self._qr_preview_modal = None
 
 
 
 
     def show_preview_modal(self):
-        self._qr_preview_dialog = ModalView(size_hint=(None, None), size=(480, 640))
-        self._qr_preview_dialog.add_widget(self._qrreader)
-        self._qr_preview_dialog.on_pre_dismiss = partial(self.qrreader_release)
-        self._qr_preview_dialog.open()
+        self._qr_preview_modal = ModalView(size_hint=(None, None), size=(480, 640))
+        self._qr_preview_modal.add_widget(self._qrreader)
+        self._qr_preview_modal.on_pre_dismiss = partial(self.qrreader_release)
+        self._qr_preview_modal.open()
         self._qrreader.connect_camera(analyze_pixels_resolution = 640, enable_analyze_pixels = True)
 
 
     def zbar_cb(self, qrcode):
-        self.close_preview_dialog()
+        self.close_preview_modal()
         address = None
         try:
             address, amount = nowallet.get_payable_from_BIP21URI(qrcode)
@@ -575,7 +627,7 @@ class BrainbowApp(MDApp):
     def start_zbar(self):
         if not self._qrreader:
             print("qrreader start")
-            self._qrreader = QRReader(letterbox_color='steelblue', aspect_ratio='4:3', cb=self.zbar_cb)
+            self._qrreader = QRReader(letterbox_color='black', aspect_ratio='4:3', cb=self.zbar_cb)
             self.show_preview_modal()
         else:
             print("qrreader_release")
@@ -642,6 +694,13 @@ class BrainbowApp(MDApp):
         self.root.ids.toolbar.right_action_items = [["file-download-outline", lambda x: self.download_prv()]]
         self.root.ids.nav_drawer.set_state("close")
         self.root.ids.sm.current = "seed"
+
+    def load_bip39_mnemonic_view(self):
+        self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
+        #self.root.ids.toolbar.right_action_items = [["file-download-outline", lambda x: self.download_prv()]]
+        self.root.ids.nav_drawer.set_state("close")
+        self.root.ids.sm.current = "bip39_mnemonic_screen"
+
 
     def load_pubkey_view(self):
         self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
@@ -884,8 +943,53 @@ class BrainbowApp(MDApp):
             self.check_new_block(),
             )
 
+
+
+    async def do_bip39_login(self):
+        #TODO: Check for seed validity
+        #TODO: Check pasphase
+
+        bip39_mnemonic = self.root.ids.bip39_mnemonic.text
+        """
+        passphrase = self.root.ids.pass_field.text
+        confirm = self.root.ids.confirm_field.text
+        if not email or not passphrase or not confirm:
+            self.show_dialog("Error", "All fields are required.")
+            return
+        if passphrase != confirm:
+            self.show_dialog("Error", "Passwords did not match.")
+            return
+
+        self.bech32 = self.root.ids.bech32_checkbox.active
+        """
+        self.menu_items[0]["text"] = "View {}PUB".format(self.pub_char.upper())
+
+        self.root.ids.sm.current = "wait"
+        try:
+            await self.do_login_tasks(bip39_mnemonic=bip39_mnemonic, bip39_passphrase=None)
+        except (SocksConnectionError, ClientConnectorError):
+            self.show_dialog("Error",
+                             "Make sure Tor/Orbot is installed and running before using Brainbow.",
+                             cb=lambda x: sys.exit(1))
+            return
+        self.update_screens()
+        self.wallet_ready()
+        await asyncio.gather(
+            self.new_history_loop(),
+            self.do_listen_task(),
+            self.update_exchange_rates(),
+            self.check_new_block(),
+            )
+
+    def bip39_login(self):
+        """
+        Alternative BIP39 login routine
+        """
+        task1 = asyncio.create_task(self.do_bip39_login())
+
     def login(self):
         task1 = asyncio.create_task(self.do_login())
+
 
     def logoff(self):
         self.show_dialog("Disconnected.","")
@@ -900,7 +1004,7 @@ class BrainbowApp(MDApp):
         logging.info("Listening for new transactions.")
         task = asyncio.create_task(self.wallet.listen_to_addresses())
 
-    async def do_login_tasks(self, email, passphrase):
+    async def do_login_tasks(self, email=None, passphrase=None, bip39_mnemonic=None, bip39_passphrase=None):
         self.root.ids.wait_text.text = "Connecting".upper()
         self.root.ids.wait_text_small.text = "Getting a random server for you."
         server, port, proto = await get_random_server(self.loop)
@@ -908,22 +1012,29 @@ class BrainbowApp(MDApp):
         try:
             connection = nowallet.Connection(self.loop, server, port, proto)
         except Exception as ex:
-            print("excepted")
             print(traceback.format_exc())
-            logging.error("L442 {}".format(ex), exc_info=True)
-            logging.info("{} {} {}".format(server, port, proto))
             await connection.do_connect()
-            logging.info("{} {} {} -&gt; connected".format(server, port, proto))
-
         await connection.do_connect()
 
-        self.root.ids.wait_text.text = "Deriving\nKeys".upper()
-        self.root.ids.wait_text_small.text = "Deriving keys will take some time to complete."
-        # make run in a seperate thread
-        # in executor runs but gets stuck
-        # wallet = await asyncio.gather(self.loop.run_in_executor(None, nowallet.Wallet, email, passphrase,
-            # connection, self.loop, self.chain, self.bech32))
-        self.wallet = nowallet.Wallet(email, passphrase, connection, self.loop, self.chain, self.bech32)
+        if email and passphrase:
+            self.root.ids.wait_text.text = "Deriving\nKeys".upper()
+            self.root.ids.wait_text_small.text = "Deriving keys will take some time to complete."
+            self.wallet = nowallet.Wallet(salt=email, passphrase=passphrase,
+                                bip39_mnemonic=None, bip39_passphrase=None,
+                                connection=connection, loop=self.loop,
+                                chain=self.chain, bech32=self.bech32)
+        elif bip39_mnemonic:
+            self.root.ids.wait_text.text = "Loading\nBIP39\nmnemonic".upper()
+            self.wallet = nowallet.Wallet(salt=None, passphrase=None,
+                                bip39_mnemonic=bip39_mnemonic,
+                                bip39_passphrase=bip39_passphrase,
+                                connection=connection, loop=self.loop,
+                                chain=self.chain, bech32=self.bech32)
+        else:
+            self.show_dialog("Error",
+                             "Please provide either your salt and passphrase or your BIP39 mnemonic to use Brainbow.",
+                             cb=lambda x: sys.exit(1))
+            return
         self.set_wallet_fingetprint(self.wallet.fingerprint)
         self.root.ids.wait_text_small.text = \
                 "Wallet fingerprint is {}.\n\n".format(
@@ -987,7 +1098,8 @@ class BrainbowApp(MDApp):
         self.update_send_screen()
         self.update_recieve_screen()
         self.update_ypub_screen()
-        self.update_seed_screen()
+        self.update_seed_screen() # BIP32
+        self.update_bip39_mnemonic_screen() # BIP39
         self.update_utxo_screen()
 
     async def new_history_loop(self):
@@ -1021,13 +1133,13 @@ class BrainbowApp(MDApp):
             await asyncio.sleep(60)
 
     async def update_exchange_rates(self):
-        sleep_time = 3
+        sleep_time = 15
         while True:
             await asyncio.sleep(sleep_time)
-            logging.info("run fetch_exchange_rates")
             if self.currency != "BTC" or \
                 (self.currency == "BTC" and Decimal(self.get_rate()) > Decimal(0)):
-                sleep_time = 60
+                logging.info("run fetch_exchange_rates")
+                sleep_time = 180
                 old_rates = self.exchange_rates
                 try:
                     self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)
@@ -1096,16 +1208,27 @@ class BrainbowApp(MDApp):
             pass
 
     def update_utxo_screen(self):
+        balance = Decimal(0)
         self.root.ids.utxoRecycleView.data_model.data = []
         self.wallet.utxos = utxo_deduplication(self.wallet.utxos)
         for utxo in self.wallet.utxos:
+            print("*"*30)
+            print(dir(utxo))
             value = Decimal(str(utxo.coin_value / nowallet.Wallet.COIN))
+            balance += value
             utxo_str = (self.unit_precision + " {}").format(value * self.unit_factor, self.units)
             _utxo = {"text": utxo_str,
-                     "secondary_text": "{}....{}:{}".format(str(utxo.tx_hash)[:19], str(utxo.tx_hash)[-19:], utxo.tx_out_index),  #Spendable
-                     "utxo": utxo}
+                     "secondary_text": "{}....{}:{}".format(
+                        str(utxo.tx_hash)[:19],
+                        str(utxo.tx_hash)[-19:],
+                        utxo.tx_out_index),  #Spendable
+                     "utxo": utxo,
+                     "tertiary_text": "{}".format(utxo.address("XTN")),
+
+                     }
             self.root.ids.utxoRecycleView.data_model.data.append(_utxo)
         self.update_addresses_screen()
+        print ("Computed balance: {}".format(balance))
 
     def update_send_screen(self):
         self.root.ids.send_balance.text = \
@@ -1149,10 +1272,20 @@ class BrainbowApp(MDApp):
             self.root.ids.seed_label.text = ""
             self.root.ids.seed_qrcode.data = ""
 
-    def open_address_bottom_sheet_callback(self, address, chunk_size=5):
+    def update_bip39_mnemonic_screen(self):
+        try:
+            self.root.ids.bip39_mnemonic_label.text = "BIP39 Mnemonic:\n\n{}".format(self.wallet.bip39_mnemonic)
+            self.root.ids.bip39_mnemonic_qrcode.data = "{}".format(self.wallet.bip39_mnemonic)
+        except Exception as ex:
+            print(traceback.format_exc())
+            print(ex)
+            self.root.ids.bip39_mnemonic_label.text = ""
+            self.root.ids.bip39_mnemonic_qrcode.data = ""
+
+
+    def open_address_bottom_sheet_callback(self, address):
         from bottom_screens_address import open_address_bottom_sheet
-        chunked_address = [address[i:i+chunk_size] for i in range(0, len(address), chunk_size)]
-        open_address_bottom_sheet(address=" ".join(chunked_address))
+        open_address_bottom_sheet(address=address)
 
     def update_addresses_screen(self):
         self.root.ids.addresses_recycle_view.data_model.data = []
@@ -1274,10 +1407,10 @@ class BrainbowApp(MDApp):
         self.units = self.config.get("brainbow", "units")
         self.update_unit()
         self.currency = "BTC"# disable by default self.config.get("brainbow", "currency")
+        self._hide_fiat_fields()
         self.explorer = self.config.get("brainbow", "explorer")
 
-        LabelBase.register(name='RobotoMono',
-                            fn_regular='assets/RobotoMono-Regular.ttf')
+        LabelBase.register(name='RobotoMono', fn_regular='assets/RobotoMono-Regular.ttf')
 
         self.fee_selection = MDDropdownMenu(items=self.fee_preset_items,
                                             width_mult=3,
@@ -1359,13 +1492,12 @@ class BrainbowApp(MDApp):
         else:
             icon = "check-circle"
 
-        data.append({"text": text,
-                    "secondary_text": history.tx_obj.id(),
-                    "history": history,
-                    "icon": icon })
+        data.append({   "text": text,
+                        "secondary_text": history.tx_obj.id(),
+                        "history": history,
+                        "icon": icon })
 
     def goto_slide(self, name):
-        print("looking for slide name={}".format(name))
         for i in app.root.ids.caraousel.slides:
             print(i.name == name)
             if i.name == name:

@@ -332,7 +332,7 @@ MDScreen:
                         id: id_login
                         AnchorLayout:
                             BoxLayout:
-                                size_hint: 0.8, 0.55
+                                size_hint: 0.8, 0.55 # 0.8, 0.55
                                 spacing: 3
                                 orientation: "vertical"
                                 MDTextField:
@@ -353,6 +353,17 @@ MDScreen:
                                     required: True
                                     font_size: '21sp'
                                     on_text: app.check_entropy()
+                                #BoxLayout:
+                                #    MDCheckbox:
+                                #        id: use_multisig
+                                #        size_hint: None, None
+                                #        size:  dp(33), dp(33)
+                                #    MDLabel:
+                                #        text: "2-of-3 multisig wallet"
+                                #        theme_text_color: "Primary"
+                                #        font_style:"Caption"
+                                #        size_hint_y: None
+                                #        height: dp(36)
                                 MDLabel:
                                     id: passphrase_hint
                                     text: "WARNING: Use a better passphrase!"
@@ -381,13 +392,72 @@ MDScreen:
                                     md_bg_color: "#252525"
                                     on_release: app.login()
                                     font_size: '18sp'
+
                                 MDLabel:
                                     size: self.size
                                     opacity: 0.85
                                     halign: 'center'
                                     font_size: '12sp'
-                                    text: "\n\n\n\n\n\n\n\n\n\n\nBrainbow is of course offered without any warranty of any kind; if you lose your bitcoin due to a bug in our software, your keystrokes being recorded on a malware-infested device from 2003, a weak passphrase, or even a typo, we are sorry in the most respectful way, but we cannot help you.\n\nJust don't forget your salt and passphrase."
+                                    pos_hint: {"center_x": .5, "center_y": .115}
+                                    text: ""#– OR –"
 
+                                MDTextButton:
+                                    text: "Use BIP39 Mnemonic instead".upper()
+                                    font_size: '18sp'
+                                    text_color: "black"
+                                    halign: "center"
+                                    pos_hint: {"center_x": .5, "center_y": .1}
+                                    color: "#c9c9c9"
+                                    on_release: app.goto_slide('login_with_bip39')
+                                #MDLabel:
+                                #    size: self.size
+                                #    opacity: 0.85
+                                #    halign: 'center'
+                                #    font_size: '12sp'
+                                #    text: "\n\n\n\n\n\n\n\n\n\n\nBrainbow is of course offered without any warranty of any kind; if you lose your bitcoin due to a bug in our software, your keystrokes being recorded on a malware-infested device from 2003, a weak passphrase, or even a typo, we are sorry in the most respectful way, but we cannot help you.\n\nJust don't forget your salt and passphrase."
+                    MDFloatLayout:
+                        name: "login_with_bip39"
+                        id: id_login_with_bip39
+                        AnchorLayout:
+                            BoxLayout:
+                                size_hint: 0.8, 0.55 # 0.55
+                                spacing: 3
+                                orientation: "vertical"
+                                MDTextField:
+                                    id: bip39_mnemonic
+                                    hint_text: "BIP39 Mnemonic (12 or 24 words)"
+                                    color_mode: "accent"
+                                    write_tab: False
+                                    required: False
+                                    font_size: '21sp'
+                                #PassphraseControlField:
+                                #    id: pass_field
+                                MDTextField:
+                                    id: bip39_passphrase_field
+                                    hint_text: "BIP39 Passphrase (optional)"
+                                    color_mode: "accent"
+                                    write_tab: False
+                                    password: True
+                                    required: False
+                                    disabled: True
+                                    font_size: '21sp'
+                                MDTextField:
+                                    id: MDTextField:
+                                    id: confirm_bip39_passphrase_field
+                                    hint_text: "Repeat BIP39 Passphrase (optional)"
+                                    color_mode: "accent"
+                                    write_tab: False
+                                    password: True
+                                    required: False
+                                    disabled: True
+                                    font_size: '21sp'
+                                MDRaisedButton:
+                                    size_hint_x: 1
+                                    text: "Let's get started using BIP39"
+                                    id: bip39_login_button
+                                    md_bg_color: "#252525"
+                                    on_release: app.bip39_login()
+                                    font_size: '18sp'
 
 
             MainScreen:
@@ -452,6 +522,7 @@ MDScreen:
                                         on_text_validate: app.set_amount_error(self.text)
                                         on_focus: app.set_amount_error(self.text)
                                     FloatInput:
+                                        id: spend_amount_input_fiat
                                         text: app.current_fiat
                                         hint_text: app.currency
                                         color_mode: "accent"
@@ -498,10 +569,17 @@ MDScreen:
                                         font_size: sp(18)
                                         md_bg_color: "#252525"
                                         on_release: asyncio.create_task(app.send_button_handler())
+                                #MDBoxLayout:
+                                #    id: floating_action_box
+                                #    spacing: "56dp"
+                                #    adaptive_size: True
+                                #    pos_hint: {"center_x": .5, "center_y": .5}
+                                #    orientation: "vertical"
 
                                 # Camera not working right now
                                 MDFloatingActionButton:
                                     icon: "qrcode-scan"
+                                    md_bg_color: "#252525"
                                     opposite_colors: True
                                     elevation_normal: 8
                                     pos_hint: {"center_x": 0.5, "center_y": 0.2}
@@ -510,13 +588,13 @@ MDScreen:
 
 
 
-                                MDFloatingActionButton:
-                                    md_bg_color: "#252525"
-                                    icon: "credit-card-scan-outline"
-                                    opposite_colors: True
-                                    pos_hint: {"center_x": 0.5, "center_y": 0.2}
-                                    id: nfc_button
-                                    on_release: app.start_nfc_tap()
+                                #    MDFloatingActionButton:
+                                #        md_bg_color: "#252525"
+                                #        icon: "credit-card-scan-outline"
+                                #        opposite_colors: True
+                                #        pos_hint: {"center_x": 0.5, "center_y": 0.2}
+                                #        id: nfc_button
+                                #        on_release: app.start_nfc_tap()
 
 
                     Tab:
@@ -533,12 +611,14 @@ MDScreen:
                                     size_hint: 1, 0.2
                                     spacing: 5
                                     FloatInput:
+                                        id: receive_amount_input
                                         text: app.current_coin
                                         hint_text: app.units
                                         color_mode: "accent"
                                         write_tab: False
                                         on_text: app.update_amounts(self.text, "coin")
                                     FloatInput:
+                                        id: receive_amount_input_fiat
                                         text: app.current_fiat
                                         hint_text: app.currency
                                         color_mode: "accent"
@@ -710,6 +790,26 @@ MDScreen:
                         QRCodeWidget:
                             id: seed_qrcode
                             show_border: False
+            SeedScreen:
+                name: "bip39_mnemonic_screen"
+                transition: SlideTransition(direction="right", duration=0.01)
+                MDCard:
+                    size_hint: None, None
+                    size: dp(320), dp(360)
+                    pos_hint: {"center_x": 0.5, "center_y": 0.55}
+                    BoxLayout:
+                        orientation:"vertical"
+                        padding: dp(10)
+                        spacing: 5
+                        MDLabel:
+                            id: bip39_mnemonic_label
+                            theme_text_color: "ContrastParentBackground"
+                            font_style:"Body2"
+                            size_hint_y: None
+                            height: dp(70)
+                        QRCodeWidget:
+                            id: bip39_mnemonic_qrcode
+                            show_border: False
 
 
 
@@ -832,6 +932,11 @@ MDScreen:
                     icon: "database-arrow-down"
                     text: "Wallet Import Format"
                     on_release: app.load_seed_view()
+
+                MDNavigationDrawerItem:
+                    icon: "database-arrow-down"
+                    text: "BIP39 Mnemonic"
+                    on_release: app.load_bip39_mnemonic_view()
 
                 MDNavigationDrawerItem:
                     icon: "database-off"

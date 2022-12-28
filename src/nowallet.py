@@ -38,12 +38,33 @@ from app import update_waiting_texts
 
 from connection import Connection
 
+from embit import bip32, bip39, bip85
 
 Chain = collections.namedtuple("Chain", ["netcode", "chain_1209k", "bip44"])
 BTC = Chain(netcode="BTC", chain_1209k="btc", bip44=0)
 TBTC = Chain(netcode="XTN", chain_1209k="tbtc", bip44=1)
 
 
+"""
+from bip49 import SegwitBIP32Node
+
+from embit import bip85 #bip32, bip39, ec
+
+secret_exp, chain_code = 104377729351993946109098618221593532628614185863132659441100078520868365683231, b'+C7\x86\x8e$\ri\x1c\xd6\\\xa1\xb6z\xb7\x18F6\x98\xd3\xff/\xe9\xd59\xa3\xcf\xf4r\xa4\xae\xb1'
+
+mpk = SegwitBIP32Node(netcode="XTN", chain_code=chain_code, secret_exponent=secret_exp)
+
+path =         "49H/1H/0H"
+account_master = mpk.subkey_for_path(path)
+account_master.fingerprint().hex() # 'e30ca53e'
+
+embit_mpk = bip32.HDKey.from_base58(mpk.hwif(as_private=1))
+embit_path = "m/49h/1h/0h/0h"
+embit_account_master = embit_mpk.derive(embit_path)
+embit_account_master.fingerprint.hex() # 'e30ca53e'
+
+from
+"""
 
 
 class Wallet:
@@ -58,6 +79,8 @@ class Wallet:
     def __init__(self,
                  salt: str,
                  passphrase: str,
+                 bip39_mnemonic: str,
+                 bip39_passphrase: str,
                  connection: Connection,
                  loop: asyncio.AbstractEventLoop,
                  chain,
@@ -68,6 +91,8 @@ class Wallet:
 
         :param salt: a string to use as a salt for key derivation
         :param passphrase: a string containing a secure passphrase
+        :param bip39_mnemonic: a string containing 12 or 24 BIP39 seed words
+        :param bip39_passphrase: a string containing a BIP39 passphrase
         :param connection: a Connection object
         :param loop: an asyncio event loop
         :param chain: a namedtuple containing chain-specific info
@@ -75,32 +100,58 @@ class Wallet:
         """
 
         @log_time_elapsed
-        def create_root_keys(salt: str, passphrase: str, account: int = 0) -> None:
+        def create_root_keys(salt: str = None, passphrase: str = None,
+                     bip39_mnemonic: str = None, bip39_passphrase: str = None,
+                     account: int = 0) -> None:
             """ Derives master key from salt/passphrase and initializes all
             master key attributes.
 
             :param salt: a string to use as a salt for key derivation
             :param passphrase: a string containing a secure passphrase
+
+            :param bip39_mnemonic: a string containing 12 or 24 BIP39 seed words
+            :param bip39_passphrase: a string containing a BIP39 passphrase
+
             :param account: account number, defaults to 0
             """
-            update_waiting_texts(text="Deriving\nKeys", small_text="Deriving keys will take some time to complete.\nPlease wait..") 
-            logging.info("Deriving keys...")
-            t = derive_key(
-                salt, passphrase
-            )  # type: Union[int, Tuple[int, bytes]]
-            assert isinstance(t, tuple), "Should never fail"
-            secret_exp, chain_code = t
+            if salt and passphrase:
+                update_waiting_texts(text="Deriving\nKeys",
+                    small_text="Deriving keys will take some time to complete.\nPlease wait..")
+                t = derive_key(
+                    salt, passphrase
+                )  # type: Union[int, Tuple[int, bytes]]
+                assert isinstance(t, tuple), "Should never fail"
+                secret_exp, chain_code = t
+                #print  ("secret_exp, chain_code = {}, {}".format(secret_exp, chain_code))
+                #print ("self.chain.netcode = {}".format(self.chain.netcode))
+                # master private key
+                warpwallet_mpk = SegwitBIP32Node(
+                    netcode=self.chain.netcode,
+                    chain_code=chain_code,
+                    secret_exponent=secret_exp
+                )  # type: SegwitBIP32Node
 
-            # master private key
-            self.mpk = SegwitBIP32Node(
-                netcode=self.chain.netcode,
-                chain_code=chain_code,
-                secret_exponent=secret_exp
-            )  # type: SegwitBIP32Node
+                # Ready for future features, BIP85 index
+                warpwallet_hwif = warpwallet_mpk.hwif(as_private=1)
+                t_embit_mpk = bip32.HDKey.from_base58(warpwallet_hwif)
+                t_mnemonic = bip85.derive_mnemonic(root=t_embit_mpk, index=0) #TODO: bip85 index
+                self.bip39_mnemonic = t_mnemonic
+                t_seed = bip39.mnemonic_to_seed(t_mnemonic)
+            elif bip39_mnemonic:
+                if bip39_passphrase is None:
+                    bip39_passphrase = ''
+                self.bip39_mnemonic = bip39_mnemonic
+                t_seed = bip39.mnemonic_to_seed(bip39_mnemonic, bip39_passphrase)
+
+            t_deriv_embit_mpk = bip32.HDKey.from_seed(t_seed).to_string()
+
+            # pycoin is legacy
+            self.mpk = SegwitBIP32Node.from_hwif(t_deriv_embit_mpk)  # type: SegwitBIP32Node
+            self.mpk._netcode = self.chain.netcode
 
             bip = 84 if bech32 else 49  # type: int
-            path = "{}H/{}H/{}H".format(bip, self.chain.bip44, account)  # type: str
-            self.derivation = {'bip': bip, 'bip44': self.chain.bip44, 'account': account}
+            path = "{}H/{}H/{}H".format(bip, self.chain.bip44, account)  # type: str       #TODO: account
+            self.derivation = {'bip': bip, 'bip44': self.chain.bip44, 'account': account}  #TODO: account
             self.fingerprint = self.mpk.fingerprint().hex()
             self.account_master = self.mpk.subkey_for_path(path)  # type: SegwitBIP32Node
             self.root_spend_key = self.account_master.subkey(0)  # type: SegwitBIP32Node
@@ -116,7 +167,8 @@ class Wallet:
         self.root_spend_key = None  # type: SegwitBIP32Node
         self.root_change_key = None  # type: SegwitBIP32Node
         self.fingerprint = None
-        create_root_keys(salt, passphrase)
+        self.bip39_mnemonic = ""
+        create_root_keys(salt, passphrase, bip39_mnemonic, bip39_passphrase)
 
         # Boolean lists, True = used / False = unused
         self.spend_indicies = []  # type: List[bool]
