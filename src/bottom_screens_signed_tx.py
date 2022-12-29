@@ -305,7 +305,7 @@ class TxDetailInfo(MDGridLayout):
         except Exception as ex:
             fee = str(ex)
             print (ex)
-        fee_lbl = MDLabel(text = fee) #"{}..{}".format(signed_tx.as_hex()[:12], signed_tx.as_hex()[-12:]))
+        fee_lbl = MDLabel(text = "{}".format(fee)) #"{}..{}".format(signed_tx.as_hex()[:12], signed_tx.as_hex()[-12:]))
         fee_lbl.text_color: "#000000"
         fee_lbl.halign = "center"
         fee_lbl.valign = "top"
