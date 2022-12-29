@@ -1,13 +1,11 @@
-"""Build embit"""
-from typing import List
-from pythonforandroid.recipe import CppCompiledComponentsPythonRecipe
+from pythonforandroid.recipe import PythonRecipe
 
 
-class EmbitRecipe(CppCompiledComponentsPythonRecipe):  # type: ignore # pylint: disable=R0903
+class EmbitRecipe(PythonRecipe):
     url = 'https://github.com/diybitcoinhardware/embit/archive/refs/heads/bip85.zip'
-    name = "embit"
-    depends: List[str] = ["setuptools"]
+    depends = ['setuptools']
+    site_packages_name = "embit"
     call_hostpython_via_targetpython = False
     install_in_hostpython = True
-
+    
 recipe = EmbitRecipe()
