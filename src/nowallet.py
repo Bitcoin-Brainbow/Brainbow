@@ -40,6 +40,9 @@ from connection import Connection
 
 from embit import bip32, bip39, bip85
 
+from utils import is_valid_address
+
+
 Chain = collections.namedtuple("Chain", ["netcode", "chain_1209k", "bip44"])
 BTC = Chain(netcode="BTC", chain_1209k="btc", bip44=0)
 TBTC = Chain(netcode="XTN", chain_1209k="tbtc", bip44=1)
@@ -124,20 +127,21 @@ class Wallet:
                 secret_exp, chain_code = t
                 #print  ("secret_exp, chain_code = {}, {}".format(secret_exp, chain_code))
                 #print ("self.chain.netcode = {}".format(self.chain.netcode))
-                # master private key
-                warpwallet_mpk = SegwitBIP32Node(
+                # WarpWallet master private key
+                self.warpwallet_mpk = SegwitBIP32Node(
                     netcode=self.chain.netcode,
                     chain_code=chain_code,
                     secret_exponent=secret_exp
                 )  # type: SegwitBIP32Node
 
                 # Ready for future features, BIP85 index
-                warpwallet_hwif = warpwallet_mpk.hwif(as_private=1)
+                warpwallet_hwif = self.warpwallet_mpk.hwif(as_private=1)
                 t_embit_mpk = bip32.HDKey.from_base58(warpwallet_hwif)
                 t_mnemonic = bip85.derive_mnemonic(root=t_embit_mpk, index=0) #TODO: bip85 index
                 self.bip39_mnemonic = t_mnemonic
                 t_seed = bip39.mnemonic_to_seed(t_mnemonic)
             elif bip39_mnemonic:
+                self.warpwallet_mpk = None # Keys not generated using WarpWallet technique
                 if bip39_passphrase is None:
                     bip39_passphrase = ''
                 self.bip39_mnemonic = bip39_mnemonic
@@ -163,6 +167,7 @@ class Wallet:
         self.bech32 = bech32
 
         self.mpk = None  # type: SegwitBIP32Node
+        self.warpwallet_mpk = None # type: SegwitBIP32Node
         self.account_master = None  # type: SegwitBIP32Node
         self.root_spend_key = None  # type: SegwitBIP32Node
         self.root_change_key = None  # type: SegwitBIP32Node
@@ -193,6 +198,11 @@ class Wallet:
         :returns: a string containing the account's XPUB.
         """
         return self.account_master.hwif()
+
+    @property
+    def private_BIP32_warpwallet_root_key(self) -> str:
+        warpwallet_root_key = self.warpwallet_mpk.hwif(as_private=1)
+        return warpwallet_root_key
 
     @property
     def private_BIP32_root_key(self) -> str:
@@ -1001,17 +1011,23 @@ class Wallet:
 
 
 
-def get_payable_from_BIP21URI(uri: str, proto: str = "bitcoin") -> Tuple[str, Decimal]:
+def get_payable_from_BIP21URI(uri: str, proto: str = "bitcoin", netcode="BTC") -> Tuple[str, Decimal]:
     """ Computes a 'payable' tuple from a given BIP21 encoded URI.
 
     :param uri: The BIP21 URI to decode
     :param proto: The expected protocol/scheme (case insensitive)
+    :param netcode: BTC or XTN 
     :returns: A payable (address, amount) corresponding to the given URI
     :raise: Raises s ValueError if there is no address given or if the
         protocol/scheme doesn't match what is expected
     """
     obj = parse.urlparse(uri)  # type: parse.ParseResult
     if not obj.path or obj.scheme.upper() != proto.upper():
+        try:
+            if is_valid_address(uri, netcode):
+                return uri, None
+        except:
+            pass
         raise ValueError("Malformed URI")
     if not obj.query:
         return obj.path, None

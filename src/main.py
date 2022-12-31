@@ -62,7 +62,7 @@ from kivymd.uix.relativelayout import MDRelativeLayout
 #from kivy_garden.zbarcam import ZBarCam
 
 
-from pycoin.key import validate
+
 from pycoin.serialize import b2h
 
 #import __init__  as nowallet
@@ -82,7 +82,10 @@ from aiosocks import SocksConnectionError
 from aiohttp.client_exceptions import ClientConnectorError
 
 from passphrase import entropy_bits
+
 from utils import utxo_deduplication
+from utils import is_valid_address
+from utils import get_payable_from_BIP21URI
 
 from bottom_screens_signed_tx import open_tx_preview_bottom_sheet
 
@@ -90,7 +93,7 @@ from camera4kivy import Preview
 from qrreader import QRReader
 
 
-__version__ = "0.1.128"
+__version__ = "0.1.133"
 
 if platform == "android":
     # NFC
@@ -615,11 +618,12 @@ class BrainbowApp(MDApp):
         self.close_preview_modal()
         address = None
         try:
-            address, amount = nowallet.get_payable_from_BIP21URI(qrcode)
+            address, amount = get_payable_from_BIP21URI(qrcode, netcode=self.chain.netcode)
             self.root.ids.address_input.text = str(address)
             if amount:
                 self.root.ids.spend_amount_input.text = str(amount)
         except ValueError as ve:
+
             self.show_dialog("Error", str(ve))
         if address:
             self.show_snackbar("Found {}..{}".format(address[:11], address[-11:]))
@@ -646,7 +650,7 @@ class BrainbowApp(MDApp):
 
     def qrcode_handler(self, symbols):
         try:
-            address, amount = nowallet.get_payable_from_BIP21URI(symbols[0])
+            address, amount = get_payable_from_BIP21URI(symbols[0])
         except ValueError as ve:
             self.show_dialog("Error", str(ve))
             return
@@ -786,17 +790,7 @@ class BrainbowApp(MDApp):
 
     def set_address_error(self, addr):
         netcode = self.chain.netcode
-        is_valid = addr.strip() and validate.is_address_valid(
-            addr.strip(), ["address", "pay_to_script"], [netcode]) == netcode
-        if not is_valid:
-            # maybe it's a bech32 address
-            from embit import bech32 as embit_bech32
-            hrp = addr.split("1")[0]
-            ver, prog = embit_bech32.decode(hrp, addr)
-            print ("{} {}".format(ver, prog))
-            if ver is not None:
-                if 0 <= ver <= 16 and prog:
-                    is_valid = True
+        is_valid = is_valid_address(addr, netcode)
         self.root.ids.address_input.error = not is_valid
 
     def set_amount_error(self, amount):
@@ -1361,10 +1355,11 @@ class BrainbowApp(MDApp):
     def update_amounts(self, text=None, type="coin"):
         if self.is_amount_inputs_locked:
             return
-        #try:
-        amount = Decimal(text) if text else Decimal("0")
-        #except:
-        #    amount = Decimal("0")
+        try:
+            amount = Decimal(text) if text else Decimal("0")
+        except:
+            #amount = Decimal("0.0")
+            return
         rate = self.get_rate() / self.unit_factor
         new_amount = None
         if type == "coin":

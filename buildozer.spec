@@ -4,7 +4,7 @@
 title = Brainbow Bitcoin Client
 
 # (str) Package name
-package.name = brainbow
+package.name = wallet
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = space.brainbow
@@ -22,7 +22,7 @@ source.exclude_exts = spec
 source.exclude_dirs = tests, bin, venv, old-sources, multisig
 
 # (str) Application versioning (method 1)
-version = 0.1.131
+version = 0.1.133
 
 # (str) Application versioning (method 2)
 #version.regex = __version__ = ['"](.*)['"]
