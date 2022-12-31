@@ -4,7 +4,7 @@
 title = Brainbow Bitcoin Client
 
 # (str) Package name
-package.name = wallet
+package.name = brainbow
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = space.brainbow
