@@ -1505,7 +1505,7 @@ class BrainbowApp(MDApp):
             print(Permission)
             print(dir(Permission))
             #request_permissions([Permission.CAMERA])
-            request_permissions([Permission.CAMERA, Permission.MANAGE_EXTERNAL_STORAGE])
+            request_permissions([Permission.CAMERA, Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
 
 
         self.title = 'Brainbow'
