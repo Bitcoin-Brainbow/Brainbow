@@ -98,18 +98,6 @@ requirements =
 # python-dateutil==2.8.2,
 # bitcoin==1.1.39,
 
-# QR SCANNER BELOW:
-# (numpy is also used to compute std dev for currency/exchange rates)
-# numpy==1.22.3,
-#  android,
-#  hostpython3==3.9.9,
-#  libiconv,
-#  libzbar,
-#  opencv-python==4.6.0.66,
-#  pyzbar==0.1.8,
-#  zbarlight==2.1, (needed if pyzbar is installed?)
-#  xcamera==2020.613,
-#  kivy-garden.zbarcam==2020.524,
 
 
 # (str) Custom source folders for requirements
@@ -167,7 +155,7 @@ fullscreen = 0
 #icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
 
 # (list) Permissions
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA,NFC
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA,NFC,MANAGE_EXTERNAL_STORAGE
 #,WRITE_EXTERNAL_STORAGE
 #,READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 #,WAKE_LOCK
