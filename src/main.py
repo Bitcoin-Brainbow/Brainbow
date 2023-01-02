@@ -1502,7 +1502,9 @@ class BrainbowApp(MDApp):
         """ """
         if platform =='android':
             from android.permissions import request_permissions, Permission
-            request_permissions([Permission.CAMERA])
+            #request_permissions([Permission.CAMERA])
+            request_permissions([Permission.CAMERA,Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
+
 
         self.title = 'Brainbow'
         self.theme_cls.material_style = "M2"
