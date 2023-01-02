@@ -634,6 +634,13 @@ MDScreen:
                                         spacing: 5
                                         on_touch_down: app.copy_current_address_to_clipboard()
                                         MDLabel:
+
+                                        #MDTextButton:
+
+                                        #MDRectangleFlatIconButton:
+                                            #line_color: 0, 0, 0, 0
+                                            #icon: 'copy'
+
                                             id: addr_label
                                             text_color: "#000000"
                                             font_style:"Body2"
@@ -669,6 +676,8 @@ MDScreen:
                         tab_padding: [10, 0, 0,0]
                         BoxLayout:
                             orientation: "vertical"
+                            padding: dp(10)
+                            spacing: 5
                             RecycleView:
                                 id: utxoRecycleView
                                 viewclass: "UTXOListItem"
@@ -790,6 +799,7 @@ MDScreen:
                         QRCodeWidget:
                             id: seed_qrcode
                             show_border: False
+                        
             SeedScreen:
                 name: "bip39_mnemonic_screen"
                 transition: SlideTransition(direction="right", duration=0.01)

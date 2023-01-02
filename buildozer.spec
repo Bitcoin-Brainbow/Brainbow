@@ -22,7 +22,7 @@ source.exclude_exts = spec
 source.exclude_dirs = tests, bin, venv, old-sources, multisig
 
 # (str) Application versioning (method 1)
-version = 0.1.133
+version = 0.1.134
 
 # (str) Application versioning (method 2)
 #version.regex = __version__ = ['"](.*)['"]
@@ -167,7 +167,7 @@ fullscreen = 0
 #icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
 
 # (list) Permissions
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA,NFC
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA,NFC,READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 #,WAKE_LOCK
 
 #, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE

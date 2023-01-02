@@ -93,7 +93,13 @@ from camera4kivy import Preview
 from qrreader import QRReader
 
 
-__version__ = "0.1.133"
+
+
+import os
+from kivymd.uix.filemanager import MDFileManager
+
+
+__version__ = "0.1.134"
 
 if platform == "android":
     # NFC
@@ -281,7 +287,7 @@ class BrainbowApp(MDApp):
         self.mempool_recommended_fees = None
         # for QR code reading UX
         self._qrreader = None
-
+        self._fiat_fields_hidden = True
 
         self._qr_preview_modal = None
         self._dialog = None # generic dialog
@@ -309,17 +315,21 @@ class BrainbowApp(MDApp):
                                  "text": "View Address"},
 
                                 {"viewclass": "MyMenuItem",
+                                 "on_release": lambda x="copy-address": self.utxo_menu_callback(self, x),
+                                 "text": "TODO:Copy Address"},
+
+                                {"viewclass": "MyMenuItem",
                                  "on_release": lambda x="Sign Message": self.utxo_menu_callback(self, x),
-                                 "text": "Sign Message" },
+                                 "text": "TODO:Sign/Verify Message" },
 
 
                                 {"viewclass": "MyMenuItem",
                                  "on_release": lambda x="View Private Key": self.utxo_menu_callback(self, x),
-                                 "text": "View Private Key"},
+                                 "text": "TODO:View Private Key"},
 
                                 {"viewclass": "MyMenuItem",
                                  "on_release": lambda x="View Redeem Script": self.utxo_menu_callback(self, x),
-                                 "text": "View Redeem Script"},
+                                 "text": "TODO:View Redeem Script"},
 
 
                                 ]
@@ -517,6 +527,7 @@ class BrainbowApp(MDApp):
             widget_fiat.opacity = 0
             widget_fiat.height = 0
             widget_fiat.width = 0
+        self._fiat_fields_hidden = True
 
     def _show_fiat_fields(self):
         print("_show_fiat_fields")
@@ -531,7 +542,7 @@ class BrainbowApp(MDApp):
             widget_fiat.height = widget_btc.height
             widget_fiat.width = 0.5
             self.update_amounts(widget_btc.text, "coin")
-
+        self._fiat_fields_hidden = False
     def on_exchange_rate_switch_active(self, switch, on_off):
         if on_off:
             self.currency = "USD"
@@ -680,10 +691,102 @@ class BrainbowApp(MDApp):
         self.root.ids.sm.current = "main"
         pass
 
+    # START EXPORT #####
+
     def download_prv(self):
         """ """
-        print(self.wallet.private_BIP32_root_key)
-        self.show_snackbar("xpriv dumped!")
+        Window.bind(on_keyboard=self.file_manager_events)
+        self.manager_open = False
+        self._xpriv_file = None
+        self.file_manager = MDFileManager(
+            exit_manager=self.exit_manager,
+            select_path=self.select_path,
+            #background_color_toolbar= [1.0, 1.0, 1.0, 1.0],
+            selector="folder",
+        )
+        self.file_manager.show(os.path.expanduser("~"))  # output manager to the screen
+        self.manager_open = True
+
+
+    def _export_xpriv_file(self, *args):
+        print(self._xpriv_file)
+        #print (path)
+        #print(self.wallet.private_BIP32_root_key)
+        if self.export_xprv_dialog:
+            self.export_xprv_dialog.dismiss()
+            self.export_xprv_dialog = None
+        self.show_snackbar("xpriv saved as {}".format(self._xpriv_file))
+
+    def _cancel_xpriv_file(self, *args):
+        self._xpriv_file = None
+        if self.export_xprv_dialog:
+            self.export_xprv_dialog.dismiss()
+            self.export_xprv_dialog = None
+        print ("self._xpriv_file = {}".format(self._xpriv_file))
+
+    def select_path(self, path: str):
+        '''
+        It will be called when you click on the file name
+        or the catalog selection button.
+
+        :param path: path to the selected directory or file;
+
+        Export XPRV w/ Coldcard compatibility
+
+        Exports a cleartext file with the BIP-32 base58-serialized extended master private key.
+        This is also known as Wallet Import Format, WIF.
+
+        Copy friendly borrowed from Coldcard due to export/import compatibility:
+
+        Please note there is no encryption for this method, and therefore, it is very hazardous and only recommended for testing purposes.
+
+        Please note that a cleartext file is exported without encryption or protection.
+        This is dangerous and is recommended for testing purposes only.
+        This is dangerous and only recommended for testing purposes.
+        This is only recommended for testing purposes.
+
+        '''
+
+        self.exit_manager()
+
+
+
+        self._xpriv_file = "{}/xprv-{}".format(path, self.wallet.fingerprint)
+
+        self.export_xprv_dialog = MDDialog(
+                title="Export BIP32 Root Key (WIF)",
+                text="Please note that a cleartext file is exported without encryption or protection.\n\nThis is dangerous and is recommended for testing purposes only.",
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL",
+                        on_release = partial(self._cancel_xpriv_file)
+                    ),
+                    MDFlatButton(
+                        text="OK, EXPORT",
+                        on_release= partial(self._export_xpriv_file)
+                    ),
+                ],
+
+            )
+        self.export_xprv_dialog.open()
+
+
+
+    def exit_manager(self, *args):
+        '''Called when the user reaches the root of the directory tree.'''
+
+        self.manager_open = False
+        self.file_manager.close()
+
+    def file_manager_events(self, instance, keyboard, keycode, text, modifiers):
+        '''Called when buttons are pressed on the mobile device.'''
+
+        if keyboard in (1001, 27):
+            if self.manager_open:
+                self.file_manager.back()
+        return True
+    # END EXPORT #####
+
 
     def close_wallet_context_view(self):
         """
@@ -1145,8 +1248,12 @@ class BrainbowApp(MDApp):
                 #    self.show_snackbar("Exchange rates updated. {}".format(self.get_rate()))
 
     def toggle_balance_label(self):
-        self.fiat_balance = not self.fiat_balance
-        self.update_balance_screen()
+        if self._fiat_fields_hidden is False:
+            self.fiat_balance = not self.fiat_balance
+            self.update_balance_screen()
+        else:
+            pass
+
 
 
 
@@ -1343,12 +1450,17 @@ class BrainbowApp(MDApp):
             self.exchange_rates = False
             return Decimal(str(0))
 
+    def copy_something_to_clipboard(self, something, message=""):
+        Clipboard.copy(something)
+        if message:
+            self.show_snackbar(text=message)
+
     def copy_current_address_to_clipboard(self):
         if self.current_tab_name == "receive":
             try:
                 current_address = self.root.ids.addr_qrcode.data.replace("bitcoin:","").split("?")[0] # "bitcoin:{}?amount={}"
                 Clipboard.copy(current_address)
-                self.show_snackbar(text="Current address copied to clipboard.")
+                self.show_snackbar(text="Copied {}...{} to clipboard.".format(current_address[:8], current_address[-8:]))
             except:
                 self.show_snackbar(text="Can't copy to clipboard.")
 
