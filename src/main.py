@@ -99,7 +99,7 @@ import os
 from kivymd.uix.filemanager import MDFileManager
 
 
-__version__ = "0.1.134"
+__version__ = "0.1.135"
 
 if platform == "android":
     # NFC

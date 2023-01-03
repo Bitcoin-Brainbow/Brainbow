@@ -22,7 +22,7 @@ source.exclude_exts = spec
 source.exclude_dirs = tests, bin, venv, old-sources, multisig
 
 # (str) Application versioning (method 1)
-version = 0.1.134
+version = 0.1.135
 
 # (str) Application versioning (method 2)
 #version.regex = __version__ = ['"](.*)['"]
@@ -105,10 +105,10 @@ requirements =
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-presplash.filename = %(source.dir)s/brain.png
+presplash.filename = %(source.dir)s/brain_icon.png
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/brain.png
+icon.filename = %(source.dir)s/brain_icon.png
 
 
 
