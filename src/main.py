@@ -435,6 +435,7 @@ class BrainbowApp(MDApp):
         print ('details, {}'.format(tag))
         details = self.get_ndef_details(tag)
         print ('details, {}'.format(details))
+        self.show_dialog("NFC Reading", 'details, {}'.format(details))
         #self.show_snackbar('details, {}'.format(tag))
         #self.show_snackbar('details, {}'.format(details))
 
