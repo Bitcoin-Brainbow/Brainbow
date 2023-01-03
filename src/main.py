@@ -698,13 +698,17 @@ class BrainbowApp(MDApp):
         Window.bind(on_keyboard=self.file_manager_events)
         self.manager_open = False
         self._xpriv_file = None
+        print("download_prv")
         self.file_manager = MDFileManager(
             exit_manager=self.exit_manager,
             select_path=self.select_path,
             #background_color_toolbar= [1.0, 1.0, 1.0, 1.0],
             selector="folder",
         )
-        self.file_manager.show(os.path.expanduser("~"))  # output manager to the screen
+        from android.storage import primary_external_storage_path
+        ext_path = primary_external_storage_path()
+        storage_path = os.path.join(ext_path, 'Downloads')
+        self.file_manager.show(storage_path)
         self.manager_open = True
 
 
@@ -1504,8 +1508,10 @@ class BrainbowApp(MDApp):
             from android.permissions import request_permissions, Permission
             print(Permission)
             print(dir(Permission))
-            #request_permissions([Permission.CAMERA])
-            request_permissions([Permission.CAMERA, Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
+            request_permissions([Permission.CAMERA])
+            request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
+
+            #request_permissions([Permission.CAMERA, Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
 
 
         self.title = 'Brainbow'
