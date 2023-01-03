@@ -412,7 +412,7 @@ class BrainbowApp(MDApp):
         return details
 
 
-    def on_new_intent(self, intent):
+    def on_new_intent(self, intent, cb=None):
         print ('on_new_intent(), {}'.format(intent.getAction()) )
         # get TAG details
         tag = cast('android.nfc.Tag', intent.getParcelableExtra(NfcAdapter.EXTRA_TAG))
@@ -435,13 +435,18 @@ class BrainbowApp(MDApp):
         print ('details, {}'.format(tag))
         details = self.get_ndef_details(tag)
         print ('details, {}'.format(details))
-        self.show_dialog("NFC Reading", 'details, {}'.format(details))
+        #self.show_dialog("NFC Reading", 'details, {}'.format(details))
         #self.show_snackbar('details, {}'.format(tag))
-        #self.show_snackbar('details, {}'.format(details))
+        #self.show_snackbar()
+        if cb:
+            cb('details, {}'.format(details))
+
+    def nfc_cb(self, reading):
+        self.show_dialog("NFC Reading", reading)
 
     def nfc_init(self):
         if platform == "android":
-            activity.bind(on_new_intent=self.on_new_intent)
+            activity.bind(on_new_intent=self.on_new_intent(cb=self.nfc_cb))
             self.j_context = context = PythonActivity.mActivity
             self.nfc_adapter = NfcAdapter.getDefaultAdapter(context)
             """
