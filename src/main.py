@@ -1169,7 +1169,7 @@ class BrainbowApp(MDApp):
 
         coinkb_fee = await self.wallet.get_fee_estimation(6)
         self.current_fee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
-
+        self.root.ids.wait_text_small.text = "Wating for fee estimate .."
         coinkb_fee = await self.wallet.get_relayfee()
         relayfee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
 
@@ -1198,7 +1198,7 @@ class BrainbowApp(MDApp):
                 "economyFee": relayfee,
                 "minimumFee": relayfee
             }
-
+        self.root.ids.wait_text_small.text = "Almost finished .."
         print(self.mempool_recommended_fees)
         logging.info("Finished 'doing login tasks'")
 
@@ -1262,7 +1262,7 @@ class BrainbowApp(MDApp):
                 #    self.show_snackbar("Exchange rates updated. {}".format(self.get_rate()))
 
     def toggle_balance_label(self):
-        self.dump_history_to_fs()
+        #self.dump_history_to_fs()
         if self._fiat_fields_hidden is False:
             self.fiat_balance = not self.fiat_balance
             self.update_balance_screen()
