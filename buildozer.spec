@@ -22,7 +22,7 @@ source.exclude_exts = spec
 source.exclude_dirs = tests, bin, venv, old-sources, multisig
 
 # (str) Application versioning (method 1)
-version = 0.1.135
+version = 0.1.136
 
 # (str) Application versioning (method 2)
 #version.regex = __version__ = ['"](.*)['"]

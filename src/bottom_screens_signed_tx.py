@@ -82,10 +82,8 @@ class TxDetailInfo(MDGridLayout):
         in_out_sats_tx_value = 0.0
         if wallet:
             addrs = wallet.get_all_used_addresses()
-            print("addrs, wallet all used addr: {}".format(addrs))
             for tx_out in signed_tx.txs_out:
                 if tx_out.address(netcode="XTN") in addrs:
-                    print("found my addr: {} value: {}".format(tx_out.address(netcode="XTN"), tx_out.coin_value))
                     in_out_sats_tx_value += tx_out.coin_value
 
 
@@ -282,7 +280,7 @@ class TxDetailInfo(MDGridLayout):
         scroll_output_view = MDScrollView(scroll_output_list)
         scroll_output_view.minimum_height = self.height
         for tx_out in signed_tx.txs_out:
-            print(dir(tx_out))
+            #print(dir(tx_out))
             scroll_output_list.add_widget(
                 TwoLineAvatarIconListItem(
                     None,
@@ -328,7 +326,6 @@ class TxDetailInfo(MDGridLayout):
 
         raw_tx_hex_tab.add_widget(raw_tx_hex_box)
         tabs.add_widget(raw_tx_hex_tab)
-
 
         self.add_widget(tabs)
 

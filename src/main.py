@@ -99,7 +99,7 @@ import os
 from kivymd.uix.filemanager import MDFileManager
 
 
-__version__ = "0.1.135"
+__version__ = "0.1.136"
 
 if platform == "android":
     # NFC
@@ -239,6 +239,9 @@ class UTXOListItem(TwoLineListItem):
 
 
 
+
+class AddressListItem(TwoLineIconListItem):
+    icon = StringProperty("database-marker-outline")
 
 class BalanceListItem(TwoLineIconListItem):
     icon = StringProperty("check-circle")
@@ -1010,6 +1013,7 @@ class BrainbowApp(MDApp):
         self._wallet_ready = True
         print("_wallet_ready=True")
         self.root.ids.sm.current = "main"
+        self.root.ids.active_wallet_version.text = "Version {}".format(__version__)
         # All methods below verify if self._wallet_ready is True.
         #self._unlock_nav_drawer()
 
@@ -1258,6 +1262,7 @@ class BrainbowApp(MDApp):
                 #    self.show_snackbar("Exchange rates updated. {}".format(self.get_rate()))
 
     def toggle_balance_label(self):
+        self.dump_history_to_fs()
         if self._fiat_fields_hidden is False:
             self.fiat_balance = not self.fiat_balance
             self.update_balance_screen()
@@ -1294,6 +1299,22 @@ class BrainbowApp(MDApp):
     #def total_wallet_tx_count(self):
     #    return len(self.wallet.get_tx_history())
 
+    def dump_history_to_fs(self):
+        """
+        return {
+            "txid": self.tx_obj.id(),
+            "is_spend": self.is_spend,
+            "value": str(self.value),
+            "height": self.height,
+            "timestamp": self.timestamp
+        }
+        """
+        f = open("dump_history.csv", 'w')
+        for hist in self.wallet.get_tx_history():
+            f.write("{}, {}, {}, {}\n".format(hist.value, hist.is_spend, hist.tx_obj.id(), hist.tx_obj.as_hex()))
+        f.close()
+
+
     def update_balance_screen(self):
         self.root.ids.balance_label.text = self.balance_str(fiat=self.fiat_balance)
         self.root.ids.recycleView.data_model.data = []
@@ -1323,8 +1344,8 @@ class BrainbowApp(MDApp):
         self.root.ids.utxoRecycleView.data_model.data = []
         self.wallet.utxos = utxo_deduplication(self.wallet.utxos)
         for utxo in self.wallet.utxos:
-            print("*"*30)
-            print(dir(utxo))
+            #print("*"*30)
+            #print(dir(utxo))
             value = Decimal(str(utxo.coin_value / nowallet.Wallet.COIN))
             balance += value
             utxo_str = (self.unit_precision + " {}").format(value * self.unit_factor, self.units)
@@ -1349,7 +1370,7 @@ class BrainbowApp(MDApp):
     def update_recieve_screen(self):
         address = self.update_recieve_qrcode()
         encoding = "bech32" if self.wallet.bech32 else "P2SH"
-        current_addr = "Current address ({}):\n{}".format(encoding, address)
+        current_addr = "\nCurrent receive address ({}):\n\n{}\n\n".format(encoding, address)
         #TODO: add derivation path, eg. m/49'/1'/0'/0/5
         self.root.ids.addr_label.text = "{}".format(current_addr)
 
@@ -1369,13 +1390,13 @@ class BrainbowApp(MDApp):
     def update_ypub_screen(self):
         ypub = self.wallet.ypub
         ypub = self.pub_char + ypub[1:]
-        self.root.ids.ypub_label.text = "Extended Public Key (SegWit):\n" + ypub
+        self.root.ids.ypub_label.text = "Extended Public Key (SegWit):\n\n{}\n\n".format(ypub)
         self.root.ids.ypub_qrcode.data = ypub
 
     def update_seed_screen(self):
         try:
             self.root.ids.seed_label.text = \
-                "BIP32 Root Key (WIF):\n" + self.wallet.private_BIP32_root_key
+                "BIP32 Root Key (WIF):\n\n{}\n\n".format(self.wallet.private_BIP32_root_key)
             self.root.ids.seed_qrcode.data = self.wallet.private_BIP32_root_key
         except Exception as ex:
             print(traceback.format_exc())
@@ -1385,7 +1406,7 @@ class BrainbowApp(MDApp):
 
     def update_bip39_mnemonic_screen(self):
         try:
-            self.root.ids.bip39_mnemonic_label.text = "BIP39 Mnemonic:\n\n{}".format(self.wallet.bip39_mnemonic)
+            self.root.ids.bip39_mnemonic_label.text = "BIP39 Mnemonic:\n\n{}\n\n".format(self.wallet.bip39_mnemonic)
             self.root.ids.bip39_mnemonic_qrcode.data = "{}".format(self.wallet.bip39_mnemonic)
         except Exception as ex:
             print(traceback.format_exc())
@@ -1398,21 +1419,68 @@ class BrainbowApp(MDApp):
         from bottom_screens_address import open_address_bottom_sheet
         open_address_bottom_sheet(address=address)
 
-    def update_addresses_screen(self):
-        self.root.ids.addresses_recycle_view.data_model.data = []
-        for address in self.wallet.get_all_known_addresses(addr=True, change=False):
-            #logging.info("Adding addr item to update_addresses_screen\n{}".format(address))
-            self.root.ids.addresses_recycle_view.data_model.data.append({
+    def _update_addresses_screen(self, change=False):
+        all_used_addresse = self.wallet.get_all_used_addresses(receive=not change, change=change)
+        for address in self.wallet.get_all_known_addresses(addr=True, change=change):
+            item = {
+                "icon": 'database-marker' if address in all_used_addresse else 'database-marker-outline',
                 "text": address,
-                "secondary_text": "Derivation: m{}'/{}'/{}'/{}/{}".format(
+                "secondary_text": "Derivation: m{}'/{}'/{}'/{}/{} {}".format(
                     self.wallet.derivation.get('bip'),
                     self.wallet.derivation.get('bip44'),
                     self.wallet.derivation.get('account'),
-                    0, #change
-                    self.wallet.search_for_index(search=address, addr=True, change=False)),
+                    '1' if change else '0',
+                    self.wallet.search_for_index(search=address, addr=True, change=change),
+                    'already used' if address in all_used_addresse else ''),
                     "on_release": lambda address=address: self.open_address_bottom_sheet_callback(address)
-                })
+                }
+            if change:
+                self.root.ids.changeaddresses_recycle_view.data_model.data.append(item)
+            else:
+                self.root.ids.addresses_recycle_view.data_model.data.append(item)
 
+
+
+    def update_addresses_screen(self):
+        self.root.ids.addresses_recycle_view.data_model.data = []
+        self.root.ids.changeaddresses_recycle_view.data_model.data = []
+        self._update_addresses_screen(change=False)
+        self._update_addresses_screen(change=True)
+
+    """
+
+    THIS IS BUGGY AS FUCK!
+
+    all_used_addresse = self.wallet.get_all_used_addresses()
+
+    this returns the index used of both, the receiving and the change addresses
+
+    can't do something meaningful without knowing if an index is change or not .
+
+
+        def _update_addresses_screen(self, change=False):
+            if change:
+                self.root.ids.changeaddresses_recycle_view.data_model.data = []
+            else:
+                self.root.ids.addresses_recycle_view.data_model.data = []
+                all_used_addresse = self.wallet.get_all_used_addresses()
+            for address in self.wallet.get_all_known_addresses(addr=True, change=False):
+                addr_index = self.wallet.search_for_index(search=address, addr=True, change=False)
+                self.root.ids.addresses_recycle_view.data_model.data.append({
+                    "icon": 'database-marker' if addr_index in all_used_addresse else 'database-marker-outline',
+                    "text": address,
+                    "secondary_text": "Derivation: m{}'/{}'/{}'/{}/{} {}".format(
+                        self.wallet.derivation.get('bip'),
+                        self.wallet.derivation.get('bip44'),
+                        self.wallet.derivation.get('account'),
+                        0, # not 'change'
+                        addr_index,
+                        'already used' if addr_index in all_used_addresse else ''),
+                        "on_release": lambda address=address: self.open_address_bottom_sheet_callback(address)
+                    })
+
+
+    """
 
     def lock_UI(self, pin):
         if not pin:

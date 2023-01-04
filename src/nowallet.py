@@ -8,7 +8,7 @@ import time
 import json
 from decimal import Decimal
 
-from urllib import parse
+
 from typing import (
     Tuple, List, Set, Dict, KeysView, Any,
     Union, Awaitable
@@ -48,36 +48,12 @@ BTC = Chain(netcode="BTC", chain_1209k="btc", bip44=0)
 TBTC = Chain(netcode="XTN", chain_1209k="tbtc", bip44=1)
 
 
-"""
-from bip49 import SegwitBIP32Node
-
-from embit import bip85 #bip32, bip39, ec
-
-secret_exp, chain_code = 104377729351993946109098618221593532628614185863132659441100078520868365683231, b'+C7\x86\x8e$\ri\x1c\xd6\\\xa1\xb6z\xb7\x18F6\x98\xd3\xff/\xe9\xd59\xa3\xcf\xf4r\xa4\xae\xb1'
-
-mpk = SegwitBIP32Node(netcode="XTN", chain_code=chain_code, secret_exponent=secret_exp)
-
-path =         "49H/1H/0H"
-account_master = mpk.subkey_for_path(path)
-account_master.fingerprint().hex() # 'e30ca53e'
-
-embit_mpk = bip32.HDKey.from_base58(mpk.hwif(as_private=1))
-embit_path = "m/49h/1h/0h/0h"
-embit_account_master = embit_mpk.derive(embit_path)
-embit_account_master.fingerprint.hex() # 'e30ca53e'
-
-from
-"""
-
-
 class Wallet:
     """ Provides all functionality required for a fully functional and secure
     HD brainwallet based on the Warpwallet technique.
     """
     COIN = 100000000  # type: int
     _GAP_LIMIT = 20  # type: int
-
-
 
     def __init__(self,
                  salt: str,
@@ -191,7 +167,6 @@ class Wallet:
 
         self.new_history = False  # type: bool
 
-
     @property
     def ypub(self) -> str:
         """ Returns this account's extended public key.
@@ -255,13 +230,28 @@ class Wallet:
         return [self.get_address(self.get_key(i, change), addr=addr)
                 for i in range(len(indicies))]  # type: List[str]
 
-    def get_all_used_addresses(self) -> List[str]:
-        """ Returns all addresses that have been used previously.
-
-        :returns: address strings containing all used
-            addresses for the given root
+    def get_all_used_addresses(self, receive: bool = True, change: bool = False, addr: bool = True) -> List[str]:
         """
-        return list(self.history.keys()) + list(self.change_history.keys())
+        Returns all receive and/or change addresses that have been used previously.
+
+        :param change: a boolean indicating which key root to use (receive or change)
+        :returns: List of address strings containing all used addresses for the given root
+        """
+        all_used_addresses = []
+
+        if receive:
+            for receive_index in self.history.keys():
+                receive_address = self.get_address(self.get_key(receive_index, False), addr=addr)
+                print ("receive_address: {}".format(receive_address))
+                all_used_addresses.append(receive_address)
+
+        if change:
+            for change_index in self.change_history.keys():
+                change_address = self.get_address(self.get_key(change_index, change), addr=addr)
+                print ("change_address: {}".format(change_address))
+                all_used_addresses.append(change_address)
+
+        return all_used_addresses
 
     def search_for_index(self, search, addr=False, change=False) -> int:
         """ Returns the index associated with a given address
@@ -408,8 +398,7 @@ class Wallet:
         """ Coroutine. Creates a _History namedtuple from a given Tx object.
 
         :param history: A Tx object given from our transaction history
-        :param address: The address of ours that is associated with the
-            given transaction
+        :param address: The address of ours that is associated with the given transaction
         :returns: A new _History namedtuple for our history
         """
         value = None  # type: int
@@ -508,7 +497,7 @@ class Wallet:
         """ Coroutine, Populates the wallet's data structures based on a new
         new tx history. Should only be called by _dispatch_result(),
 
-        :param address: the address associated with this new tx history
+        :param address/scripthash: the address associated with this new tx history
         :param history: a history message from the server
         :param change: a boolean indicating which key index list to use
         :returns: A boolean that is true if all given histories were empty
@@ -619,7 +608,6 @@ class Wallet:
         """
         logging.debug("Listening for updates involving any known address...")
         await self.connection.consume_queue(self._dispatch_result)
-
 
     async def _dispatch_result(self, result: List[str]) -> None:
         """ Gets called by the Connection's consume_queue method when a new TX
@@ -1006,30 +994,3 @@ class Wallet:
         str_.append("\nYour current address: {}".format(
             self.get_address(self.get_next_unused_key(), addr=True)))
         return "".join(str_)
-
-
-
-
-
-def get_payable_from_BIP21URI(uri: str, proto: str = "bitcoin", netcode="BTC") -> Tuple[str, Decimal]:
-    """ Computes a 'payable' tuple from a given BIP21 encoded URI.
-
-    :param uri: The BIP21 URI to decode
-    :param proto: The expected protocol/scheme (case insensitive)
-    :param netcode: BTC or XTN 
-    :returns: A payable (address, amount) corresponding to the given URI
-    :raise: Raises s ValueError if there is no address given or if the
-        protocol/scheme doesn't match what is expected
-    """
-    obj = parse.urlparse(uri)  # type: parse.ParseResult
-    if not obj.path or obj.scheme.upper() != proto.upper():
-        try:
-            if is_valid_address(uri, netcode):
-                return uri, None
-        except:
-            pass
-        raise ValueError("Malformed URI")
-    if not obj.query:
-        return obj.path, None
-    query = parse.parse_qs(obj.query)  # type: Dict
-    return obj.path, Decimal(query["amount"][0])

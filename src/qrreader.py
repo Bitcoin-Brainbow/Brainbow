@@ -41,22 +41,6 @@ class QRReader(Preview, CommonGestures):
             #    self.cb(barcodes[0].data.decode('utf-8'))
             self.make_qrcode_decoded_thread_safe(barcodes[0].data.decode('utf-8'))
             return
-        """
-        for barcode in barcodes:
-            text = barcode.data.decode('utf-8')
-            if 'https://' in text or 'http://' in text:
-                x, y, w, h = barcode.rect
-                # Map Zbar coordinates to Kivy coordinates
-                y = max(image_size[1] -y -h, 0)
-                # Map Analysis coordinates to Preview coordinates
-                if mirror:
-                    x = max(image_size[0] -x -w, 0)
-                x = round(x * scale + image_pos[0])
-                y = round(y * scale + image_pos[1])
-                w = round(w * scale)
-                h = round(h * scale)
-                found.append({'x':x, 'y':y, 'w':w, 'h':h, 't':text})
-        """
         self.make_thread_safe(list(found)) ## A COPY of the list
 
     @mainthread
@@ -65,7 +49,6 @@ class QRReader(Preview, CommonGestures):
 
     @mainthread
     def make_qrcode_decoded_thread_safe(self, qrcode_decoded):
-        print("make_qrcode_decoded_thread_safe {}".format(qrcode_decoded))
         self.qrcode_decoded = qrcode_decoded
         if self.cb:
             self.cb(self.qrcode_decoded)

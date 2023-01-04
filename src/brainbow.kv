@@ -27,7 +27,12 @@
 
 
 <BalanceListItem>:
-    on_release: self.on_release()
+    #on_release: self.on_release()
+    IconLeftConfirmationWidget:
+        icon: self.parent.parent.icon
+
+<AddressListItem>:
+    #on_release: self.on_release()
     IconLeftConfirmationWidget:
         icon: self.parent.parent.icon
 
@@ -654,20 +659,43 @@ MDScreen:
                         name: "addresses"
                         id: addresses
                         icon: "map-marker-multiple"
-                        title: "ADDRESSES"
+                        title: "RECEIVE ADDRESSES"
                         title_icon_mode: "Top"
                         tab_padding: [10, 0, 0,0]
                         BoxLayout:
                             orientation: "vertical"
                             RecycleView:
                                 id: addresses_recycle_view
-                                viewclass: "TwoLineListItem" #TwoLineIconListItem
+                                viewclass: "AddressListItem" # "TwoLineListItem" #
                                 RecycleBoxLayout:
                                     default_size: None, None
                                     default_size_hint: 1, None
                                     size_hint_y: None
                                     height: self.minimum_height
                                     orientation: "vertical"
+
+
+                    Tab:
+                        name: "changeaddresses"
+                        id: changeaddresses
+                        icon: "map-marker-multiple-outline"
+                        title: "CHANGE ADDRESSES"
+                        title_icon_mode: "Top"
+                        tab_padding: [10, 0, 0,0]
+                        BoxLayout:
+                            orientation: "vertical"
+                            RecycleView:
+                                id: changeaddresses_recycle_view
+                                viewclass: "AddressListItem" # "TwoLineListItem" #
+                                RecycleBoxLayout:
+                                    default_size: None, None
+                                    default_size_hint: 1, None
+                                    size_hint_y: None
+                                    height: self.minimum_height
+                                    orientation: "vertical"
+
+
+
                     Tab:
                         name: "utxos"
                         icon: "database-marker"
@@ -676,12 +704,11 @@ MDScreen:
                         tab_padding: [10, 0, 0,0]
                         BoxLayout:
                             orientation: "vertical"
-                            padding: dp(10)
-                            spacing: 5
                             RecycleView:
                                 id: utxoRecycleView
                                 viewclass: "UTXOListItem"
                                 RecycleBoxLayout:
+                                    tab_padding: [10, 0, 0,0]
                                     default_size: None, None
                                     default_size_hint: 1, None
                                     size_hint_y: None
@@ -799,7 +826,7 @@ MDScreen:
                         QRCodeWidget:
                             id: seed_qrcode
                             show_border: False
-                        
+
             SeedScreen:
                 name: "bip39_mnemonic_screen"
                 transition: SlideTransition(direction="right", duration=0.01)
@@ -827,10 +854,8 @@ MDScreen:
     MDNavigationLayout:
         MDNavigationDrawer:
             id: nav_drawer
-            #type: "standard"
             anchor: "left"
             padding: 16, 22, 12, 16
-            #radius: (0, 16, 16, 0) if self.anchor == "left" else (16, 0, 0, 16)
             radius: (0, 0, 0, 0)
             md_bg_color: "#ffffff"
             MDNavigationDrawerMenu:
@@ -839,17 +864,11 @@ MDScreen:
                     text: "(no active wallet)"
                     text_color: "#c9c9c9"
                     id: active_wallet_alias
-                    #source: "brain_nav.png"
-
-                    #spacing: "4dp"
                     padding: "12dp", 0, 0, "56dp"
-
-                #MDNavigationDrawerLabel:
-                #    text: "Wallet"
 
                 MDNavigationDrawerItem:
                     icon: "database-import"
-                    text: "Recieve"
+                    text: "Receive"
                     on_release: app.goto_screen('main', 'RECEIVE')
 
                 MDNavigationDrawerItem:
@@ -880,8 +899,13 @@ MDScreen:
 
                 MDNavigationDrawerItem:
                     icon: "map-marker-multiple"
-                    text: "Addresses"
-                    on_release: app.goto_screen('main', 'ADDRESSES')
+                    text: "Receive Addresses"
+                    on_release: app.goto_screen('main', 'RECEIVE ADDRESSES')
+
+                MDNavigationDrawerItem:
+                    icon: "map-marker-multiple-outline"
+                    text: "Change Addresses"
+                    on_release: app.goto_screen('main', 'CHANGE ADDRESSES')
 
                 MDNavigationDrawerItem:
                     icon: "database-marker"
@@ -913,10 +937,10 @@ MDScreen:
 
                 #MDNavigationDrawerDivider:
 
-                MDNavigationDrawerItem:
-                    icon: "cellphone-nfc"
-                    text: "NFC On/Off"
-                    on_release: app.nfc_toggle()
+                #MDNavigationDrawerItem:
+                #    icon: "cellphone-nfc"
+                #    text: "NFC On/Off"
+                #    on_release: app.nfc_toggle()
 
                 #MDNavigationDrawerItem:
                 #    icon: "database-cog"
@@ -952,3 +976,9 @@ MDScreen:
                     icon: "database-off"
                     text: "Disconnet Wallet and Exit"
                     on_release: app.logoff()
+
+                MDNavigationDrawerDivider:
+
+                MDNavigationDrawerLabel:
+                    id: active_wallet_version
+                    text: ""
