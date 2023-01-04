@@ -92,7 +92,7 @@ import os
 from kivymd.uix.filemanager import MDFileManager
 
 
-__version__ = "0.1.137"
+__version__ = "0.1.138"
 
 if platform == "android":
     # NFC
@@ -591,7 +591,7 @@ class BrainbowApp(MDApp):
                                auto_dismiss=False,
                                buttons=[
                                    MDFlatButton(
-                                       text="Dismiss",
+                                       text="DISMISS",
                                        on_release=partial(self.close_dialog))
                                    ]
                                )
@@ -1009,7 +1009,10 @@ class BrainbowApp(MDApp):
         self.root.ids.active_wallet_version.text = "Version {}".format(__version__)
         # All methods below verify if self._wallet_ready is True.
         #self._unlock_nav_drawer()
-
+        #self.show_dialog("Loaded for the first time?", "If you are loading this wallet for the first time, it is recommended to close it and reload it.\n\This way you can make sure that you did not make a typo.\n\nIf the wallet is ___ again, then everything is fine.")
+        #  in your salt or passphrase
+        self.show_dialog("New wallet?", "To make sure that you did not make a typo, it is recommended to close the wallet now and reloading it.\n\nIf the wallet name is '{}' after reloading it, everything is fine.".format(wallet_alias(self.wallet.fingerprint[0:2],
+                self.wallet.fingerprint[2:4])))
     @property
     def pub_char(self):
         if self.chain == nowallet.BTC:
@@ -1141,7 +1144,7 @@ class BrainbowApp(MDApp):
             return
         self.set_wallet_fingetprint(self.wallet.fingerprint)
         self.root.ids.wait_text_small.text = \
-                "Wallet fingerprint is {}.\n\n".format(
+                "Wallet fingerprint is {}.\n{}\n".format(
                         self.wallet.fingerprint,
                         wallet_alias(self.wallet.fingerprint[0:2],
                                 self.wallet.fingerprint[2:4]))
