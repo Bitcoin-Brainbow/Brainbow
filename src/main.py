@@ -58,14 +58,8 @@ from kivy.core.clipboard import Clipboard
 from kivy.core.text import LabelBase
 from kivymd.uix.relativelayout import MDRelativeLayout
 
-
-#from kivy_garden.zbarcam import ZBarCam
-
-
-
 from pycoin.serialize import b2h
 
-#import __init__  as nowallet
 import nowallet
 
 from electrum_servers import get_random_server
@@ -74,7 +68,6 @@ from fee_estimate import fetch_fee_estimate
 from settings_json import settings_json
 from wallet_alias import wallet_alias
 from functools import partial
-#import asynckivy as ak
 import threading
 import concurrent.futures
 
@@ -99,7 +92,7 @@ import os
 from kivymd.uix.filemanager import MDFileManager
 
 
-__version__ = "0.1.136"
+__version__ = "0.1.137"
 
 if platform == "android":
     # NFC
@@ -415,7 +408,7 @@ class BrainbowApp(MDApp):
         return details
 
 
-    def on_new_intent(self, intent, cb=None):
+    def on_new_intent(self, intent):
         print ('on_new_intent(), {}'.format(intent.getAction()) )
         # get TAG details
         tag = cast('android.nfc.Tag', intent.getParcelableExtra(NfcAdapter.EXTRA_TAG))
@@ -441,15 +434,15 @@ class BrainbowApp(MDApp):
         #self.show_dialog("NFC Reading", 'details, {}'.format(details))
         #self.show_snackbar('details, {}'.format(tag))
         #self.show_snackbar()
-        if cb:
-            cb('details, {}'.format(details))
+        #if cb:
+        #    cb('details, {}'.format(details))
 
-    def nfc_cb(self, reading):
-        self.show_dialog("NFC Reading", reading)
+    #def nfc_cb(self, reading):
+    #    self.show_dialog("NFC Reading", reading)
 
     def nfc_init(self):
         if platform == "android":
-            activity.bind(on_new_intent=self.on_new_intent(cb=self.nfc_cb))
+            activity.bind(on_new_intent=self.on_new_intent)
             self.j_context = context = PythonActivity.mActivity
             self.nfc_adapter = NfcAdapter.getDefaultAdapter(context)
             """
@@ -1169,7 +1162,9 @@ class BrainbowApp(MDApp):
 
         coinkb_fee = await self.wallet.get_fee_estimation(6)
         self.current_fee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
-        self.root.ids.wait_text_small.text = "Wating for fee estimate .."
+
+        #self.root.ids.wait_text_small.text = "Wating for fee estimate .."
+
         coinkb_fee = await self.wallet.get_relayfee()
         relayfee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
 
@@ -1198,10 +1193,7 @@ class BrainbowApp(MDApp):
                 "economyFee": relayfee,
                 "minimumFee": relayfee
             }
-        self.root.ids.wait_text_small.text = "Almost finished .."
-        print(self.mempool_recommended_fees)
         logging.info("Finished 'doing login tasks'")
-
         logging.info("all known addreses {}".format(self.wallet.get_all_known_addresses(addr=True)))
 
     def update_screens(self):
