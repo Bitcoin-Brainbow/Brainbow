@@ -704,6 +704,16 @@ MDScreen:
                         tab_padding: [10, 0, 0,0]
                         BoxLayout:
                             orientation: "vertical"
+                            BalanceLabel:
+                                id: utxo_balance_label
+                                font_style: "H5"
+                            #    text: "UTXO Selection"
+                                theme_text_color: "Primary"
+                                halign: "center"
+                                size_hint_y: None
+                                #height: self.texture_size[1] + dp(48)
+                                height:dp(12)
+                                #on_release: app.toggle_balance_label()
                             RecycleView:
                                 id: utxoRecycleView
                                 viewclass: "UTXOListItem"
