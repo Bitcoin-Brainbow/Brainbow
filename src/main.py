@@ -1047,6 +1047,7 @@ class BrainbowApp(MDApp):
         self.wallet_ready()
         await asyncio.gather(
             self.new_history_loop(),
+            self.do_listen_to_headers(), # <--
             self.do_listen_task(),
             self.update_exchange_rates(),
             self.check_new_block(),
@@ -1108,6 +1109,10 @@ class BrainbowApp(MDApp):
             pass
         sys.exit(1)
 
+
+    async def do_listen_to_headers(self):
+        logging.info("Listening for new headers, listen_to_headers.")
+        task = asyncio.create_task(self.wallet.listen_to_headers())
 
     async def do_listen_task(self):
         logging.info("Listening for new transactions.")

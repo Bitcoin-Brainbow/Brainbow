@@ -161,7 +161,8 @@ android.presplash_color = #FFFFFF
 #icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
 
 # (list) Permissions
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA,NFC,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA,NFC
+#,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 #,WRITE_EXTERNAL_STORAGE
 #,, WRITE_EXTERNAL_STORAGE
 #,WAKE_LOCK
@@ -378,8 +379,8 @@ android.allow_backup = True
 #p4a.fork = kivy
 
 # (str) python-for-android branch to use, defaults to master
-#p4a.branch = master
-p4a.branch = develop
+p4a.branch = master
+#p4a.branch = develop
 
 # (str) python-for-android specific commit to use, defaults to HEAD, must be within p4a.branch
 #p4a.commit = HEAD

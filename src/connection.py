@@ -53,7 +53,7 @@ class Connection:
             "subscribe": "blockchain.scripthash.subscribe",
             "subscribe_headers": "blockchain.headers.subscribe",
             "estimatefee": "blockchain.estimatefee",
-            "relayfee": "blockchain.relayfee", 
+            "relayfee": "blockchain.relayfee",
             "broadcast": "blockchain.transaction.broadcast"
         }  # type: Dict[str, str]
 
@@ -64,7 +64,7 @@ class Connection:
         await self.connection
         logging.info("Connected to server")
 
-    async def listen_rpc(self, method: str, args: List) -> Any:
+    async def listen_rpc(self, method: str, args: List = None) -> Any:
         """ Coroutine. Sends a normal RPC message to the server and awaits response.
 
         :param method: The Electrum API method to use
@@ -74,7 +74,10 @@ class Connection:
         res = None
         method = self.methods.get(method, method) # lookup shortcuts or use "method" instead
         try:
-            res = await self.client.RPC(method, *args)
+            if args is None:
+                res = await self.client.RPC(method)
+            else:
+                res = await self.client.RPC(method, *args)
         except Exception as ex:
             print("listen_rpc Exception {}".format(ex))
             if method.endswith("broadcast"):

@@ -333,6 +333,7 @@ class Wallet:
         zeroconf = Decimal(str(result["unconfirmed"])) / Wallet.COIN  # type: Decimal
         return confirmed, zeroconf
 
+
     async def _get_utxos(self, scripthash: str) -> List[Spendable]:
         """ Coroutine. Returns a list of pycoin.tx.Spendable objects for all
         UTXOS associated with the given scripthash (address)
@@ -624,15 +625,16 @@ class Wallet:
                 self.new_history = True
                 logging.info("Dispatched a new history for address %s", addr)
 
-    # WORK IN PROGRESS
-    #async def listen_to_blocks(self) -> None:
-    #    """ Coroutine,  waiting for new blocks
-    #    """
-    #
-    #    logging.info("block_info, listen s")
-    #    a = []
-    #    ans = await self.connection.listen_subscribe(self.connection.methods["subscribe_headers"], a)
-    #    logging.info("block_info, listen e {} {}".format(ans, a))
+
+    async def listen_to_headers(self) -> None:
+        """ Coroutine,  waiting for new blocks / block_info
+        """
+
+        logging.info("block_info, listen s")
+
+        ans = await self.connection.listen_rpc(self.connection.methods["subscribe_headers"])
+        logging.info("block_info, listen e {} {}".format(ans, []))
+
 
 
     @staticmethod
