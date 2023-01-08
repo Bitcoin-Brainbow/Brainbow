@@ -57,7 +57,6 @@ requirements =
   Jinja2==3.1.2,
   Kivy==2.1.0,
   kivymd==1.0.2,
-  connectrum==0.8.1,
   kivy-garden.qrcode==2021.314,
   MarkupSafe==2.1.1,
   multidict==6.0.2,
@@ -98,7 +97,9 @@ requirements =
 # python-dateutil==2.8.2,
 # bitcoin==1.1.39,
 
-nostr==0.0.1 
+nostr==0.0.1
+
+#  connectrum==0.8.1,
 
 
 # (str) Custom source folders for requirements
