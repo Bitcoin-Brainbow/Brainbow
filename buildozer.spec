@@ -32,6 +32,7 @@ version.filename = %(source.dir)s/main.py
 requirements =
   python3==3.9.9,
   #cffi, see nostr below
+  cffi==1.15.1,
   pbkdf2,
   Cython==0.29.32,
   typing-extensions==4.4.0,
@@ -90,6 +91,10 @@ requirements =
   libiconv,
   libzbar,
   pyzbar==0.1.7,
+  cryptography==39.0.0,
+  pycparser==2.21,
+  secp256k1,
+  websocket-client==1.4.2,
 
 # These are used to see decrypt TX
 #
@@ -98,11 +103,11 @@ requirements =
 # bitcoin==1.1.39,
 
 # nostr==0.0.1 dependencies
-cffi==1.15.1
-cryptography==39.0.0
-pycparser==2.21
-secp256k1==0.14.0
-websocket-client==1.4.2
+#cffi==1.15.1,
+#cryptography==39.0.0,
+#pycparser==2.21,
+#secp256k1,
+#websocket-client==1.4.2,
 
 #  connectrum==0.8.1 extended and included in app ,
 
