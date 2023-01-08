@@ -91,22 +91,18 @@ requirements =
   libiconv,
   libzbar,
   pyzbar==0.1.7,
+
   cryptography,
   pycparser==2.21,
-  secp256k1,
+  secp256k1==0.13.2.4,
   websocket-client==1.4.2,
 
-# These are used to see decrypt TX
-#
-# blockcypher==1.0.93,
-# python-dateutil==2.8.2,
-# bitcoin==1.1.39,
 
 # nostr==0.0.1 dependencies
 #cffi==1.15.1, but we have 1.13.2 available
 #cryptography==39.0.0,  we have
 #pycparser==2.21,
-#secp256k1,
+#secp256k1, asks for 0.14.0
 #websocket-client==1.4.2,
 
 #  connectrum==0.8.1 extended and included in app ,
