@@ -102,8 +102,8 @@ requirements =
 # bitcoin==1.1.39,
 
 # nostr==0.0.1 dependencies
-#cffi==1.15.1,
-#cryptography==39.0.0,
+#cffi==1.15.1, but we have 1.13.2 available
+#cryptography==39.0.0,  we have
 #pycparser==2.21,
 #secp256k1,
 #websocket-client==1.4.2,
