@@ -93,7 +93,7 @@ requirements =
   pyzbar==0.1.7,
 
   cryptography,
-  pycparser==2.21,
+  pycparser==2.14,
   secp256k1==0.13.2.4,
   websocket-client==1.4.2,
 
@@ -101,7 +101,7 @@ requirements =
 # nostr==0.0.1 dependencies
 #cffi==1.15.1, but we have 1.13.2 available
 #cryptography==39.0.0,  we have
-#pycparser==2.21,
+#pycparser==2.14, but asks for 2.21,
 #secp256k1, asks for 0.14.0
 #websocket-client==1.4.2,
 
