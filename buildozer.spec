@@ -31,7 +31,7 @@ version.filename = %(source.dir)s/main.py
 # (list) Application requirements
 requirements =
   python3==3.9.9,
-  cffi,
+  #cffi, see nostr below
   pbkdf2,
   Cython==0.29.32,
   typing-extensions==4.4.0,
@@ -97,9 +97,14 @@ requirements =
 # python-dateutil==2.8.2,
 # bitcoin==1.1.39,
 
-nostr==0.0.1
+# nostr==0.0.1 dependencies
+cffi==1.15.1
+cryptography==39.0.0
+pycparser==2.21
+secp256k1==0.14.0
+websocket-client==1.4.2
 
-#  connectrum==0.8.1,
+#  connectrum==0.8.1 extended and included in app ,
 
 
 # (str) Custom source folders for requirements
