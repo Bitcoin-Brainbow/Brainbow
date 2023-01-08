@@ -91,7 +91,7 @@ requirements =
   libiconv,
   libzbar,
   pyzbar==0.1.7,
-  cryptography==39.0.0,
+  cryptography,
   pycparser==2.21,
   secp256k1,
   websocket-client==1.4.2,
