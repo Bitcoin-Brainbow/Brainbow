@@ -5,7 +5,7 @@ class CryptographyRecipe(CompiledComponentsPythonRecipe):
     name = 'cryptography'
     version = '39.0.0'
     url = 'https://github.com/pyca/cryptography/archive/{version}.tar.gz'
-    depends = ['openssl', 'six', 'setuptools', 'cffi']
+    depends = ['openssl', 'six', 'setuptools_rust', 'setuptools', 'cffi']
     call_hostpython_via_targetpython = False
 
     def get_recipe_env(self, arch):
