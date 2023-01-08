@@ -31,8 +31,7 @@ version.filename = %(source.dir)s/main.py
 # (list) Application requirements
 requirements =
   python3==3.9.9,
-  #cffi, see nostr below
-  cffi==1.15.1,
+  cffi,
   pbkdf2,
   Cython==0.29.32,
   typing-extensions==4.4.0,
