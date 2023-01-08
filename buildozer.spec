@@ -31,6 +31,7 @@ version.filename = %(source.dir)s/main.py
 # (list) Application requirements
 requirements =
   python3==3.9.9,
+  setuptools-rust,
   cffi,
   pbkdf2,
   Cython==0.29.32,
