@@ -77,9 +77,9 @@ requirements =
   urllib3==1.24.3,
   yarl==1.8.1,
   zipp==3.8.1,
-  blockcypher==1.0.93,
-  python-dateutil==2.8.2,
-  bitcoin==1.1.39,
+  #blockcypher==1.0.93,
+  #python-dateutil==2.8.2,
+  #bitcoin==1.1.39,
   android,
   pyjnius==1.4.2,
   embit==0.7.0,
@@ -98,6 +98,7 @@ requirements =
 # python-dateutil==2.8.2,
 # bitcoin==1.1.39,
 
+nostr==0.0.1 
 
 
 # (str) Custom source folders for requirements

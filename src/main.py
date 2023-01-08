@@ -86,13 +86,13 @@ from camera4kivy import Preview
 from qrreader import QRReader
 
 
-
+top_blk = {'height', 0}
 
 import os
 from kivymd.uix.filemanager import MDFileManager
 
 
-__version__ = "0.1.139"
+__version__ = "0.1.140"
 
 if platform == "android":
     # NFC
@@ -121,7 +121,6 @@ if platform == "android":
 else:
     Window.size = (768/2, 1366/2)
 
-from utils import get_block_height
 
 
 class IconLeftConfirmationWidget(ILeftBodyTouch, MDIconButton):
@@ -199,6 +198,8 @@ class ScanAnalyze(Preview):
 class ExchangeRateScreen(Screen):
     pass
 
+class BlockHeightScreen(Screen):
+    pass
 
 class TXReviewScreen(Screen):
     pass
@@ -825,6 +826,11 @@ class BrainbowApp(MDApp):
         self.root.ids.nav_drawer.set_state("close")
         self.root.ids.sm.current = "exchangerate"
 
+    def load_blockheight_view(self):
+        self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
+        self.root.ids.nav_drawer.set_state("close")
+        self.root.ids.sm.current = "blockheightscreen"
+
     def check_entropy(self):
         """ Update entropy hint. Aim for 128+ bits """
         passphrase_entropy_bits = entropy_bits(self.root.ids.pass_field.text)
@@ -1086,6 +1092,7 @@ class BrainbowApp(MDApp):
         self.wallet_ready()
         await asyncio.gather(
             self.new_history_loop(),
+            self.do_listen_to_headers(), # <--
             self.do_listen_task(),
             self.update_exchange_rates(),
             self.check_new_block(),
@@ -1109,10 +1116,26 @@ class BrainbowApp(MDApp):
             pass
         sys.exit(1)
 
+    #
+    def disconnect_callback(self, *args, **kwargs ):
+        self.show_dialog("Electrum server connection lost!", "Please close and restart Brainbow.")
+        # exit wallet, continue offline
 
+    async def track_top_block(self):
+        global top_blk
+        fut, Q = self.wallet.connection.client.subscribe('blockchain.headers.subscribe') # listen_subscribe
+        top_blk = await fut
+        while 1:
+            top_blk = max(await Q.get())
+            print("new top-block: %r" % (top_blk,))
+
+    #
     async def do_listen_to_headers(self):
-        logging.info("Listening for new headers, listen_to_headers.")
-        task = asyncio.create_task(self.wallet.listen_to_headers())
+        logging.info("Listening for new headers, do_listen_to_headers.")
+        #task = asyncio.create_task(self.wallet.listen_to_headers())
+        task1 = asyncio.create_task(self.track_top_block())
+
+    #
 
     async def do_listen_task(self):
         logging.info("Listening for new transactions.")
@@ -1124,7 +1147,7 @@ class BrainbowApp(MDApp):
         server, port, proto = await get_random_server(self.loop)
         self.root.ids.wait_text_small.text = "Connected to {}.".format(server)
         try:
-            connection = nowallet.Connection(self.loop, server, port, proto)
+            connection = nowallet.Connection(self.loop, server, port, proto, disconnect_callback=self.disconnect_callback)
         except Exception as ex:
             print(traceback.format_exc())
             await connection.do_connect()
@@ -1220,22 +1243,14 @@ class BrainbowApp(MDApp):
             await asyncio.sleep(1)
             self.check_new_history()
 
-    #async def check_new_block(self):
-    #    while True:
-    #        await asyncio.sleep(10)
-    #        logging.info("run chk block")
-
-    #async def check_new_block(self):
-    #    logging.info("Listening for new blocks.")
-    #    await self.wallet.listen_to_blocks()
-
     async def check_new_block(self):
         while True:
-            logging.info("run get_block_height")
+            await asyncio.sleep(1)
             try:
-                tip = get_block_height()
+                tip = top_blk.get('height', 0)
                 if tip > self.block_height:
                     self.block_height = tip
+                    self.root.ids.blockheight_lbl.text = "[b]{}[/b]".format(tip)
                     logging.info("NEW self.block_height={}".format(self.block_height))
                     self.update_balance_screen()
                     self.show_snackbar("Block {} found!".format(self.block_height))
@@ -1243,7 +1258,6 @@ class BrainbowApp(MDApp):
                 print(traceback.format_exc())
                 logging.error(err)
                 self.block_height = 0
-            await asyncio.sleep(60)
 
     async def update_exchange_rates(self):
         sleep_time = 15
@@ -1252,7 +1266,7 @@ class BrainbowApp(MDApp):
             if self.currency != "BTC" or \
                 (self.currency == "BTC" and Decimal(self.get_rate()) > Decimal(0)):
                 logging.info("run fetch_exchange_rates")
-                sleep_time = 180
+                sleep_time = 60
                 old_rates = self.exchange_rates
                 try:
                     self.exchange_rates = await fetch_exchange_rates(nowallet.BTC.chain_1209k)

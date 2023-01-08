@@ -20,7 +20,8 @@ class Connection:
                  loop: asyncio.AbstractEventLoop,
                  server: str,
                  port: int,
-                 proto: str) -> None:
+                 proto: str,
+                 disconnect_callback=None) -> None:
         """ Connection object constructor.
 
         :param loop: an asyncio event loop
@@ -29,7 +30,7 @@ class Connection:
         :returns: A new Connection object
         """
         logging.info("Connecting...")
-
+        self.disconnect_callback = disconnect_callback
         self.server_info = ServerInfo(server, hostname=server, ports=port)  # type: ServerInfo
 
         logging.info(str(self.server_info.get_port(proto)))
@@ -39,7 +40,8 @@ class Connection:
                 self.server_info,
                 proto_code=proto,
                 use_tor=True,
-                disable_cert_verify=(proto != "s")
+                disable_cert_verify=(proto != "s"),
+                disconnect_callback=self.disconnect_callback
             )  # type: asyncio.Future
 
         self.queue = None  # type: asyncio.Queue

@@ -756,6 +756,21 @@ MDScreen:
 
 
 
+            BlockHeightScreen:
+                name: "blockheightscreen"
+                MDFloatLayout:
+                    BoxLayout:
+                        size_hint: 1, 1
+                        orientation:"vertical"
+                        MDLabel:
+                            id: blockheight_lbl
+                            text: "[b]000000[/b]"
+                            markup: True
+                            pos_hint: {"center_y": .485}
+                            halign: "center"
+                            font_size: "25sp"
+                            color: rgba(1, 3, 23, 225)
+
 
             ExchangeRateScreen:
                 name: "exchangerate"
@@ -955,6 +970,12 @@ MDScreen:
                 #MDNavigationDrawerItem:
                 #    icon: "database-cog"
                 #    text: "Settings"
+
+                MDNavigationDrawerItem:
+                    icon: "counter"
+                    text: "Block Height"
+                    on_release: app.load_blockheight_view()
+
 
                 MDNavigationDrawerItem:
                     icon: "cash-100"

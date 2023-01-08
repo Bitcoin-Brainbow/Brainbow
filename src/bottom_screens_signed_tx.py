@@ -23,7 +23,7 @@ from kivymd.uix.list import IconRightWidget
 from kivymd.uix.list import MDList
 
 
-from utils import decodetx
+
 from kivy_utils import open_url
 import nowallet
 
@@ -80,11 +80,13 @@ class TxDetailInfo(MDGridLayout):
     def __init__(self, signed_tx, history=None, wallet=None, **var_args):
         super(TxDetailInfo, self).__init__(**var_args)
         in_out_sats_tx_value = 0.0
-        if wallet:
-            addrs = wallet.get_all_used_addresses()
-            for tx_out in signed_tx.txs_out:
-                if tx_out.address(netcode="XTN") in addrs:
-                    in_out_sats_tx_value += tx_out.coin_value
+
+        #FIXME:
+        #if wallet:
+        #    addrs = wallet.get_all_used_addresses() #TODO: FIXME: this is buggy, returns index of both (change and receive addresses)
+        #    for tx_out in signed_tx.txs_out:
+        #        if tx_out.address(netcode="XTN") in addrs:
+        #            in_out_sats_tx_value += tx_out.coin_value
 
 
         self.cols = 1
@@ -110,7 +112,6 @@ class TxDetailInfo(MDGridLayout):
 
         txid = signed_tx.id()
         txid_short = "{}..{}".format(txid[:13], txid[-13:])
-        decoded_tx = decodetx(signed_tx.as_hex())
 
         overview_box = MDBoxLayout()
         overview_box.orientation = "vertical"

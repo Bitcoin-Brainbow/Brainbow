@@ -3,7 +3,6 @@ import binascii
 import datetime
 import time
 import json
-import blockcypher
 from functools import wraps
 from typing import Callable
 from urllib import parse
@@ -103,25 +102,3 @@ def get_timestamp_from_block_header(block_header):
     ba = binascii.a2b_hex(byte_timestamp)
     int_timestamp = int.from_bytes(ba, byteorder='little', signed=True)
     return datetime.datetime.fromtimestamp(int_timestamp)
-
-
-def decodetx(tx, sort_keys=True, as_string=False):
-    """
-    # Successfully installed bitcoin-1.1.39 blockcypher-1.0.93 python-dateutil-2.8.2
-    https://www.blockcypher.com/dev/bitcoin/?python#push-raw-transaction-endpoint
-    """
-    parsed = blockcypher.decodetx(tx_hex=tx, coin_symbol=BLOCK_CYPHER_COIN,
-                                            api_key=BLOCK_CYPHER_TOKEN)
-    return parsed
-    #try:
-    #    return json.dumps(parsed, indent=4, sort_keys=sort_keys)
-    #except Exception as ex:
-    #    parsed = {"error": "{}".format(ex) }
-    #    return json.dumps(parsed, indent=4, sort_keys=sort_keys)
-
-
-def get_block_height():
-    """
-    """
-    return blockcypher.get_latest_block_height(coin_symbol=BLOCK_CYPHER_COIN,
-                                                   api_key=BLOCK_CYPHER_TOKEN)

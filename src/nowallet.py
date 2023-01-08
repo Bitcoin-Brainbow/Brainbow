@@ -27,8 +27,7 @@ from connectrum.svr_info import ServerInfo
 from connectrum import ElectrumErrorResponse
 
 from bip49 import SegwitBIP32Node
-from keys import derive_key
-from utils import decodetx
+from keys import derive_key 
 from utils import is_txid
 from utils import log_time_elapsed
 from history import History
@@ -626,14 +625,33 @@ class Wallet:
                 logging.info("Dispatched a new history for address %s", addr)
 
 
+#    async def listen_to_headers(self) -> None:
+#        """ Coroutine,  waiting for new blocks / block_info
+#        """
+#
+#        logging.info("block_info, listen s")
+#
+#        ans = await self.connection.listen_subscribe(self.connection.methods["subscribe_headers"])
+#        logging.info("block_info, listen e {} {}".format(ans, []))
+
     async def listen_to_headers(self) -> None:
-        """ Coroutine,  waiting for new blocks / block_info
+        """ Coroutine, adds all known addresses to the subscription queue, and
+        begins consuming the queue so we can receive new tx histories from
+        the server asynchronously.
         """
+        logging.debug("Listening for updates involving any known address...")
+        await self.connection.consume_queue(self._dispatch_result2)
 
-        logging.info("block_info, listen s")
+    async def _dispatch_result2(self, result: List[str]) -> None:
+        """ Gets called by the Connection's consume_queue method when a new TX
+        history is sent from the server, then populates data structures using
+        _interpret_new_history().
 
-        ans = await self.connection.listen_rpc(self.connection.methods["subscribe_headers"])
-        logging.info("block_info, listen e {} {}".format(ans, []))
+        :param result: an address that has some new tx history
+        """
+        lst = []
+        ans = await self.connection.listen_subscribe(self.connection.methods["subscribe_headers"], lst)  # type: List[Dict[str, Any]]
+        print("ans {}".format(ans))
 
 
 
