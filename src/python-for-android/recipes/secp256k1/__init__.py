@@ -5,7 +5,7 @@ from pythonforandroid.recipe import CppCompiledComponentsPythonRecipe
 class Secp256k1Recipe(CppCompiledComponentsPythonRecipe):
 
     version = '0.14.0'
-    url = "https://pypi.python.org/packages/source/s/secp256k1/secp256k1-{version}.tar.gz"
+    url = "https://pypi.python.org/packages/source/s/secp256k1/secp256k1-{}.tar.gz".format(version)
 
     call_hostpython_via_targetpython = False
 
