@@ -31,8 +31,7 @@ version.filename = %(source.dir)s/main.py
 # (list) Application requirements
 requirements =
   python3==3.9.9,
-  setuptools-rust,
-  cffi,
+  cffi==1.13.2,
   pbkdf2,
   Cython==0.29.32,
   typing-extensions==4.4.0,
@@ -92,10 +91,11 @@ requirements =
   libzbar,
   pyzbar==0.1.7,
 
-  cryptography,
-  pycparser==2.14,
-  secp256k1==0.13.2.4,
-  websocket-client==1.4.2,
+#  cryptography,
+#  setuptools-rust,
+#  pycparser==2.14,
+#  secp256k1==0.13.2.4,
+#  websocket-client==1.4.2,
 
 
 # nostr==0.0.1 dependencies
@@ -169,7 +169,8 @@ android.presplash_color = #FFFFFF
 #icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
 
 # (list) Permissions
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA,NFC
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,CAMERA
+#,NFC
 #,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 #,WRITE_EXTERNAL_STORAGE
 #,, WRITE_EXTERNAL_STORAGE

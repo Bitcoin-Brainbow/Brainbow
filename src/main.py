@@ -10,7 +10,12 @@ except:
 # End patch
 
 import re
-import asyncio
+
+from asyncio import create_task as asyncio_create_task
+from asyncio import gather as asyncio_gather
+from asyncio import sleep as asyncio_sleep
+
+
 import logging
 
 from decimal import Decimal
@@ -88,8 +93,8 @@ from qrreader import QRReader
 
 top_blk = {'height', 0}
 
-import os
-from kivymd.uix.filemanager import MDFileManager
+#import os
+
 
 
 __version__ = "0.1.140"
@@ -698,6 +703,10 @@ class BrainbowApp(MDApp):
 
     def download_prv(self):
         """ """
+        from os.path import join as os_path_join
+        from kivymd.uix.filemanager import MDFileManager
+        from android.storage import primary_external_storage_path
+
         Window.bind(on_keyboard=self.file_manager_events)
         self.manager_open = False
         self._xpriv_file = None
@@ -708,9 +717,8 @@ class BrainbowApp(MDApp):
             #background_color_toolbar= [1.0, 1.0, 1.0, 1.0],
             selector="folder",
         )
-        from android.storage import primary_external_storage_path
         ext_path = primary_external_storage_path()
-        storage_path = os.path.join(ext_path, 'Downloads')
+        storage_path = os_path_join(ext_path, 'Downloads')
         self.file_manager.show(storage_path)
         self.manager_open = True
 
@@ -909,10 +917,7 @@ class BrainbowApp(MDApp):
         self.root.ids.address_input.error = not is_valid
 
     def set_amount_error(self, amount):
-        #try:
         _amount = Decimal(amount) if amount else Decimal("0")
-        #except:
-        #    _amount = Decimal("0")
         is_valid = _amount / self.unit_factor <= self.wallet.balance
         self.root.ids.spend_amount_input.error = not is_valid
 
@@ -1051,7 +1056,7 @@ class BrainbowApp(MDApp):
             return
         self.update_screens()
         self.wallet_ready()
-        await asyncio.gather(
+        await asyncio_gather(
             self.new_history_loop(),
             self.do_listen_to_headers(), # <--
             self.do_listen_task(),
@@ -1090,7 +1095,7 @@ class BrainbowApp(MDApp):
             return
         self.update_screens()
         self.wallet_ready()
-        await asyncio.gather(
+        await asyncio_gather(
             self.new_history_loop(),
             self.do_listen_to_headers(), # <--
             self.do_listen_task(),
@@ -1102,10 +1107,11 @@ class BrainbowApp(MDApp):
         """
         Alternative BIP39 login routine
         """
-        task1 = asyncio.create_task(self.do_bip39_login())
+        task1 = asyncio_create_task(self.do_bip39_login())
 
     def login(self):
-        task1 = asyncio.create_task(self.do_login())
+        task1 = asyncio_create_task(self.do_login())
+
 
 
     def logoff(self):
@@ -1132,14 +1138,14 @@ class BrainbowApp(MDApp):
     #
     async def do_listen_to_headers(self):
         logging.info("Listening for new headers, do_listen_to_headers.")
-        #task = asyncio.create_task(self.wallet.listen_to_headers())
-        task1 = asyncio.create_task(self.track_top_block())
+        #task = asyncio_create_task(self.wallet.listen_to_headers())
+        task1 = asyncio_create_task(self.track_top_block())
 
     #
 
     async def do_listen_task(self):
         logging.info("Listening for new transactions.")
-        task = asyncio.create_task(self.wallet.listen_to_addresses())
+        task = asyncio_create_task(self.wallet.listen_to_addresses())
 
     async def do_login_tasks(self, email=None, passphrase=None, bip39_mnemonic=None, bip39_passphrase=None):
         self.root.ids.wait_text.text = "Connecting".upper()
@@ -1240,12 +1246,12 @@ class BrainbowApp(MDApp):
 
     async def new_history_loop(self):
         while True:
-            await asyncio.sleep(1)
+            await asyncio_sleep(1)
             self.check_new_history()
 
     async def check_new_block(self):
         while True:
-            await asyncio.sleep(1)
+            await asyncio_sleep(1)
             try:
                 tip = top_blk.get('height', 0)
                 if tip > self.block_height:
@@ -1259,10 +1265,11 @@ class BrainbowApp(MDApp):
                 logging.error(err)
                 self.block_height = 0
 
+
     async def update_exchange_rates(self):
         sleep_time = 15
         while True:
-            await asyncio.sleep(sleep_time)
+            await asyncio_sleep(sleep_time)
             if self.currency != "BTC" or \
                 (self.currency == "BTC" and Decimal(self.get_rate()) > Decimal(0)):
                 logging.info("run fetch_exchange_rates")
@@ -1607,6 +1614,13 @@ class BrainbowApp(MDApp):
         self.title = 'Brainbow'
         self.theme_cls.material_style = "M2"
         self.theme_cls.theme_style = "Light"
+        #self.theme_cls.theme_style = "Dark"
+        #self.theme_cls.primary_palette = "Gray"
+        #self.theme_cls.primary_hue = "200"  # "500"
+        #self.theme_cls.secondary_palette = "Red"
+        #self.theme_cls.primary_hue = "200"  # "500"
+        #self.theme_cls.theme_style_switch_animation = True
+        #self.theme_cls.theme_style_switch_animation_duration = 0.8
 
         self.icon = "brain.png"
         self.use_kivy_settings = False

@@ -9,9 +9,9 @@ from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.tab import MDTabsBase
 from kivymd.uix.tab import MDTabs
-from kivymd.uix.recycleview import MDRecycleView
-from kivy.uix.recycleboxlayout import RecycleBoxLayout
-import asyncio
+#from kivymd.uix.recycleview import MDRecycleView
+#from kivy.uix.recycleboxlayout import RecycleBoxLayout
+
 from kivymd.app import MDApp
 
 from kivymd.uix.scrollview import MDScrollView
@@ -25,13 +25,15 @@ from kivymd.uix.list import MDList
 
 
 from kivy_utils import open_url
-import nowallet
+
+
 
 
 
 class BroadcastButton(MDRaisedButton):
     def do_broadcast_current_signed_tx(self):
-        task1 = asyncio.create_task(MDApp.get_running_app().do_broadcast())
+        from asyncio import create_task as asyncio_create_task
+        task1 = asyncio_create_task(MDApp.get_running_app().do_broadcast())
 
     def __init__(self, **kwargs):
         self.on_release = self.do_broadcast_current_signed_tx
@@ -42,23 +44,27 @@ class BroadcastButton(MDRaisedButton):
 class ExplorerViewButton(MDRaisedButton):
     """ """
     def do_view_txid_in_explorer(self):
+
+        from nowallet import BTC as nowallet_BTC
+        from nowallet import TBTC as nowallet_TBTC
+
         app = MDApp.get_running_app()
         base_url, chain = None, app.chain.chain_1209k
         if app.explorer == "blockcypher":
             base_url = "https://live.blockcypher.com/{}/tx/{}/"
-            if app.chain == nowallet.TBTC:
+            if app.chain == nowallet_TBTC:
                 chain = "btc-testnet"
         elif app.explorer == "smartbit":
             base_url = "https://{}.smartbit.com.au/tx/{}/"
-            if app.chain == nowallet.BTC:
+            if app.chain == nowallet_BTC:
                 chain = "www"
-            elif app.chain == nowallet.TBTC:
+            elif app.chain == nowallet_TBTC:
                 chain = "testnet"
         elif app.explorer == "mempool.space":
             base_url = "https://mempool.space/{}tx/{}"
-            if app.chain == nowallet.BTC:
+            if app.chain == nowallet_BTC:
                 chain = ""
-            elif app.chain == nowallet.TBTC:
+            elif app.chain == nowallet_TBTC:
                 chain = "testnet/"
         url = base_url.format(chain, self.txid)
         open_url(url)
