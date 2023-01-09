@@ -100,28 +100,6 @@ top_blk = {'height', 0}
 __version__ = "0.1.140"
 
 if platform == "android":
-    # NFC
-    from jnius import autoclass, cast
-    from android.runnable import run_on_ui_thread
-    from android import activity
-
-    NfcAdapter = autoclass('android.nfc.NfcAdapter')
-    PythonActivity = autoclass('org.kivy.android.PythonActivity')
-    Intent = autoclass('android.content.Intent')
-    IntentFilter = autoclass('android.content.IntentFilter')
-    PendingIntent = autoclass('android.app.PendingIntent')
-    NdefRecord = autoclass('android.nfc.NdefRecord')
-    NdefMessage = autoclass('android.nfc.NdefMessage')
-    Tag = autoclass('android.nfc.Tag')
-    IsoDep = autoclass('android.nfc.tech.IsoDep')
-    MifareClassic = autoclass('android.nfc.tech.MifareClassic')
-    MifareUltralight = autoclass('android.nfc.tech.MifareUltralight')
-    Ndef = autoclass('android.nfc.tech.Ndef')
-    NfcA = autoclass('android.nfc.tech.NfcA')
-    NfcB = autoclass('android.nfc.tech.NfcB')
-    NfcF = autoclass('android.nfc.tech.NfcF')
-    NfcV = autoclass('android.nfc.tech.NfcV')
-    # end NFC
     Window.softinput_mode = "below_target"
 else:
     Window.size = (768/2, 1366/2)
@@ -161,45 +139,6 @@ class SeedScreen(Screen):
 class PINScreen(Screen):
     pass
 
-
-"""
-from kivy.clock import mainthread
-
-
-class ScanScreen(MDScreen):
-
-    def on_kv_post(self, obj):
-        print("*** on_kv_post *** {}".format(obj))
-        app = MDApp.get_running_app()
-        if app and app.root:
-            app.root.ids.preview.connect_camera(enable_analyze_pixels = True, default_zoom=0.0)
-
-    @mainthread
-    def got_result(self, result):
-        print("*** got_result = {} *** ".format(result))
-        app = MDApp.get_running_app()
-        if app:
-            app.root.ids.ti.text = str(result)
-"""
-"""
-ScanAnalyze:
-    name: "preview"
-"""
-"""
-class ScanAnalyze(Preview):
-    """ """
-    extracted_data=ObjectProperty(None)
-    def analyze_pixels_callback(self, pixels, image_size, image_pos, scale, mirror):
-        pimage=Image.frombytes(mode='RGBA',size=image_size,data=pixels)
-        list_of_all_barcodes=decode(pimage)
-        if list_of_all_barcodes:
-            if self.extracted_data:
-                self.extracted_data(list_of_all_barcodes[0])
-            else:
-                print("Not found")
-
-"""
-
 class ExchangeRateScreen(Screen):
     pass
 
@@ -231,8 +170,7 @@ class UTXOListItem(TwoLineListItem):
         app.utxo_menu = MDDropdownMenu(items=app.utxo_menu_items,
                                         width_mult=6,
                                         caller=self,
-                                        max_height=0,
-                                        )
+                                        max_height=0,)
         app.utxo_menu.open()
 
 
@@ -241,6 +179,7 @@ class UTXOListItem(TwoLineListItem):
 
 class AddressListItem(TwoLineIconListItem):
     icon = StringProperty("database-marker-outline")
+
 
 class BalanceListItem(TwoLineIconListItem):
     icon = StringProperty("check-circle")
@@ -251,6 +190,7 @@ class BalanceListItem(TwoLineIconListItem):
         print(self.history.value)
         print(dir(self.history.tx_obj))
         open_tx_preview_bottom_sheet(self.history.tx_obj, self.history, app.wallet)
+
 
 class FloatInput(MDTextField):
     pat = re.compile('[^0-9]')
@@ -273,8 +213,8 @@ class BrainbowApp(MDApp):
     current_utxo = ObjectProperty()
     block_height = 0
     _wallet_ready = False  # is false until we can use the wallet
-    _nfc_is_on = False
-    _nfc_is_available = False
+
+
     def __init__(self, loop):
         self.chain = nowallet.TBTC # TBTC
         self.loop = loop
@@ -362,153 +302,6 @@ class BrainbowApp(MDApp):
 
         if x == "view-address":
             self.open_address_bottom_sheet_callback(address=cls.utxo.address(netcode="XTN"))
-
-
-    # NFC
-    def get_ndef_details(self, tag):
-        # Get all the details from the tag.
-        tag_details = ""
-        details = {}
-        try:
-            #print 'id'
-            tag_uid = ':'.join(['{:02x}'.format(bt & 0xff) for bt in tag.getId()])
-            tag_details= "UID: "+ tag_uid
-            details['uid'] = tag_uid
-
-            #print 'technologies'
-            tag_details+="\nTECH LIST: "+str(tag.getTechList())
-
-            #print 'get NDEF tag details'
-            ndefTag = cast('android.nfc.tech.Ndef', Ndef.get(tag))
-
-            #print 'tag size'
-            tag_details+="\nSIZE: "+str(ndefTag.getMaxSize())
-
-            #print 'is tag writable?'
-            tag_details+="\nWRITABLE: "+str(ndefTag.isWritable())
-
-
-            #print 'tag type'
-            tag_details+="\nTAG TYPE: "+str(ndefTag.getType())
-
-            # get size of current records
-            ndefMesg = ndefTag.getCachedNdefMessage()
-            # check if tag is empty
-            if not ndefMesg:
-                tag_details+="\nNDEF MESSAGE: NO NDEF MESSAGE"
-            else:
-                ndefrecords =  ndefMesg.getRecords()
-                length = len(ndefrecords)
-                recTypes = []
-                for record in ndefrecords:
-                    recTypes.append({
-                        'type': ''.join(map(unichr, record.getType())),
-                        'payload': ''.join(map(unichr, record.getPayload()))
-                        })
-                tag_details+="\nREC TYPES: "+str(recTypes)
-            print(tag_details)
-
-        except Exception as err:
-            print(traceback.format_exc())
-            print("ERROR: "+str(err))
-        return details
-
-
-    def on_new_intent(self, intent):
-        print ('on_new_intent(), {}'.format(intent.getAction()) )
-        # get TAG details
-        tag = cast('android.nfc.Tag', intent.getParcelableExtra(NfcAdapter.EXTRA_TAG))
-        try:
-            print("="*80)
-            if intent.getAction() != NfcAdapter.ACTION_NDEF_DISCOVERED:
-                return
-            rawmsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
-            if not rawmsgs:
-                return
-            for message in rawmsgs:
-                message = cast(NdefMessage, message)
-                payload = message.getRecords()[0].getPayload()
-                print ('payload: {}'.format(''.join(map(chr, payload))))
-            print("S="*40)
-        except Exception as err:
-            print(traceback.format_exc())
-            print("ERROR: "+str(err))
-            print("ERR="*20)
-        print ('details, {}'.format(tag))
-        details = self.get_ndef_details(tag)
-        print ('details, {}'.format(details))
-        #self.show_dialog("NFC Reading", 'details, {}'.format(details))
-        #self.show_snackbar('details, {}'.format(tag))
-        #self.show_snackbar()
-        #if cb:
-        #    cb('details, {}'.format(details))
-
-    #def nfc_cb(self, reading):
-    #    self.show_dialog("NFC Reading", reading)
-
-    def nfc_init(self):
-        if platform == "android":
-            activity.bind(on_new_intent=self.on_new_intent)
-            self.j_context = context = PythonActivity.mActivity
-            self.nfc_adapter = NfcAdapter.getDefaultAdapter(context)
-            """
-            PendingIntent pendingIntent = null;
-
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                pendingIntent = PendingIntent.getActivity
-                       (this, 0, notificationIntent, PendingIntent.FLAG_MUTABLE);
-            }
-            else
-            {
-                 pendingIntent = PendingIntent.getActivity
-                        (this, 0, notificationIntent, PendingIntent.FLAG_ONE_SHOT);
-            }
-            """
-
-            #self.nfc_pending_intent = PendingIntent.getActivity(context, 0, Intent(context, context.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0)
-            self.nfc_pending_intent = PendingIntent.getActivity(context, 0, Intent(context, context.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), PendingIntent.FLAG_MUTABLE)
-            self.enable_nfc_foreground_dispatch()
-            return True
-        return False
-
-    def disable_nfc_foreground_dispatch(self):
-        if platform == "android":
-            run_on_ui_thread(self.nfc_adapter.disableForegroundDispatch(self.j_context))
-
-
-    def enable_nfc_foreground_dispatch(self):
-        if platform == "android":
-            run_on_ui_thread(self.nfc_adapter.enableForegroundDispatch(self.j_context, self.nfc_pending_intent, None,None))
-
-    def nfc_enable(self):
-        if platform == "android":
-            if not self._nfc_is_on:
-                activity.bind(on_new_intent=self.on_new_intent)
-                print ("bind NFC, NFC enable")
-                self._nfc_is_on = True
-                self.show_snackbar("NFC enabled")
-                #TODO: display icon ON
-        else:
-            self.show_snackbar("NFC not supported")
-
-    def nfc_disable(self):
-        if platform == "android":
-            if self._nfc_is_on:
-                activity.unbind(on_new_intent=self.on_new_intent)
-                print ("unbind NFC, NFC disable")
-                self._nfc_is_on = False
-                self.show_snackbar("NFC disabled")
-                #TODO: display icon OFF
-        else:
-            self.show_snackbar("NFC not supported")
-
-    def nfc_toggle(self):
-        """ """
-        if self._nfc_is_on:
-            self.nfc_disable()
-        else:
-            self.nfc_enable()
-    # end NFC
 
     def current_slide(self, index):
         print("current_slide {} ".format(index))
@@ -658,14 +451,7 @@ class BrainbowApp(MDApp):
 
 
 
-    def start_nfc_tap(self):
-        #if platform != "android":
-        #    self.show_snackbar("Tapping is not supported on {}.".format(platform))
-        #    return
 
-        #self.root.ids.sm.current = "zbar"
-        #self.root.ids.detector.start()
-        logging.info("start_nfc_tap")
 
     def qrcode_handler(self, symbols):
         try:
@@ -1011,9 +797,7 @@ class BrainbowApp(MDApp):
         - load main screen
         - unlock nav
         """
-        self._nfc_is_available = self.nfc_init() #TODO: maybe move to build()
-        if self._nfc_is_available:
-            self._nfc_is_on = True
+
         self._wallet_ready = True
         print("_wallet_ready=True")
         self.root.ids.sm.current = "main"
@@ -1684,20 +1468,14 @@ class BrainbowApp(MDApp):
     def on_pause(self):
         if self._qrreader:
             self._qrreader.disconnect_camera()
-        self.disable_nfc_foreground_dispatch()
-        print ("on_pause called")
         return True
 
     def on_resume(self):
-        self.enable_nfc_foreground_dispatch()
-        print ("on_resume called")
         return True
 
     def on_stop(self):
         if self._qrreader:
             self._qrreader.disconnect_camera()
-        self.disable_nfc_foreground_dispatch()
-        print ("on_stop called")
         return True
 
     def add_list_item(self, text, history):
