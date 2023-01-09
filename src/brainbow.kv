@@ -414,6 +414,7 @@ MDScreen:
                                     pos_hint: {"center_x": .5, "center_y": .1}
                                     color: "#c9c9c9"
                                     on_release: app.goto_slide('login_with_bip39')
+
                                 #MDLabel:
                                 #    size: self.size
                                 #    opacity: 0.85
@@ -466,48 +467,67 @@ MDScreen:
 
 
                     MDFloatLayout:
-                        name: "startup_exchangerate"
-                            MDFloatLayout:
-                                BoxLayout:
-                                    size_hint: 1, 1
-                                    orientation:"vertical"
-                                    MDLabel:
-                                        text: "[b]Live exchange rates, BTC/USD[/b]"
-                                        markup: True
-                                        pos_hint: {"center_y": .485}
-                                        halign: "center"
-                                        font_size: "25sp"
-                                        color: rgba(1, 3, 23, 225)
-                                    MDSwitch:
-                                        size_hint: None, None
-                                        size: "48dp", "48dp"
-                                        pos_hint: {'center_x': .5, 'center_y': .5}
-                                        on_active: app.on_exchange_rate_switch_active(*args)
-                                    MDSwitch:
-                                        size_hint: None, None
-                                        size: "48dp", "48dp"
-                                        pos_hint: {'center_x': .5, 'center_y': .5}
-                                        on_active: app.on_exchange_rate_switch_active(*args)
-                                    MDSwitch:
-                                        size_hint: None, None
-                                        size: "48dp", "48dp"
-                                        pos_hint: {'center_x': .5, 'center_y': .5}
-                                        on_active: app.on_exchange_rate_switch_active(*args)
-                                    MDSwitch:
-                                        size_hint: None, None
-                                        size: "48dp", "48dp"
-                                        pos_hint: {'center_x': .5, 'center_y': .5}
-                                        on_active: app.on_exchange_rate_switch_active(*args)
-                                    MDLabel:
-                                        id: current_btc_exchange_rate
-                                        halign: "center"
-                                        text: "1 BTC = 1 BTC"
-                                        pos_hint: {'center_x': .5, 'center_y': .6}
-                                    MDLabel:
-                                        halign: "center"
-            #                            text: "By activating 'Live exchange rates', Brainbow\nwill get the exchange rates from different\nservices and calculate rate within the app."
-                                        text: "By enabling 'Live exchange rates', Brainbow\nretrieves the exchange rates from various\nservices and calculates an average rate."
-                                        pos_hint: {'center_x': .5, 'center_y': .65}
+                        name: "startup_offline_mode"
+                        Image:
+                            source: "assets/larry_offline.png"
+                            pos_hint: {"center_x": .5, "center_y": .7}
+                            size_hint: .66, .66
+                            #size_hint: .42, .42
+                        MDLabel:
+                            text: "[b]Offline Mode[/b]"
+                            markup: True
+                            pos_hint: {"center_y": .485}
+                            halign: "center"
+                            font_size: "25sp"
+                            color: rgba(1, 3, 23, 225)
+                        MDSwitch:
+                            size_hint: None, None
+                            size: "48dp", "48dp"
+                            pos_hint: {"center_x": .5, "center_y": .4}
+                        MDLabel:
+                            margin: "8dp"
+                            pos_hint: {"center_y": .3}
+                            opacity: 0.95
+                            halign: 'center'
+                            font_size: '16sp'
+                            text: "By enabling 'Offline Mone', Brainbow\ndoes not open any network connection."
+                        #MDSwitch:
+                        #    size_hint: None, None
+                        #    size: "48dp", "48dp"
+                        #    pos_hint: {"center_x": .5, "center_y": .136}
+                        #    #on_active: app.on_exchange_rate_switch_active(*args)
+                        MDLabel:
+                            text: "m of n"
+                            pos_hint: {"center_y": .055}
+                            halign: "center"
+                            font_size: "14sp"
+                            color: "#c9c9c9"
+
+
+
+
+                    MDFloatLayout:
+                        name: "startup_my_electrum"
+                        BoxLayout:
+                            size_hint: 1, 1
+                            orientation:"vertical"
+                            MDLabel:
+                                text: "[b]Private Electurm Server[/b]"
+                                markup: True
+                                pos_hint: {"center_y": .485}
+                                halign: "center"
+                                font_size: "25sp"
+                                color: rgba(1, 3, 23, 225)
+                            MDSwitch:
+                                size_hint: None, None
+                                size: "48dp", "48dp"
+                                pos_hint: {'center_x': .5, 'center_y': .5}
+                                #on_active: app.on_exchange_rate_switch_active(*args)
+                            MDLabel:
+                                halign: "center"
+                                text: "By enabling 'Private Electurm Server', Brainbow\ndoes will connect to the given server over TOR.\n\nIf disabled, a random public server chosen.\n\nUsing a public server means\nit can see your transactions."
+                                pos_hint: {'center_x': .5, 'center_y': .65}
+
 
 
             MainScreen:

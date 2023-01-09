@@ -1513,7 +1513,8 @@ class BrainbowApp(MDApp):
 
 
 if __name__ == "__main__":
-    loop = asyncio.new_event_loop()
+    from asyncio import new_event_loop
+    loop = new_event_loop()
     app = BrainbowApp(loop)
     loop.run_until_complete(app.async_run())
     loop.close()
