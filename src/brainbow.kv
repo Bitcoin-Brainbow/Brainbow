@@ -420,27 +420,27 @@ MDScreen:
                                     write_tab: False
                                     required: False
                                     font_size: '21sp'
-                                #PassphraseControlField:
-                                #    id: pass_field
-                                MDTextField:
-                                    id: bip39_passphrase_field
-                                    hint_text: "BIP39 Passphrase (optional)"
-                                    color_mode: "accent"
-                                    write_tab: False
-                                    password: True
-                                    required: False
-                                    disabled: True
-                                    font_size: '21sp'
-                                MDTextField:
-                                    id: MDTextField:
-                                    id: confirm_bip39_passphrase_field
-                                    hint_text: "Repeat BIP39 Passphrase (optional)"
-                                    color_mode: "accent"
-                                    write_tab: False
-                                    password: True
-                                    required: False
-                                    disabled: True
-                                    font_size: '21sp'
+                                ##PassphraseControlField:
+                                ##    id: pass_field
+                                #MDTextField:
+                                #    id: bip39_passphrase_field
+                                #    hint_text: "BIP39 Passphrase (optional)"
+                                #    color_mode: "accent"
+                                #    write_tab: False
+                                #    password: True
+                                #    required: False
+                                #    disabled: True
+                                #    font_size: '21sp'
+                                #MDTextField:
+                                #    id: MDTextField:
+                                #    id: confirm_bip39_passphrase_field
+                                #    hint_text: "Repeat BIP39 Passphrase (optional)"
+                                #    color_mode: "accent"
+                                #    write_tab: False
+                                #    password: True
+                                #    required: False
+                                #    disabled: True
+                                #    font_size: '21sp'
                                 MDRaisedButton:
                                     size_hint_x: 1
                                     text: "Let's get started using BIP39"
@@ -1081,8 +1081,11 @@ MDScreen:
             anchor: "right"
             padding: 16, 22, 12, 16
             radius: (0, 0, 0, 0)
-            md_bg_color: "#ffffff"
+            #md_bg_color: "#ffffff"
+            #md_bg_color: app.theme_cls.bg_light
             MDNavigationDrawerMenu:
+
+
                 MDNavigationDrawerHeader:
                     title: "Brainbow"
                     text: "On-boarding"
@@ -1104,6 +1107,7 @@ MDScreen:
                     on_release: pass
                 MDNavigationDrawerItem:
                     text: "What salt is"
+                    text_color: "#000000"
                     on_release: app.goto_slide('salt_is')
                 MDNavigationDrawerItem:
                     text: "What a passphrase is"
@@ -1121,6 +1125,7 @@ MDScreen:
                 MDNavigationDrawerItem:
                     icon: "form-textbox-password"
                     text: "Connect to Bitcoin"
+                    #text_color: app.theme_cls.primary_dark
                     on_release: app.goto_slide('login')
                 MDNavigationDrawerItem:
                     icon: "format-columns"

@@ -97,7 +97,7 @@ top_blk = {'height', 0}
 
 
 
-__version__ = "0.1.142"
+__version__ = "0.1.143"
 
 if platform == "android":
     Window.softinput_mode = "below_target"
