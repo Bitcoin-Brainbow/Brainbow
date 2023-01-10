@@ -97,7 +97,7 @@ top_blk = {'height', 0}
 
 
 
-__version__ = "0.1.141"
+__version__ = "0.1.142"
 
 if platform == "android":
     Window.softinput_mode = "below_target"
@@ -481,7 +481,12 @@ class BrainbowApp(MDApp):
         self.root.ids.sm.current = "main"
 
 
-
+    def switch_theme_handler(self):
+        if self.is_darkmode:
+            self.theme_cls.theme_style = "Light"
+        else:
+            self.theme_cls.theme_style = "Dark"
+        self.is_darkmode = not self.is_darkmode
 
     def onboarding_menu_handler(self):
         if not self._wallet_ready:
@@ -617,7 +622,7 @@ class BrainbowApp(MDApp):
         """
         Used for settings and wallet mechanics, not transactions.
         """
-        self.root.ids.toolbar.left_action_items = [["menu", lambda x: self.nav_drawer_handler()]]
+        self.root.ids.toolbar.left_action_items = [["menu", lambda x: self.nav_drawer_handler()], ["theme-light-dark", lambda x: app.switch_theme_handler()]]
         self.root.ids.toolbar.right_action_items = []
         app.root.ids.sm.current = current
 
@@ -1460,8 +1465,8 @@ class BrainbowApp(MDApp):
         #self.theme_cls.primary_hue = "200"  # "500"
         #self.theme_cls.secondary_palette = "Red"
         #self.theme_cls.primary_hue = "200"  # "500"
-        #self.theme_cls.theme_style_switch_animation = True
-        #self.theme_cls.theme_style_switch_animation_duration = 0.8
+        self.theme_cls.theme_style_switch_animation = True
+        self.theme_cls.theme_style_switch_animation_duration = 0.8
 
         self.use_kivy_settings = False
         self.rbf = self.config.getboolean("brainbow", "rbf")

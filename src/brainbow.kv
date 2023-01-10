@@ -62,13 +62,6 @@
             pass_field.password = False if pass_field.password is True else True
 
 MDScreen:
-    md_bg_color: 1, 1, 1, 1
-
-#    Preview:
-#        id: preview
-#        aspect_ratio: '16:9'
-#        md_bg_color : 1, 1, 1, 1
-
     BoxLayout:
         orientation: "vertical"
         MDTopAppBar:
@@ -78,12 +71,13 @@ MDScreen:
             md_bg_color: "#252525"
             #anchor_title: "center"
             #icon: "fingerprint"
-            #left_action_items: [["menu", lambda x: app.menu_button_handler(self)]]
+            left_action_items: [["theme-light-dark", lambda x: app.switch_theme_handler()]]
+            #["weather-night", lambda x: app.onboarding_menu_handler()]] if app.is_darkmode else  [["white-balance-sunny", lambda x: app.onboarding_menu_handler()]]
             # left_action_items: [['menu', lambda x: root.ids.nav_drawer.set_state("open")]]
 
             #left_action_items: [["menu", lambda x: app.nav_drawer_handler()]]
             right_action_items: [["hand-wave-outline", lambda x: app.onboarding_menu_handler()]]
-
+                                    # brightness-2 white-balance-sunny
         Widget:
     MDNavigationLayout:
         x: toolbar.height
@@ -93,7 +87,7 @@ MDScreen:
             transition: SlideTransition(direction="right", duration=0.01)
             WelcomeScreen:
                 MDFloatLayout:
-                    md_bg_color : 1, 1, 1, 1
+                    #md_bg_color : 1, 1, 1, 1
                 Carousel:
                     #name: "caraousel"
                     id: caraousel
