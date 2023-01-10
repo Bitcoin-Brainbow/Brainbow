@@ -66,7 +66,4 @@ class AddressDetailInfo(MDGridLayout):
 
 def open_address_bottom_sheet(address, qr=False):
     addr_btm_sheet = MDCustomBottomSheet(screen=AddressDetailInfo(address))
-    addr_btm_sheet.open()
-    print(dir(addr_btm_sheet))
-    from publish_to_nostr import pub_addr
-    pub_addr(address)
+    addr_btm_sheet.open() 
