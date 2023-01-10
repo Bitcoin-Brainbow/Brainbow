@@ -33,6 +33,9 @@ class Connection:
         self.disconnect_callback = disconnect_callback
         self.server_info = ServerInfo(server, hostname=server, ports=port)  # type: ServerInfo
 
+        #for f in ['nickname', 'hostname', 'ports', 'version', 'pruning_limit' ]:
+        #    print("{}: {}".format(f, self.server_info.get(f)))
+
         logging.info(str(self.server_info.get_port(proto)))
 
         self.client = StratumClient(loop)  # type: StratumClient

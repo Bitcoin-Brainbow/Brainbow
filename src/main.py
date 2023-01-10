@@ -217,6 +217,7 @@ class BrainbowApp(MDApp):
 
     def __init__(self, loop):
         self.chain = nowallet.TBTC # TBTC
+    #    self.chain = nowallet.BTC
         self.loop = loop
         self.is_amount_inputs_locked = False
         self.fiat_balance = False
@@ -233,6 +234,7 @@ class BrainbowApp(MDApp):
 
         self._qr_preview_modal = None
         self._dialog = None # generic dialog
+        self._disconnect_dialog = None
 
         # class MyMenuItem(MDMenuItem):
         class MyMenuItem(OneLineListItem):
@@ -295,6 +297,7 @@ class BrainbowApp(MDApp):
         super().__init__()
 
 
+
     def utxo_menu_callback(self, cls, x):
         print("menu_callback: {} {}".format( cls.utxo.address(netcode="XTN"), x))
         #print ("352 {}".format(dir(cls)))
@@ -344,6 +347,7 @@ class BrainbowApp(MDApp):
             widget_fiat.width = 0.5
             self.update_amounts(widget_btc.text, "coin")
         self._fiat_fields_hidden = False
+
     def on_exchange_rate_switch_active(self, switch, on_off):
         if on_off:
             self.currency = "USD"
@@ -359,6 +363,13 @@ class BrainbowApp(MDApp):
 
         self.update_balance_screen()
 
+    def on_offline_switch_active(self, switch, on_off):
+        if on_off:
+            print("OFFLINE MODE ")
+            self.root.ids.startup_offline_mode_image_source.source = "assets/offline.png"
+        else:
+            print("NOT OFFLINE MODE")
+            self.root.ids.startup_offline_mode_image_source.source = "assets/online.png"
     def show_snackbar(self, text):
         snackbar = Snackbar(text=text,
                             snackbar_x="8dp",
@@ -400,8 +411,13 @@ class BrainbowApp(MDApp):
         if self._dialog:
             self._dialog.dismiss()
 
-
-
+    def close_disconnect_dialog(self, *args):
+        if self._disconnect_dialog:
+            self._disconnect_dialog.dismiss()
+    def close_disconnect_dialog_and_reconnect(self, *args):
+        if self._disconnect_dialog:
+            self._disconnect_dialog.dismiss()
+        print("close_disconnect_dialog_and_reconnect")
 
     def close_preview_modal(self, *args):
         if self._qr_preview_modal:
@@ -465,6 +481,13 @@ class BrainbowApp(MDApp):
         self.root.ids.sm.current = "main"
 
 
+
+
+    def onboarding_menu_handler(self):
+        if not self._wallet_ready:
+            self.root.ids.onboarding_drawer.set_state("open")
+
+
     def nav_drawer_handler(self):
         if self._wallet_ready:
             self.root.ids.nav_drawer.set_state("open")
@@ -473,11 +496,8 @@ class BrainbowApp(MDApp):
         else:
             self.show_snackbar('No active session.')
 
-    def menu_button_handler(self, button):
-        if self.root.ids.sm.current == "main":
-            MDDropdownMenu(items=self.menu_items, width_mult=4, caller=button, \
-            max_height=dp(250)).open()
-        pass
+
+
 
     def navigation_handler(self, button):
         print ("navigation_handler. button={}".format(button), button)
@@ -491,7 +511,6 @@ class BrainbowApp(MDApp):
         """ """
         from os.path import join as os_path_join
         from kivymd.uix.filemanager import MDFileManager
-        from android.storage import primary_external_storage_path
 
         Window.bind(on_keyboard=self.file_manager_events)
         self.manager_open = False
@@ -503,7 +522,12 @@ class BrainbowApp(MDApp):
             #background_color_toolbar= [1.0, 1.0, 1.0, 1.0],
             selector="folder",
         )
-        ext_path = primary_external_storage_path()
+        try:
+            from android.storage import primary_external_storage_path
+            ext_path = primary_external_storage_path()
+        except ModuleNotFoundError:
+            from os.path import expanduser
+            ext_path = expanduser("~")
         storage_path = os_path_join(ext_path, 'Downloads')
         self.file_manager.show(storage_path)
         self.manager_open = True
@@ -589,13 +613,13 @@ class BrainbowApp(MDApp):
     # END EXPORT #####
 
 
-    def close_wallet_context_view(self):
+    def close_wallet_context_view(self, current="main"):
         """
         Used for settings and wallet mechanics, not transactions.
         """
         self.root.ids.toolbar.left_action_items = [["menu", lambda x: self.nav_drawer_handler()]]
         self.root.ids.toolbar.right_action_items = []
-        app.root.ids.sm.current = "main"
+        app.root.ids.sm.current = current
 
     def load_seed_view(self):
         self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
@@ -830,7 +854,8 @@ class BrainbowApp(MDApp):
         self.bech32 = self.root.ids.bech32_checkbox.active
         self.menu_items[0]["text"] = "View {}PUB".format(self.pub_char.upper())
 
-        self.root.ids.sm.current = "wait"
+        self.close_wallet_context_view(current="wait")
+
         try:
             await self.do_login_tasks(email, passphrase)
         except (SocksConnectionError, ClientConnectorError):
@@ -869,7 +894,8 @@ class BrainbowApp(MDApp):
         """
         self.menu_items[0]["text"] = "View {}PUB".format(self.pub_char.upper())
 
-        self.root.ids.sm.current = "wait"
+        self.close_wallet_context_view(current="wait")
+
         try:
             await self.do_login_tasks(bip39_mnemonic=bip39_mnemonic, bip39_passphrase=None)
         except (SocksConnectionError, ClientConnectorError):
@@ -898,17 +924,37 @@ class BrainbowApp(MDApp):
 
 
 
-    def logoff(self):
-        self.show_dialog("Disconnected.","")
+    def logoff(self, *args, **kwargs):
+        #self.show_dialog("Disconnected.","")
         try:
             MDApp.get_running_app().stop()
         except:
             pass
-        sys.exit(1)
+        sys.exit(0)
 
     #
     def disconnect_callback(self, *args, **kwargs ):
-        self.show_dialog("Electrum server connection lost!", "Please close and restart Brainbow.")
+        dialog_height = 200
+        self._disconnect_dialog = MDDialog(title="Electrum server connection lost!",
+                   text="Please quit and reopen Brainbow", # , or try to reconnect.
+                   size_hint=(.8, None),
+                   height=dp(dialog_height),
+                   auto_dismiss=False,
+                   buttons=[
+                      # MDFlatButton(
+                        #   text="TYR RECONNECT",
+                        #   on_release=partial(self.close_disconnect_dialog_and_reconnect))
+                       #,
+                       MDFlatButton(
+                           text="QUIT",
+                           on_release=partial(self.logoff))
+                       ,
+                       MDFlatButton(
+                           text="DISMISS",
+                           on_release=partial(self.close_disconnect_dialog))
+                       ]
+                   )
+        self._disconnect_dialog.open()
         # exit wallet, continue offline
 
     async def track_top_block(self):
@@ -934,8 +980,12 @@ class BrainbowApp(MDApp):
     async def do_login_tasks(self, email=None, passphrase=None, bip39_mnemonic=None, bip39_passphrase=None):
         self.root.ids.wait_text.text = "Connecting".upper()
         self.root.ids.wait_text_small.text = "Getting a random server for you."
-        server, port, proto = await get_random_server(self.loop)
-        self.root.ids.wait_text_small.text = "Connected to {}.".format(server)
+        try:
+            server, port, proto = await get_random_server(self.loop)
+            print ("server, port, proto = {} {} {} ".format(server, port, proto))
+            self.root.ids.wait_text_small.text = "Connected to {}.".format(server)
+        except:
+            pass
         try:
             connection = nowallet.Connection(self.loop, server, port, proto, disconnect_callback=self.disconnect_callback)
         except Exception as ex:
@@ -1385,20 +1435,27 @@ class BrainbowApp(MDApp):
 
     def build(self):
         """ """
+        self.title = 'Brainbow'
+        self.is_darkmode = False
+        self.icon = "brain.png"
+
         if platform =='android':
             from android.permissions import request_permissions, Permission
-            print(Permission)
-            print(dir(Permission))
             request_permissions([Permission.CAMERA])
             request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
 
-            #request_permissions([Permission.CAMERA, Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
+            from android_utils import dark_mode
+            self.is_darkmode = dark_mode()
 
 
-        self.title = 'Brainbow'
+
+        # Theme settings
         self.theme_cls.material_style = "M2"
-        self.theme_cls.theme_style = "Light"
-        #self.theme_cls.theme_style = "Dark"
+        if self.is_darkmode:
+            self.theme_cls.theme_style = "Dark"
+        else:
+            self.theme_cls.theme_style = "Light"
+
         #self.theme_cls.primary_palette = "Gray"
         #self.theme_cls.primary_hue = "200"  # "500"
         #self.theme_cls.secondary_palette = "Red"
@@ -1406,7 +1463,6 @@ class BrainbowApp(MDApp):
         #self.theme_cls.theme_style_switch_animation = True
         #self.theme_cls.theme_style_switch_animation_duration = 0.8
 
-        self.icon = "brain.png"
         self.use_kivy_settings = False
         self.rbf = self.config.getboolean("brainbow", "rbf")
         self.units = self.config.get("brainbow", "units")
@@ -1497,6 +1553,7 @@ class BrainbowApp(MDApp):
                         "icon": icon })
 
     def goto_slide(self, name):
+        self.root.ids.onboarding_drawer.set_state("close")
         for i in app.root.ids.caraousel.slides:
             print(i.name == name)
             if i.name == name:

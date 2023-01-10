@@ -9,8 +9,7 @@
 #:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
 #:import MDNavigationLayout kivymd.uix.navigationdrawer.navigationdrawer.MDNavigationLayout
 
-# QR SCANNER
-# : import ZBarCam kivy_garden.zbarcam.ZBarCam
+
 
 
 <Tab>
@@ -35,19 +34,6 @@
     #on_release: self.on_release()
     IconLeftConfirmationWidget:
         icon: self.parent.parent.icon
-
-#<ScanScreen>:
-#	BoxLayout:
-#		orientation: 'vertical'
-#		ScanAnalyze:
-#			id:preview
-#			aspect_ratio: '16:9'
-#			extracted_data:root.got_result
-#
-#		MDLabel:
-#			size_hint_y: None
-#			height:'130dp'
-#			id:ti
 
 
 <PassphraseControlField>:
@@ -94,7 +80,10 @@ MDScreen:
             #icon: "fingerprint"
             #left_action_items: [["menu", lambda x: app.menu_button_handler(self)]]
             # left_action_items: [['menu', lambda x: root.ids.nav_drawer.set_state("open")]]
-            left_action_items: [["menu", lambda x: app.nav_drawer_handler()]]
+
+            #left_action_items: [["menu", lambda x: app.nav_drawer_handler()]]
+            right_action_items: [["hand-wave-outline", lambda x: app.onboarding_menu_handler()]]
+
         Widget:
     MDNavigationLayout:
         x: toolbar.height
@@ -221,6 +210,7 @@ MDScreen:
                             color: "#c9c9c9"
 
                     MDFloatLayout:
+                        name: "salt_is"
                         Image:
                             source: "assets/what-salt-is.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
@@ -469,7 +459,8 @@ MDScreen:
                     MDFloatLayout:
                         name: "startup_offline_mode"
                         Image:
-                            source: "assets/larry_offline.png"
+                            source: "assets/online.png"
+                            id: startup_offline_mode_image_source
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .66, .66
                             #size_hint: .42, .42
@@ -484,18 +475,48 @@ MDScreen:
                             size_hint: None, None
                             size: "48dp", "48dp"
                             pos_hint: {"center_x": .5, "center_y": .4}
+                            on_active: app.on_offline_switch_active(*args)
                         MDLabel:
                             margin: "8dp"
                             pos_hint: {"center_y": .3}
                             opacity: 0.95
                             halign: 'center'
                             font_size: '16sp'
-                            text: "By enabling 'Offline Mone', Brainbow\ndoes not open any network connection."
-                        #MDSwitch:
-                        #    size_hint: None, None
-                        #    size: "48dp", "48dp"
-                        #    pos_hint: {"center_x": .5, "center_y": .136}
-                        #    #on_active: app.on_exchange_rate_switch_active(*args)
+                            text: "By enabling 'Offline Mode', Brainbow does\nnot establish any network connections."
+                        MDLabel:
+                            text: "m of n"
+                            pos_hint: {"center_y": .055}
+                            halign: "center"
+                            font_size: "14sp"
+                            color: "#c9c9c9"
+
+                    MDFloatLayout:
+                        name: "startup_my_electrum"
+                        Image:
+                            source: "assets/btc-own-node.png"
+                            pos_hint: {"center_x": .5, "center_y": .7}
+                            size_hint: .66, .66
+                            #size_hint: .42, .42
+                        MDLabel:
+                            text: "[b]Private Electurm Server[/b]"
+                            markup: True
+                            pos_hint: {"center_y": .485}
+                            halign: "center"
+                            font_size: "25sp"
+                            color: rgba(1, 3, 23, 225)
+                        MDSwitch:
+                            size_hint: None, None
+                            size: "48dp", "48dp"
+                            pos_hint: {"center_x": .5, "center_y": .4}
+
+                        MDLabel:
+                            margin: "8dp"
+                            pos_hint: {"center_y": .225}
+                            opacity: 0.95
+                            halign: 'center'
+                            font_size: '16sp'
+                            text: "By enabling 'Private Electurm Server', Brainbow\nwill connect to the given Electrum Server only.\n\nWhen disabled, Brainbow connects to a random\npublic server that can see your transactions."
+
                         MDLabel:
                             text: "m of n"
                             pos_hint: {"center_y": .055}
@@ -506,27 +527,6 @@ MDScreen:
 
 
 
-                    MDFloatLayout:
-                        name: "startup_my_electrum"
-                        BoxLayout:
-                            size_hint: 1, 1
-                            orientation:"vertical"
-                            MDLabel:
-                                text: "[b]Private Electurm Server[/b]"
-                                markup: True
-                                pos_hint: {"center_y": .485}
-                                halign: "center"
-                                font_size: "25sp"
-                                color: rgba(1, 3, 23, 225)
-                            MDSwitch:
-                                size_hint: None, None
-                                size: "48dp", "48dp"
-                                pos_hint: {'center_x': .5, 'center_y': .5}
-                                #on_active: app.on_exchange_rate_switch_active(*args)
-                            MDLabel:
-                                halign: "center"
-                                text: "By enabling 'Private Electurm Server', Brainbow\ndoes will connect to the given server over TOR.\n\nIf disabled, a random public server chosen.\n\nUsing a public server means\nit can see your transactions."
-                                pos_hint: {'center_x': .5, 'center_y': .65}
 
 
 
@@ -1044,7 +1044,7 @@ MDScreen:
 
                 MDNavigationDrawerItem:
                     icon: "cash-100"
-                    text: "Exchange Rates On/Off"
+                    text: "Live Exchange Rates"
                     on_release: app.load_exchangerate_view()
 
                 MDNavigationDrawerDivider:
@@ -1078,3 +1078,71 @@ MDScreen:
                 MDNavigationDrawerLabel:
                     id: active_wallet_version
                     text: ""
+
+
+
+    MDNavigationLayout:
+        MDNavigationDrawer:
+            id: onboarding_drawer
+            anchor: "right"
+            padding: 16, 22, 12, 16
+            radius: (0, 0, 0, 0)
+            md_bg_color: "#ffffff"
+            MDNavigationDrawerMenu:
+                MDNavigationDrawerHeader:
+                    title: "Brainbow"
+                    text: "On-boarding"
+                    padding: "12dp", 0, 0, "56dp"
+
+
+                #MDNavigationDrawerLabel:
+                #    text: "Information"
+
+                MDNavigationDrawerItem:
+                    text: "Welcome to Brainbow"
+                    on_release: pass
+
+                MDNavigationDrawerItem:
+                    text: "Access your wallet"
+                    on_release: pass
+                MDNavigationDrawerItem:
+                    text: "Protect your wallet"
+                    on_release: pass
+                MDNavigationDrawerItem:
+                    text: "What salt is"
+                    on_release: app.goto_slide('salt_is')
+                MDNavigationDrawerItem:
+                    text: "What a passphrase is"
+                    on_release: pass
+                MDNavigationDrawerItem:
+                    text: "Unlimited wallets"
+                    on_release: pass
+
+
+
+                MDNavigationDrawerDivider:
+                MDNavigationDrawerLabel:
+                    text: "Wallet Access"
+
+                MDNavigationDrawerItem:
+                    icon: "form-textbox-password"
+                    text: "Connect to Bitcoin"
+                    on_release: app.goto_slide('login')
+                MDNavigationDrawerItem:
+                    icon: "format-columns"
+                    text: "Use BIP39 Mnemonic"
+                    on_release: app.goto_slide('login_with_bip39')
+
+                MDNavigationDrawerDivider:
+                MDNavigationDrawerLabel:
+                    text: "Advanced Settings"
+
+                MDNavigationDrawerItem:
+                    icon: "toggle-switch-off-outline"
+                    text: "Offline Mode"
+                MDNavigationDrawerItem:
+                    icon: "toggle-switch-off-outline"
+                    text: "Private Electrum Server"
+                MDNavigationDrawerItem:
+                    icon: "toggle-switch-off-outline"
+                    text: "Live Exchange Rates"

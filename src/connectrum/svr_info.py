@@ -123,8 +123,12 @@ class ServerInfo(dict):
 
         if 'port' in self: return self['hostname'], int(self['port']), use_ssl
 
-        rv = next(i for i in self['ports'] if i[0] == for_protocol)
-
+        print(self['ports'])
+        try:
+            rv = next(i for i in self['ports'] if i[0] == for_protocol)
+        except Exception as ex:
+            print (ex)
+            rv = []
         port = None
         if len(rv) >= 2:
             try:
