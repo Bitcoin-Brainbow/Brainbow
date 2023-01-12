@@ -71,8 +71,8 @@ MDScreen:
             md_bg_color: "#252525"
             #anchor_title: "center"
             #icon: "fingerprint"
-            left_action_items: [["theme-light-dark", lambda x: app.switch_theme_handler()]]
-            #["weather-night", lambda x: app.onboarding_menu_handler()]] if app.is_darkmode else  [["white-balance-sunny", lambda x: app.onboarding_menu_handler()]]
+            left_action_items: [["brightness-2", lambda x: app.switch_theme_handler()]]
+            #["moon-waxing-crescent", lambda x: app.onboarding_menu_handler()]] if app.is_darkmode else  [["white-balance-sunny", lambda x: app.onboarding_menu_handler()]]
             # left_action_items: [['menu', lambda x: root.ids.nav_drawer.set_state("open")]]
 
             #left_action_items: [["menu", lambda x: app.nav_drawer_handler()]]
@@ -95,7 +95,7 @@ MDScreen:
                     on_current_slide: app.current_slide(self.index)
                     MDFloatLayout:
                         FitImage:
-                            source: "assets/onboarding_00.png"
+                            source: "assets/dark-onboarding_00.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .42, .42
                         MDLabel:
@@ -132,7 +132,7 @@ MDScreen:
 
                     MDFloatLayout:
                         Image:
-                            source: "assets/onboarding_10.png"
+                            source: "assets/dark-onboarding_10.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .66, .66
                             #size_hint: .42, .42
@@ -169,7 +169,7 @@ MDScreen:
 
                     MDFloatLayout:
                         Image:
-                            source: "assets/onboarding_20.png"
+                            source: "assets/dark-onboarding_20.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .66, .66
                             #size_hint: .42, .42
@@ -206,7 +206,7 @@ MDScreen:
                     MDFloatLayout:
                         name: "salt_is"
                         Image:
-                            source: "assets/what-salt-is.png"
+                            source: "assets/dark-what-salt-is.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .66, .66
 
@@ -245,7 +245,7 @@ MDScreen:
 
                     MDFloatLayout:
                         Image:
-                            source: "assets/strong_passphrase.png"
+                            source: "assets/dark-strong_passphrase.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .66, .66
                             #size_hint: .42, .42
@@ -281,7 +281,7 @@ MDScreen:
 
                     MDFloatLayout:
                         Image:
-                            source: "assets/onboarding_unlimited_wallets.png"
+                            source: "assets/dark-onboarding_unlimited_wallets.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .66, .66
                             #size_hint: .42, .42
@@ -453,7 +453,7 @@ MDScreen:
                     MDFloatLayout:
                         name: "startup_offline_mode"
                         Image:
-                            source: "assets/online.png"
+                            source: "assets/dark-online.png"
                             id: startup_offline_mode_image_source
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .66, .66
@@ -487,7 +487,7 @@ MDScreen:
                     MDFloatLayout:
                         name: "startup_my_electrum"
                         Image:
-                            source: "assets/btc-own-node.png"
+                            source: "assets/dark-btc-own-node.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
                             size_hint: .66, .66
                             #size_hint: .42, .42
@@ -1137,11 +1137,11 @@ MDScreen:
                     text: "Advanced Settings"
 
                 MDNavigationDrawerItem:
-                    icon: "toggle-switch-off-outline"
+                    icon: "toggle-switch-off"
                     text: "Offline Mode"
                 MDNavigationDrawerItem:
-                    icon: "toggle-switch-off-outline"
+                    icon: "toggle-switch-off"
                     text: "Private Electrum Server"
                 MDNavigationDrawerItem:
-                    icon: "toggle-switch-off-outline"
+                    icon: "toggle-switch-off"
                     text: "Live Exchange Rates"

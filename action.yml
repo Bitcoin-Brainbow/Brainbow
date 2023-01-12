@@ -7,9 +7,9 @@ branding:
 
 inputs:
   command:
-    description: Command to start Buildozer. Set to `buildozer ios debug` for iOS
+    description: Command to start Buildozer. Set to `buildozer ios debug|release` for iOS
     required: true
-    default: buildozer android release
+    default: buildozer android debug
   repository_root:
     description: Path to cloned repository. Set if you specified path for `actions/checkout` action.
     required: true

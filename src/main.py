@@ -366,10 +366,10 @@ class BrainbowApp(MDApp):
     def on_offline_switch_active(self, switch, on_off):
         if on_off:
             print("OFFLINE MODE ")
-            self.root.ids.startup_offline_mode_image_source.source = "assets/offline.png"
+            self.root.ids.startup_offline_mode_image_source.source = "assets/dark-offline.png"
         else:
             print("NOT OFFLINE MODE")
-            self.root.ids.startup_offline_mode_image_source.source = "assets/online.png"
+            self.root.ids.startup_offline_mode_image_source.source = "assets/dark-online.png"
     def show_snackbar(self, text):
         snackbar = Snackbar(text=text,
                             snackbar_x="8dp",
@@ -1449,10 +1449,10 @@ class BrainbowApp(MDApp):
             request_permissions([Permission.CAMERA])
             request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
 
-            from android_utils import dark_mode
-            self.is_darkmode = dark_mode()
+            #from android_utils import dark_mode
+            #self.is_darkmode = dark_mode()
 
-
+        self.is_darkmode = True # Force dark mode for all     
 
         # Theme settings
         self.theme_cls.material_style = "M2"
