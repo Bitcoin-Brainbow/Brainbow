@@ -97,7 +97,7 @@ top_blk = {'height', 0}
 
 
 
-__version__ = "0.1.143"
+__version__ = "0.1.144"
 
 if platform == "android":
     Window.softinput_mode = "below_target"
@@ -158,7 +158,9 @@ class PassphraseControlField(MDRelativeLayout):
     hint_text = StringProperty()
 
 
-
+class QRScanAddressField(MDRelativeLayout):
+    text = StringProperty()
+    helper_text = StringProperty()
 
 class UTXOListItem(TwoLineListItem):
     """ """
@@ -456,13 +458,11 @@ class BrainbowApp(MDApp):
         if address:
             self.show_snackbar("Found {}..{}".format(address[:11], address[-11:]))
 
-    def start_zbar(self):
+    def start_qr_scanner(self):
         if not self._qrreader:
-            print("qrreader start")
             self._qrreader = QRReader(letterbox_color='black', aspect_ratio='4:3', cb=self.zbar_cb)
             self.show_preview_modal()
         else:
-            print("qrreader_release")
             self.qrreader_release()
 
 
@@ -699,7 +699,7 @@ class BrainbowApp(MDApp):
                 self.show_dialog("Redeem script", "", qrdata=script)
 
 
-    def fee_select_callback(self, selected_fee):
+    def fee_select_callback(self, selected_fee="custom"):
 
         """mempool_recommended_fees = {  "fastestFee": 5,
                                       "halfHourFee": 4,
@@ -748,6 +748,7 @@ class BrainbowApp(MDApp):
             chg_out = tx.txs_out[chg_vout]  # type: TxOut
             txid, exception = await self.wallet.broadcast(tx.as_hex(), chg_out)  # type: str
             if txid:
+                # successfully broadcasted
                 # remove UTXOs once broadcasted
                 self.wallet.utxos = []
                 for i, utxo in enumerate(self.wallet.utxos):
@@ -758,6 +759,14 @@ class BrainbowApp(MDApp):
                 if self.tx_btm_sheet:
                     self.tx_btm_sheet.dismiss()
                     self.tx_btm_sheet = None
+
+                # Reset last used values in send tab
+                self.fee_select_callback()
+                self.root.ids.address_input.text = ""
+                self.root.ids.address_input.error = False
+                self.root.ids.spend_amount_input_fiat.text = "0"
+                self.root.ids.spend_amount_input.text = "0"
+
                 self.show_snackbar("Transaction {}..{} sent.".format(txid[:11],txid[-11:]))
             else:
                 try:
@@ -1452,7 +1461,7 @@ class BrainbowApp(MDApp):
             #from android_utils import dark_mode
             #self.is_darkmode = dark_mode()
 
-        self.is_darkmode = True # Force dark mode for all     
+        self.is_darkmode = True # Force dark mode for all
 
         # Theme settings
         self.theme_cls.material_style = "M2"

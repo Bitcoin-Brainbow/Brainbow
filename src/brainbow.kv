@@ -45,7 +45,6 @@
         text: root.text
         color_mode: "accent"
         password: True
-        id: pass_field
         hint_text: "Passphrase"
         write_tab: False
         required: True
@@ -60,6 +59,41 @@
         on_release:
             self.icon = "eye" if self.icon == "eye-off" else "eye-off"
             pass_field.password = False if pass_field.password is True else True
+
+<QRScanAddressField>:
+    size_hint_y: None
+    height: address_input.height
+    text: address_input.text
+    MDTextField:
+        id: address_input
+        text: root.text
+        color_mode: "accent"
+        #hint_text: "Enter Address"
+        helper_text_mode: "persistent"
+        helper_text: "Enter Address"
+        write_tab: False
+        on_text: app.set_address_error(self.text)
+        on_text_validate: app.set_address_error(self.text)
+        on_focus: app.set_address_error(self.text)
+    MDIconButton:
+        icon: "qrcode-scan"
+        theme_icon_color: "Custom"
+        icon_color: "#cccccc"
+        pos_hint: {"center_y": .5}
+        pos: address_input.width - self.width + dp(8), 0
+        on_release: app.start_qr_scanner()
+
+
+
+#MDTextField:
+#    id: address_input
+#    helper_text: "Enter Address"
+#    helper_text_mode: "persistent"
+#    color_mode: "accent"
+#    write_tab: False
+#    on_text: app.set_address_error(self.text)
+#    on_text_validate: app.set_address_error(self.text)
+#    on_focus: app.set_address_error(self.text)
 
 MDScreen:
     BoxLayout:
@@ -600,15 +634,17 @@ MDScreen:
                                 BoxLayout:
                                     size_hint: 1, 0.6
                                     spacing: 5
-                                    MDTextField:
+                                    QRScanAddressField:
                                         id: address_input
-                                        helper_text: "Enter Address"
-                                        helper_text_mode: "persistent"
-                                        color_mode: "accent"
-                                        write_tab: False
-                                        on_text: app.set_address_error(self.text)
-                                        on_text_validate: app.set_address_error(self.text)
-                                        on_focus: app.set_address_error(self.text)
+                                    #MDTextField:
+                                    #    id: address_input
+                                    #    helper_text: "Enter Address"
+                                    #    helper_text_mode: "persistent"
+                                    #    color_mode: "accent"
+                                    #    write_tab: False
+                                    #    on_text: app.set_address_error(self.text)
+                                    #    on_text_validate: app.set_address_error(self.text)
+                                    #    on_focus: app.set_address_error(self.text)
                                 BoxLayout:
                                     size_hint: 1, 0.6
                                     spacing: 25
@@ -640,15 +676,16 @@ MDScreen:
                                 #    pos_hint: {"center_x": .5, "center_y": .5}
                                 #    orientation: "vertical"
 
-                                # Camera not working right now
-                                MDFloatingActionButton:
-                                    icon: "qrcode-scan"
-                                    md_bg_color: "#252525"
-                                    opposite_colors: True
-                                    elevation_normal: 8
-                                    pos_hint: {"center_x": 0.5, "center_y": 0.2}
-                                    id: camera_button
-                                    on_release: app.start_zbar()
+
+                                # Old Button to scan a QR Code
+                                #MDFloatingActionButton:
+                                #    icon: "qrcode-scan"
+                                #    md_bg_color: "#252525"
+                                #    opposite_colors: True
+                                #    elevation_normal: 8
+                                #    pos_hint: {"center_x": 0.5, "center_y": 0.2}
+                                #    id: camera_button
+                                #    on_release: app.start_qr_scanner()
 
 
 
@@ -789,10 +826,24 @@ MDScreen:
                 AnchorLayout:
                     MDSpinner:
                         size_hint: None, None
-                        size: dp(248), dp(248)
+                        size: dp(250), dp(250)
                         pos_hint: {"center_x": 0.5, "center_y": 0.5}
                         palette:
-                            [0, 0, 0, 1],
+                            [1, 0.25, 0, 1],[1, 0.5, 1, 1],
+                        line_width: dp(1.25)
+                    MDSpinner:
+                        size_hint: None, None
+                        size: dp(255), dp(255)
+                        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                        palette:
+                            [1, 0.5, 0, 1],[.8, 0.25, 1, 1],
+                        line_width: dp(1.25)
+                    MDSpinner:
+                        size_hint: None, None
+                        size: dp(260), dp(260)
+                        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                        palette:
+                            [.8, 0.5, 0, 1],[.6, 0.05, 1, 1],
                         line_width: dp(1.25)
                 MDLabel:
                     id: wait_text
