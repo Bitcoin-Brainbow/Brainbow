@@ -27,7 +27,7 @@ from connectrum.svr_info import ServerInfo
 from connectrum import ElectrumErrorResponse
 
 from bip49 import SegwitBIP32Node
-from keys import derive_key 
+from keys import derive_key
 from utils import is_txid
 from utils import log_time_elapsed
 from history import History
@@ -342,7 +342,7 @@ class Wallet:
         """
         logging.info("Retrieving utxos for scripthash %s", scripthash)
         try:
-            update_loading_small_text("Retrieving utxos for address {}".format(scripthash))
+            update_loading_small_text("Retrieving UTXOs for address/scripthash {}".format(scripthash))
         except:
             pass
         result = await self.connection.listen_rpc(self.connection.methods["listunspent"], [scripthash])  # type: Dict

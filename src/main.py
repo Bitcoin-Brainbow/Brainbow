@@ -97,7 +97,7 @@ top_blk = {'height', 0}
 
 
 
-__version__ = "0.1.144"
+__version__ = "0.1.145"
 
 if platform == "android":
     Window.softinput_mode = "below_target"
@@ -1261,13 +1261,13 @@ class BrainbowApp(MDApp):
     def update_ypub_screen(self):
         ypub = self.wallet.ypub
         ypub = self.pub_char + ypub[1:]
-        self.root.ids.ypub_label.text = "Extended Public Key (SegWit):\n\n{}\n\n".format(ypub)
+        self.root.ids.ypub_label.text = "{}".format(ypub)
         self.root.ids.ypub_qrcode.data = ypub
 
     def update_seed_screen(self):
         try:
             self.root.ids.seed_label.text = \
-                "BIP32 Root Key (WIF):\n\n{}\n\n".format(self.wallet.private_BIP32_root_key)
+                "{}".format(self.wallet.private_BIP32_root_key)
             self.root.ids.seed_qrcode.data = self.wallet.private_BIP32_root_key
         except Exception as ex:
             print(traceback.format_exc())
@@ -1277,7 +1277,7 @@ class BrainbowApp(MDApp):
 
     def update_bip39_mnemonic_screen(self):
         try:
-            self.root.ids.bip39_mnemonic_label.text = "BIP39 Mnemonic:\n\n{}\n\n".format(self.wallet.bip39_mnemonic)
+            self.root.ids.bip39_mnemonic_label.text = "{}".format(self.wallet.bip39_mnemonic)
             self.root.ids.bip39_mnemonic_qrcode.data = "{}".format(self.wallet.bip39_mnemonic)
         except Exception as ex:
             print(traceback.format_exc())
@@ -1469,13 +1469,13 @@ class BrainbowApp(MDApp):
             self.theme_cls.theme_style = "Dark"
         else:
             self.theme_cls.theme_style = "Light"
-
-        #self.theme_cls.primary_palette = "Gray"
+        print (self.theme_cls)
+        print (dir(self.theme_cls))
         #self.theme_cls.primary_hue = "200"  # "500"
         #self.theme_cls.secondary_palette = "Red"
         #self.theme_cls.primary_hue = "200"  # "500"
-        self.theme_cls.theme_style_switch_animation = True
-        self.theme_cls.theme_style_switch_animation_duration = 0.8
+        #self.theme_cls.theme_style_switch_animation = True
+        #self.theme_cls.theme_style_switch_animation_duration = 0.8
 
         self.use_kivy_settings = False
         self.rbf = self.config.getboolean("brainbow", "rbf")

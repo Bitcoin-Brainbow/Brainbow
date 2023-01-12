@@ -103,15 +103,8 @@ MDScreen:
             title: "Brainbow"
             pos_hint: {"top": 1}
             md_bg_color: "#252525"
-            #anchor_title: "center"
-            #icon: "fingerprint"
             left_action_items: [["brightness-2", lambda x: app.switch_theme_handler()]]
-            #["moon-waxing-crescent", lambda x: app.onboarding_menu_handler()]] if app.is_darkmode else  [["white-balance-sunny", lambda x: app.onboarding_menu_handler()]]
-            # left_action_items: [['menu', lambda x: root.ids.nav_drawer.set_state("open")]]
-
-            #left_action_items: [["menu", lambda x: app.nav_drawer_handler()]]
             right_action_items: [["hand-wave-outline", lambda x: app.onboarding_menu_handler()]]
-                                    # brightness-2 white-balance-sunny
         Widget:
     MDNavigationLayout:
         x: toolbar.height
@@ -121,9 +114,7 @@ MDScreen:
             transition: SlideTransition(direction="right", duration=0.01)
             WelcomeScreen:
                 MDFloatLayout:
-                    #md_bg_color : 1, 1, 1, 1
                 Carousel:
-                    #name: "caraousel"
                     id: caraousel
                     use_pagination: True
                     on_current_slide: app.current_slide(self.index)
@@ -354,7 +345,7 @@ MDScreen:
                         name: "login"
                         id: id_login
                         AnchorLayout:
-                            BoxLayout:
+                            MDBoxLayout:
                                 size_hint: 0.8, 0.55 # 0.8, 0.55
                                 spacing: 3
                                 orientation: "vertical"
@@ -602,7 +593,7 @@ MDScreen:
                         icon: "database-export"
                         #icon: "database-arrow-right"
                         AnchorLayout:
-                            BoxLayout:
+                            MDBoxLayout:
                                 size_hint: 0.9, 0.75
                                 orientation: "vertical"
                                 spacing: 9
@@ -669,33 +660,7 @@ MDScreen:
                                         font_size: sp(18)
                                         md_bg_color: "#252525"
                                         on_release: asyncio.create_task(app.send_button_handler())
-                                #MDBoxLayout:
-                                #    id: floating_action_box
-                                #    spacing: "56dp"
-                                #    adaptive_size: True
-                                #    pos_hint: {"center_x": .5, "center_y": .5}
-                                #    orientation: "vertical"
 
-
-                                # Old Button to scan a QR Code
-                                #MDFloatingActionButton:
-                                #    icon: "qrcode-scan"
-                                #    md_bg_color: "#252525"
-                                #    opposite_colors: True
-                                #    elevation_normal: 8
-                                #    pos_hint: {"center_x": 0.5, "center_y": 0.2}
-                                #    id: camera_button
-                                #    on_release: app.start_qr_scanner()
-
-
-
-                                #    MDFloatingActionButton:
-                                #        md_bg_color: "#252525"
-                                #        icon: "credit-card-scan-outline"
-                                #        opposite_colors: True
-                                #        pos_hint: {"center_x": 0.5, "center_y": 0.2}
-                                #        id: nfc_button
-                                #        on_release: app.start_nfc_tap()
 
 
                     Tab:
@@ -704,12 +669,12 @@ MDScreen:
                         title_icon_mode: "Top"
                         icon: "database-import"
                         AnchorLayout:
-                            BoxLayout:
-                                size_hint: 0.9, 0.8
+                            MDBoxLayout:
+                                size_hint: 0.9, 0.9
                                 spacing: 3
                                 orientation: "vertical"
-                                BoxLayout:
-                                    size_hint: 1, 0.2
+                                MDBoxLayout:
+                                    size_hint: 1, 0.5
                                     spacing: 5
                                     FloatInput:
                                         id: receive_amount_input
@@ -726,27 +691,21 @@ MDScreen:
                                         write_tab: False
                                         on_text: app.update_amounts(self.text, "fiat")
                                 MDCard:
+                                    md_bg_color: "#000000"
                                     size_hint: None, None
-                                    size: dp(300), dp(320)
+                                    size: dp(280), dp(300)
                                     pos_hint: {"center_x": 0.5}
-                                    BoxLayout:
+                                    MDBoxLayout:
                                         orientation:"vertical"
                                         padding: dp(10)
                                         spacing: 5
                                         on_touch_down: app.copy_current_address_to_clipboard()
                                         MDLabel:
-
-                                        #MDTextButton:
-
-                                        #MDRectangleFlatIconButton:
-                                            #line_color: 0, 0, 0, 0
-                                            #icon: 'copy'
-
                                             id: addr_label
                                             text_color: "#000000"
                                             font_style:"Body2"
                                             size_hint_y: None
-                                            height: dp(40)
+                                            height: dp(60)
                                         QRCodeWidget:
                                             id: addr_qrcode
                                             show_border: False
@@ -857,7 +816,7 @@ MDScreen:
                 MDLabel:
                     id: wait_text_small
                     size: self.size
-                    font_size: '11sp'
+                    font_size: '12sp'
                     text: "-"
                     theme_text_color: "Primary"
                     size_hint: 0.7, None
@@ -885,7 +844,7 @@ MDScreen:
             ExchangeRateScreen:
                 name: "exchangerate"
                 MDFloatLayout:
-                    BoxLayout:
+                    MDBoxLayout:
                         size_hint: 1, 1
                         orientation:"vertical"
                         MDLabel:
@@ -911,77 +870,96 @@ MDScreen:
                             text: "By enabling 'Live exchange rates', Brainbow\nretrieves the exchange rates from various\nservices and calculates an average rate."
                             pos_hint: {'center_x': .5, 'center_y': .65}
 
-
-
-
-
+            # ------------------------------------------------------------------
             YPUBScreen:
                 name: "ypub"
-                MDCard:
+                transition: SlideTransition(direction="right", duration=0.01)
+                MDLabel:
+                    theme_text_color: "Primary"
+                    font_style: "H6"
+                    size: self.size
+                    height: dp(70)
+                    size_hint: 0.7, None
+                    halign: "center"
+                    text: "Extended Public Key (SegWit)"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.95}
+                MDLabel:
+                    id: ypub_label
+                    theme_text_color: "Primary"
+                    font_style:"Body1"
+                    size: self.size
+                    height: dp(70)
+                    size_hint: 0.7, None
+                    pos_hint: {"center_x": 0.5, "center_y": 0.785}
+                AnchorLayout:
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
                     size_hint: None, None
-                    size: dp(320), dp(360)
-                    pos_hint: {"center_x": 0.5, "center_y": 0.55}
-                    BoxLayout:
-                        orientation:"vertical"
-                        padding: dp(10)
-                        spacing: 5
-                        MDLabel:
-                            id: ypub_label
-                            theme_text_color: "ContrastParentBackground"
-                            font_style: "Body2"
-                            size_hint_y: None
-                            height: dp(70)
-                        QRCodeWidget:
-                            id: ypub_qrcode
-                            show_border: False
-
-
-
-
-
-
-
+                    size: dp(240), dp(240)
+                    anchor_x: 'center'
+                    anchor_y: 'center'
+                    QRCodeWidget:
+                        id: ypub_qrcode
+                        show_border: False
+            # ------------------------------------------------------------------
             SeedScreen:
                 name: "seed"
                 transition: SlideTransition(direction="right", duration=0.01)
-                MDCard:
+                MDLabel:
+                    theme_text_color: "Primary"
+                    font_style: "H6"
+                    size: self.size
+                    height: dp(70)
+                    size_hint: 0.7, None
+                    halign: "center"
+                    text: "BIP32 Root Key (WIF)"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.95}
+                MDLabel:
+                    id: seed_label
+                    theme_text_color: "Primary"
+                    font_style:"Body1"
+                    size: self.size
+                    height: dp(70)
+                    size_hint: 0.7, None
+                    pos_hint: {"center_x": 0.5, "center_y": 0.785}
+                AnchorLayout:
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
                     size_hint: None, None
-                    size: dp(320), dp(360)
-                    pos_hint: {"center_x": 0.5, "center_y": 0.55}
-                    BoxLayout:
-                        orientation:"vertical"
-                        padding: dp(10)
-                        spacing: 5
-                        MDLabel:
-                            id: seed_label
-                            theme_text_color: "ContrastParentBackground"
-                            font_style:"Body2"
-                            size_hint_y: None
-                            height: dp(70)
-                        QRCodeWidget:
-                            id: seed_qrcode
-                            show_border: False
-
+                    size: dp(240), dp(240)
+                    anchor_x: 'center'
+                    anchor_y: 'center'
+                    QRCodeWidget:
+                        id: seed_qrcode
+                        show_border: False
+            # ------------------------------------------------------------------
             SeedScreen:
                 name: "bip39_mnemonic_screen"
                 transition: SlideTransition(direction="right", duration=0.01)
-                MDCard:
+                MDLabel:
+                    theme_text_color: "Primary"
+                    font_style: "H6"
+                    size: self.size
+                    height: dp(70)
+                    size_hint: 0.7, None
+                    halign: "center"
+                    text: "BIP39 Mnemonic"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.95}
+                MDLabel:
+                    id: bip39_mnemonic_label
+                    theme_text_color: "Primary"
+                    font_style:"Body1"
+                    size: self.size
+                    height: dp(70)
+                    size_hint: 0.7, None
+                    pos_hint: {"center_x": 0.5, "center_y": 0.785}
+                AnchorLayout:
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
                     size_hint: None, None
-                    size: dp(320), dp(360)
-                    pos_hint: {"center_x": 0.5, "center_y": 0.55}
-                    BoxLayout:
-                        orientation:"vertical"
-                        padding: dp(10)
-                        spacing: 5
-                        MDLabel:
-                            id: bip39_mnemonic_label
-                            theme_text_color: "ContrastParentBackground"
-                            font_style:"Body2"
-                            size_hint_y: None
-                            height: dp(70)
-                        QRCodeWidget:
-                            id: bip39_mnemonic_qrcode
-                            show_border: False
+                    size: dp(240), dp(240)
+                    anchor_x: 'center'
+                    anchor_y: 'center'
+                    QRCodeWidget:
+                        id: bip39_mnemonic_qrcode
+                        show_border: False
 
 
 
@@ -992,7 +970,7 @@ MDScreen:
             anchor: "left"
             padding: 16, 22, 12, 16
             radius: (0, 0, 0, 0)
-            md_bg_color: "#ffffff"
+            #md_bg_color: "#ffffff"
             MDNavigationDrawerMenu:
                 MDNavigationDrawerHeader:
                     title: "Brainbow"
@@ -1016,8 +994,6 @@ MDScreen:
                     right_text: ""
                     text_right_color: "#4a4939"
                     text: "Transactions"
-                    #text_color: "#c9c9c9"
-                    #selected_color: "#c9c9c9"
                     id: nav_drawer_item_transactions
                     on_release: app.goto_screen('main', 'TRANSACTIONS')
 
@@ -1132,24 +1108,14 @@ MDScreen:
             anchor: "right"
             padding: 16, 22, 12, 16
             radius: (0, 0, 0, 0)
-            #md_bg_color: "#ffffff"
-            #md_bg_color: app.theme_cls.bg_light
             MDNavigationDrawerMenu:
-
-
                 MDNavigationDrawerHeader:
                     title: "Brainbow"
                     text: "On-boarding"
                     padding: "12dp", 0, 0, "56dp"
-
-
-                #MDNavigationDrawerLabel:
-                #    text: "Information"
-
                 MDNavigationDrawerItem:
                     text: "Welcome to Brainbow"
                     on_release: pass
-
                 MDNavigationDrawerItem:
                     text: "Access your wallet"
                     on_release: pass
@@ -1166,27 +1132,20 @@ MDScreen:
                 MDNavigationDrawerItem:
                     text: "Unlimited wallets"
                     on_release: pass
-
-
-
                 MDNavigationDrawerDivider:
                 MDNavigationDrawerLabel:
                     text: "Wallet Access"
-
                 MDNavigationDrawerItem:
                     icon: "form-textbox-password"
                     text: "Connect to Bitcoin"
-                    #text_color: app.theme_cls.primary_dark
                     on_release: app.goto_slide('login')
                 MDNavigationDrawerItem:
                     icon: "format-columns"
                     text: "Use BIP39 Mnemonic"
                     on_release: app.goto_slide('login_with_bip39')
-
                 MDNavigationDrawerDivider:
                 MDNavigationDrawerLabel:
                     text: "Advanced Settings"
-
                 MDNavigationDrawerItem:
                     icon: "toggle-switch-off"
                     text: "Offline Mode"
