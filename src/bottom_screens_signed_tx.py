@@ -323,10 +323,19 @@ class TxDetailInfo(MDGridLayout):
         fee_box = MDBoxLayout()
         fee_box.orientation = "vertical"
         try:
-            fee = signed_tx.total_in()  - signed_tx.total_out()
-            #fee = signed_tx.fee()
+            fee  =   str("n/a")   
+            try:
+                print ("history.value - signed_tx.total_out() {}".format(history.value - signed_tx.total_out()))
+            except Exception as ex:
+                fee = str("n/a")
+                print (ex)
+            try:
+                fee = signed_tx.fee()
+            except:
+                pass
+
         except Exception as ex:
-            fee = str(ex)
+            fee = str("n/a")
             print (ex)
         fee_lbl = MDLabel(text = "{}".format(fee)) #"{}..{}".format(signed_tx.as_hex()[:12], signed_tx.as_hex()[-12:]))
     #    fee_lbl.text_color: "#000000"

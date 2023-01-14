@@ -27,24 +27,21 @@ def dark_mode():
 #         print(traceback.format_exc())
 
 
-def android_setflag(self):
+def android_setflag():
     try:
         PythonActivity.mActivity.getWindow().addFlags(Params.FLAG_KEEP_SCREEN_ON)
     except:
         pass
 
-def setflag(self, *args):
-    self.android_setflag()
 
 
-def android_clearflag(self):
+def android_clearflag():
     try:
         PythonActivity.mActivity.getWindow().clearFlags(Params.FLAG_KEEP_SCREEN_ON)
     except:
         pass
 
-def clearflag(self, *args):
-    self.android_clearflag()
+
 
 try:
     run_on_ui_thread(android_setflag)

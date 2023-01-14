@@ -38,8 +38,7 @@ class History:
 
     async def get_timestamp(self, connection: Connection) -> None:
         """ Coroutine. Gets the timestamp for this Tx based on the given height.
-        :param connection: a Connection object for getting a block header
-            from the server
+        :param connection: a Connection object for getting a block header from the server
         """
         if self.height > 0:
             try:
@@ -48,12 +47,9 @@ class History:
                     [self.height]
                 )  # type: Dict[str, Any]
             except ElectrumErrorResponse as e:
-                print("E156 {}".format(e))
                 return
             self.timestamp = get_timestamp_from_block_header(block_header)
-
-            logging.debug("Got timestamp %d from block at height %s",
-                          self.height, self.timestamp)
+            logging.debug("Got timestamp {} for block at height {}".format(self.height, self.timestamp))
         else:
             import datetime
             self.timestamp = datetime.datetime.now()

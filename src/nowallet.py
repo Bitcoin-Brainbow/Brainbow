@@ -422,7 +422,7 @@ class Wallet:
             is_spend = True
             value = self._get_spend_value(history)
 
-        decimal_value = Decimal(str(value)) / Wallet.COIN  # type: Decimal
+        decimal_value = Decimal(str(value)) / Wallet.COIN  # type: Decimal, in BTC.
         history_obj = History(tx_obj=history,
                               is_spend=is_spend,
                               value=decimal_value,

@@ -634,7 +634,10 @@ class BrainbowApp(MDApp):
         """
         Used for settings and wallet mechanics, not transactions.
         """
-        self.root.ids.toolbar.left_action_items = [["menu", lambda x: self.nav_drawer_handler()], ["theme-light-dark", lambda x: app.switch_theme_handler()]]
+        self.root.ids.toolbar.left_action_items = [["menu", lambda x: self.nav_drawer_handler()],
+                        ["theme-light-dark", lambda x: app.switch_theme_handler()],
+                        ["creation", lambda x: app.dump_history_to_fs()],
+                        ]
         self.root.ids.toolbar.right_action_items = []
         app.root.ids.sm.current = current
 
@@ -1148,7 +1151,6 @@ class BrainbowApp(MDApp):
                 #    self.show_snackbar("Exchange rates updated. {}".format(self.get_rate()))
 
     def toggle_balance_label(self):
-        #self.dump_history_to_fs()
         if self._fiat_fields_hidden is False:
             self.fiat_balance = not self.fiat_balance
             self.update_balance_screen()
@@ -1178,12 +1180,9 @@ class BrainbowApp(MDApp):
         walias = wallet_alias(fingerprint[0:2], fingerprint[2:4])
         self.root.ids.toolbar.title = walias
         self.root.ids.active_wallet_alias.text = "{} ({})".format(walias, fingerprint)
-        #self.root.ids.toolbar.title = fingerprint.upper()
         if self.chain  == nowallet.TBTC:
             self.root.ids.toolbar.title += " TESTNET"
 
-    #def total_wallet_tx_count(self):
-    #    return len(self.wallet.get_tx_history())
 
     def dump_history_to_fs(self):
         """
@@ -1195,10 +1194,38 @@ class BrainbowApp(MDApp):
             "timestamp": self.timestamp
         }
         """
-        f = open("dump_history.csv", 'w')
+        f = open("brainbow-history-dump-{}.csv".format(self.wallet.fingerprint), 'w')
         for hist in self.wallet.get_tx_history():
             f.write("{}, {}, {}, {}\n".format(hist.value, hist.is_spend, hist.tx_obj.id(), hist.tx_obj.as_hex()))
         f.close()
+
+        # fix balance screen
+        utxo_balance_combined = {}
+        utxo_list = []
+        self.root.ids.balance_label.text = "FIXED!"
+        self.root.ids.recycleView.data_model.data = []
+
+
+        for hist in self.wallet.get_tx_history():
+            if hist.tx_obj.id() not in utxo_list:
+                utxo_list.append(hist.tx_obj.id()) # keep everything in chronological order
+                utxo_balance_combined[hist.tx_obj.id()] = []
+            if hist.is_spend:
+                utxo_balance_combined[hist.tx_obj.id()].append(-1*hist.value * self.unit_factor)
+            else:
+                utxo_balance_combined[hist.tx_obj.id()].append(hist.value * self.unit_factor)
+
+        for txid in utxo_list:
+            for hist in self.wallet.get_tx_history():
+                if txid == hist.tx_obj.id():
+                    tx_sum = sum(utxo_balance_combined[txid])
+                    verb = "" if tx_sum < 0 else "+"
+                    val = self.unit_precision.format(tx_sum)
+                    hist_str = "{}{} {}".format(verb, val, self.units)
+                    self.add_list_item(hist_str, hist)
+                    break
+        self.root.ids.nav_drawer_item_transactions.right_text = "{}".format(len(utxo_list))
+        self.root.ids.nav_drawer_item_transactions.size_hint_x = None
 
 
     def update_balance_screen(self):
@@ -1609,16 +1636,16 @@ class BrainbowApp(MDApp):
             if tab and name == "main":
                 self.root.ids.main_tabs.switch_tab(tab, search_by="title")
 
-    def on_selected(self, instance_selection_list, instance_selection_item):
-        self.root.ids.toolbar.title = str(
-            len(instance_selection_list.get_selected_list_items())
-        )
-
-    def on_unselected(self, instance_selection_list, instance_selection_item):
-        if instance_selection_list.get_selected_list_items():
-            self.root.ids.toolbar.title = str(
-                len(instance_selection_list.get_selected_list_items())
-            )
+    # def on_selected(self, instance_selection_list, instance_selection_item):
+    #     self.root.ids.toolbar.title = str(
+    #         len(instance_selection_list.get_selected_list_items())
+    #     )
+    #
+    # def on_unselected(self, instance_selection_list, instance_selection_item):
+    #     if instance_selection_list.get_selected_list_items():
+    #         self.root.ids.toolbar.title = str(
+    #             len(instance_selection_list.get_selected_list_items())
+    #         )
 
 
 if __name__ == "__main__":
