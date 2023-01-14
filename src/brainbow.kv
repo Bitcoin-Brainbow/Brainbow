@@ -10,8 +10,6 @@
 #:import MDNavigationLayout kivymd.uix.navigationdrawer.navigationdrawer.MDNavigationLayout
 
 
-
-
 <Tab>
     MDLabel:
         text: root.content_text
@@ -34,7 +32,6 @@
     #on_release: self.on_release()
     IconLeftConfirmationWidget:
         icon: self.parent.parent.icon
-
 
 <PassphraseControlField>:
     size_hint_y: None
@@ -60,6 +57,7 @@
             self.icon = "eye" if self.icon == "eye-off" else "eye-off"
             pass_field.password = False if pass_field.password is True else True
 
+
 <QRScanAddressField>:
     size_hint_y: None
     height: address_input.height
@@ -84,16 +82,30 @@
         on_release: app.start_qr_scanner()
 
 
+<SpendAmount>:
+    size_hint_y: None
+    height: spend_amount_input.height
+    text: app.current_coin
+    FloatInput:
+        id: spend_amount_input
+        text: root.text
+        color_mode: "accent"
+        hint_text: app.units
+        write_tab: False
+        on_text: app.update_amounts(self.text, "coin")
+        on_text: app.set_amount_error(self.text)
+        on_text_validate: app.set_amount_error(self.text)
+        on_focus: app.set_amount_error(self.text)
+    MDIconButton:
+        icon: "all-inclusive"
+        theme_icon_color: "Custom"
+        icon_color: "#cccccc"
+        pos_hint: {"center_y": .5}
+        pos: spend_amount_input.width - self.width + dp(8), 0
+        on_release: app.spend_all_UTXOs()
 
-#MDTextField:
-#    id: address_input
-#    helper_text: "Enter Address"
-#    helper_text_mode: "persistent"
-#    color_mode: "accent"
-#    write_tab: False
-#    on_text: app.set_address_error(self.text)
-#    on_text_validate: app.set_address_error(self.text)
-#    on_focus: app.set_address_error(self.text)
+
+    ###
 
 MDScreen:
     BoxLayout:
@@ -102,7 +114,7 @@ MDScreen:
             id: toolbar
             title: "Brainbow"
             pos_hint: {"top": 1}
-            md_bg_color: "#252525"
+            md_bg_color: "#343432" #"#252525"
             left_action_items: [["brightness-2", lambda x: app.switch_theme_handler()]]
             right_action_items: [["hand-wave-outline", lambda x: app.onboarding_menu_handler()]]
         Widget:
@@ -137,8 +149,6 @@ MDScreen:
                             halign: 'center'
                             font_size: '16sp'
                             text: "Brainbow is a stateless, non-custodial,\ndeterministic Bitcoin wallet.\n\nStateless means, that Brainbow does\nnot save or store your private key\nor wallet information anywhere.\n\nConnect to Bitcoin by generating your wallet\nusing a salt and a really good passphrase."
-
-
                         MDTextButton:
                             text: "SKIP AND CONNECT TO BITCOIN"
                             font_size: '18sp'
@@ -153,8 +163,6 @@ MDScreen:
                             halign: "center"
                             font_size: "14sp"
                             color: "#c9c9c9"
-
-
                     MDFloatLayout:
                         Image:
                             source: "assets/dark-onboarding_10.png"
@@ -190,8 +198,6 @@ MDScreen:
                             halign: "center"
                             font_size: "14sp"
                             color: "#c9c9c9"
-
-
                     MDFloatLayout:
                         Image:
                             source: "assets/dark-onboarding_20.png"
@@ -267,7 +273,7 @@ MDScreen:
                             halign: "center"
                             font_size: "14sp"
                             color: "#c9c9c9"
-
+                    # ----------------------------------------------------------
                     MDFloatLayout:
                         Image:
                             source: "assets/dark-strong_passphrase.png"
@@ -556,7 +562,8 @@ MDScreen:
                     tab_display_mode: "icons"
                     on_tab_switch: app.give_current_tab_name(*args)
                     #on_slide_progress: print('hello')
-                    background_color: "#4d4d4d"
+                    #background_color: "#4d4d4d"
+                    background_color: "#343432"
                 #    underline_color: "#f7931a"
                     tab_bar_height:  dp(52)
                     id: main_tabs
@@ -600,16 +607,18 @@ MDScreen:
                                 BoxLayout:
                                     size_hint: 1, 0.2
                                     spacing: 5
-                                    FloatInput:
+                                    SpendAmount:
                                         id: spend_amount_input
-                                        text: app.current_coin
-                                        hint_text: app.units
-                                        color_mode: "accent"
-                                        write_tab: False
-                                        on_text: app.update_amounts(self.text, "coin")
-                                        on_text: app.set_amount_error(self.text)
-                                        on_text_validate: app.set_amount_error(self.text)
-                                        on_focus: app.set_amount_error(self.text)
+                                    #FloatInput:
+                                    #    id: spend_amount_input
+                                    #    text: app.current_coin
+                                    #    hint_text: app.units
+                                    #    color_mode: "accent"
+                                    #    write_tab: False
+                                    #    on_text: app.update_amounts(self.text, "coin")
+                                    #    on_text: app.set_amount_error(self.text)
+                                    #    on_text_validate: app.set_amount_error(self.text)
+                                    #    on_focus: app.set_amount_error(self.text)
                                     FloatInput:
                                         id: spend_amount_input_fiat
                                         text: app.current_fiat
@@ -622,21 +631,18 @@ MDScreen:
                                     size_hint: 1, 0.2
                                     theme_text_color: "Primary"
                                     font_style: "H6"
-                                BoxLayout:
+                                MDLabel:
+                                    id: send_all_minus_fee
+                                    size_hint: 1, 0.2
+                                    text: ""
+                                    theme_text_color: "Primary"
+                                    font_style: "Body2"
+                                MDBoxLayout:
                                     size_hint: 1, 0.6
                                     spacing: 5
                                     QRScanAddressField:
                                         id: address_input
-                                    #MDTextField:
-                                    #    id: address_input
-                                    #    helper_text: "Enter Address"
-                                    #    helper_text_mode: "persistent"
-                                    #    color_mode: "accent"
-                                    #    write_tab: False
-                                    #    on_text: app.set_address_error(self.text)
-                                    #    on_text_validate: app.set_address_error(self.text)
-                                    #    on_focus: app.set_address_error(self.text)
-                                BoxLayout:
+                                MDBoxLayout:
                                     size_hint: 1, 0.6
                                     spacing: 25
                                     FloatInput:
@@ -649,7 +655,7 @@ MDScreen:
                                         #size_hint: None, None
                                         on_text: app.fee_input_handler()
                                         on_focus: if self.focus: app.fee_selection.open()
-                                BoxLayout:
+                                MDBoxLayout:
                                     size_hint: 1, 0.6
                                     spacing: 5
                                     MDRaisedButton:
@@ -779,6 +785,7 @@ MDScreen:
                                     size_hint_y: None
                                     height: self.minimum_height
                                     orientation: "vertical"
+
 
             WaitScreen:
                 name: "wait"

@@ -27,9 +27,6 @@ from kivymd.uix.list import MDList
 from kivy_utils import open_url
 
 
-
-
-
 class BroadcastButton(MDRaisedButton):
     def do_broadcast_current_signed_tx(self):
         from asyncio import create_task as asyncio_create_task
@@ -83,7 +80,7 @@ class DetailTab(MDFloatLayout, MDTabsBase):
 
 
 class TxDetailInfo(MDGridLayout):
-    def __init__(self, signed_tx, history=None, wallet=None, **var_args):
+    def __init__(self, bg_color, signed_tx, history=None, wallet=None, **var_args):
         super(TxDetailInfo, self).__init__(**var_args)
         in_out_sats_tx_value = 0.0
 
@@ -103,28 +100,28 @@ class TxDetailInfo(MDGridLayout):
         self.width = Window.width
         self.size_hint_y = None
         self.minimum_height = self.height
-        self.md_bg_color = "#fafafa"
+        self.md_bg_color = bg_color
 
 
 
         tabs = MDTabs()
-        tabs.background_color = "#fafafa"
-        tabs.text_color_normal = "#000000"
-        tabs.text_color_active = "#000000"
+        tabs.background_color = bg_color
+    #    tabs.text_color_normal = "#000000"
+    #    tabs.text_color_active = "#000000"
 
 
         overview_tab = DetailTab(title="OVERVIEW")
-        overview_tab.background_color = "#fafafa"
+        overview_tab.background_color = bg_color
 
         txid = signed_tx.id()
         txid_short = "{}..{}".format(txid[:13], txid[-13:])
 
         overview_box = MDBoxLayout()
         overview_box.orientation = "vertical"
-        overview_box.background_color = "#fea0f0" #"#fafafa"
+        overview_box.background_color = bg_color
 
         lbl1 = MDLabel(text ='Amount')
-        lbl1.text_color: "#000000"
+    #    lbl1.text_color: "#000000"
         lbl1.halign = "center"
         lbl1.font_size = '24sp'
         lbl1.theme_text_color = "Primary" #color: "#000000"
@@ -135,7 +132,7 @@ class TxDetailInfo(MDGridLayout):
 
 
         lbl2 = MDLabel(text = "{} sats or {} USD".format(in_out_sats_tx_value, "0.00" ))
-        lbl2.text_color: "#000000"
+    #    lbl2.text_color: "#000000"
         lbl2.halign = "center"
         #lbl2.font_name = "RobotoMono"
         lbl2.valign = "top"
@@ -150,7 +147,7 @@ class TxDetailInfo(MDGridLayout):
 
 
         lbl12 = MDLabel(text ='Transaction ID')
-        lbl12.text_color: "#000000"
+    #    lbl12.text_color: "#000000"
         lbl12.halign = "center"
         lbl12.font_size = '24sp'
         lbl12.theme_text_color = "Primary" #color: "#000000"
@@ -159,7 +156,7 @@ class TxDetailInfo(MDGridLayout):
         overview_box.add_widget(lbl12)
 
         lbl22 = MDLabel(text = txid_short)
-        lbl22.text_color: "#000000"
+    #    lbl22.text_color: "#000000"
         lbl22.halign = "center"
         lbl22.font_name = "RobotoMono"
         lbl22.valign = "top"
@@ -168,7 +165,7 @@ class TxDetailInfo(MDGridLayout):
         if history and history.height > 0:
 
             lbl31 = MDLabel(text ='Block')
-            lbl31.text_color: "#000000"
+    #        lbl31.text_color: "#000000"
             lbl31.halign = "center"
             lbl31.font_size = '24sp'
             lbl31.theme_text_color = "Primary" #color: "#000000"
@@ -177,7 +174,7 @@ class TxDetailInfo(MDGridLayout):
             overview_box.add_widget(lbl31)
 
             lbl32 = MDLabel(text = "{}".format(history.height))
-            lbl32.text_color: "#000000"
+    #        lbl32.text_color: "#000000"
             lbl32.halign = "center"
             lbl32.valign = "top"
             overview_box.add_widget(lbl32)
@@ -197,26 +194,14 @@ class TxDetailInfo(MDGridLayout):
             #broadcast_btn.size_hint_x = None
             broadcast_btn.size_hint_x = 0.5
             broadcast_btn.font_size = '18sp'
-            broadcast_btn.md_bg_color = "#252525"
+    #        broadcast_btn.md_bg_color = "#252525"
 
             broadcast_btn_dl = MDRaisedButton(text="Download")
             #broadcast_btn_dl.size_hint_x = None
             broadcast_btn_dl.size_hint_x = 0.5
             broadcast_btn_dl.font_size = '18sp'
-            broadcast_btn_dl.md_bg_color = "#252525"
+    #        broadcast_btn_dl.md_bg_color = "#252525"
 
-            """
-
-                id: login_button
-
-                on_release: app.login()
-
-                spacer = MDBoxLayout()
-            spacer.add_widget(lbl2)
-            spacer.padding = ["42dp", 0, "42dp", 0]
-            self.add_widget(spacer)
-
-            """
             btn_box.add_widget(broadcast_btn_dl)
             btn_box.add_widget(broadcast_btn)
             overview_box.add_widget(btn_box)
@@ -225,10 +210,26 @@ class TxDetailInfo(MDGridLayout):
             explorer_btn.text = "View on mempool.space"
             explorer_btn.size_hint_x = 1
             explorer_btn.font_size = '18sp'
-            explorer_btn.md_bg_color = "#252525"
+    #        explorer_btn.md_bg_color = "#252525"
 
             btn_box.add_widget(explorer_btn)
             overview_box.add_widget(btn_box)
+
+            for input in history.tx_obj.txs_in:
+                """
+                print("input, {}".format(input))
+                """
+                for ii in  dir(input):
+                    try:
+                        print("input, {} {}".format(ii, getattr(input, ii, "-")))
+                    except Exception as ex:
+                        print (ex)
+                    try:
+                        print("input, {} {}".format(ii, getattr(input, ii, "-")()))
+                    except Exception as ex:
+                        print (ex)
+                        pass
+
 
         overview_tab.add_widget(overview_box)
         tabs.add_widget(overview_tab)
@@ -238,29 +239,45 @@ class TxDetailInfo(MDGridLayout):
         #inputs_tab.background_color = "#fafafa"
         inputs_box = MDBoxLayout()
         inputs_box.orientation = "vertical"
-        #inputs_box.background_color = "#fea0f0" #"#fafafa"
 
-        """
-        lbl1 = MDLabel(text ='Amount/total_in')
-        lbl1.text_color: "#000000"
-        lbl1.halign = "center"
-        lbl1.font_size = '24sp'
-        lbl1.theme_text_color = "Primary"
-        lbl1.valign = "top"
-        lbl1.bold = True
-        inputs_box.add_widget(lbl1)
-        """
 
         scroll_input_list = MDList(id="scroll_view_list")
         scroll_input_view = MDScrollView(scroll_input_list)
         scroll_input_view.minimum_height = self.height
+        for ii in  dir(signed_tx):
+            try:
+                print("signed_tx, {} {}".format(ii, getattr(signed_tx, ii, "-")))
+            except Exception as ex:
+                print (ex)
+                pass
+            try:
+                print("signed_tx, {} {}".format(ii, getattr(signed_tx, ii, "-")()))
+            except Exception as ex:
+                print (ex)
+                pass
+        """
+        """
         for input in signed_tx.txs_in:
+            """
+            print("input, {}".format(input))
+            """
+            for ii in  dir(input):
+                try:
+                    print("input, {} {}".format(ii, getattr(input, ii, "-")))
+                except Exception as ex:
+                    print (ex)
+                try:
+                    print("input, {} {}".format(ii, getattr(input, ii, "-")()))
+                except Exception as ex:
+                    print (ex)
+                    pass
+
             scroll_input_list.add_widget(
                 TwoLineIconListItem(
                     IconLeftWidget(
                         icon="arrow-right-circle-outline" # = UTXO was spent (empty)
                     ),
-                    text="{}".format(input),
+                    text="{}".format(input.bitcoin_address()),
                     secondary_text="secondary_text",
                 ))
         inputs_box.add_widget(scroll_input_view)
@@ -306,12 +323,13 @@ class TxDetailInfo(MDGridLayout):
         fee_box = MDBoxLayout()
         fee_box.orientation = "vertical"
         try:
-            fee = signed_tx.fee()
+            fee = signed_tx.total_in()  - signed_tx.total_out()
+            #fee = signed_tx.fee()
         except Exception as ex:
             fee = str(ex)
             print (ex)
         fee_lbl = MDLabel(text = "{}".format(fee)) #"{}..{}".format(signed_tx.as_hex()[:12], signed_tx.as_hex()[-12:]))
-        fee_lbl.text_color: "#000000"
+    #    fee_lbl.text_color: "#000000"
         fee_lbl.halign = "center"
         fee_lbl.valign = "top"
         fee_box.add_widget(fee_lbl)
@@ -325,7 +343,7 @@ class TxDetailInfo(MDGridLayout):
         raw_tx_hex_box.orientation = "vertical"
 
         raw_tx_hex_lbl = MDLabel(text = "{}..{}".format(signed_tx.as_hex()[:12], signed_tx.as_hex()[-12:]))
-        raw_tx_hex_lbl.text_color: "#000000"
+    #    raw_tx_hex_lbl.text_color: "#000000"
         raw_tx_hex_lbl.halign = "center"
         raw_tx_hex_lbl.font_name = "RobotoMono"
         raw_tx_hex_lbl.valign = "top"
@@ -338,12 +356,12 @@ class TxDetailInfo(MDGridLayout):
 
 
 
-def open_tx_preview_bottom_sheet(signed_tx, history=None, wallet=None):
+def open_tx_preview_bottom_sheet(bg_color, signed_tx, history=None, wallet=None):
     screen_box = MDBoxLayout()
     #screen_box.md_bg_color = "#fafafa"
     screen_box.orientation = "vertical"
     screen_box.size_hint_y = None
-    screen_box.add_widget(TxDetailInfo(signed_tx, history, wallet))
+    screen_box.add_widget(TxDetailInfo(bg_color, signed_tx, history, wallet))
 
     tx_btm_sheet = MDCustomBottomSheet(screen=screen_box)
     tx_btm_sheet.open()

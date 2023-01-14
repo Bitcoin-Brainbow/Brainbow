@@ -40,6 +40,7 @@ from connection import Connection
 from embit import bip32, bip39, bip85
 
 from utils import is_valid_address
+from utils import utxo_deduplication
 
 
 Chain = collections.namedtuple("Chain", ["netcode", "chain_1209k", "bip44"])
@@ -304,6 +305,13 @@ class Wallet:
             history.extend(filter(lambda t: t.is_spend, value["txns"]))
         history.sort(reverse=True, key=lambda h: int(time.mktime(h.timestamp.timetuple())))
         return history
+
+    def utxo_balance(self):
+        """ Accumulate all UTXO after deduplication. """
+        balance = Decimal(0)
+        for utxo in utxo_deduplication(self.utxos):
+            balance += Decimal(str(utxo.coin_value / Wallet.COIN))
+        return balance
 
     async def _get_history(self, txids: List[str]) -> List[Tx]:
         """ Coroutine. Returns a list of pycoin.tx.Tx objects
@@ -777,11 +785,13 @@ class Wallet:
         # Sort utxos based on current fee rate before coin selection
         self.utxos.sort(key=lambda utxo: utxo.coin_value, reverse=not is_high_fee)
 
-        # Collect enough utxos for this spend
-        # Add them to spent list and delete them from utxo list
+        # Collect enough UTXOs for this spend.
+        # Add them to spent list and delete them from UTXO list later.
         for i, utxo in enumerate(self.utxos):
             if total_out < amount + fee_highball:
                 self.spent_utxos.append(utxo)
+                #if utxo not in spendables: <--
+                #    spendables.append(utxo)
                 spendables.append(utxo)
                 in_addrs.add(utxo.address(self.chain.netcode))
                 del_indexes.append(i)
@@ -935,19 +945,34 @@ class Wallet:
                     would be consumed by braodcasting the Tx.
         :raise: Raises a base Exception if we can't afford the fee
         """
+        spend_all = amount == self.utxo_balance() # do we spend the full available balance?
+
         is_high_fee = Wallet.coinkb_to_satb(coin_per_kb) > 100
+
 
         # type: Tuple[Tx, Set[str], int]
         t1 = self._mktx(address, amount, is_high_fee, rbf=rbf)
         tx, in_addrs, chg_vout, del_utxo_candidates = t1
         t2 = self._get_fee(tx, coin_per_kb)  # type: Tuple[int, int]
         fee, tx_vsize = t2
-
+        print ("fee, tx_vsize: {} {}".format(fee, tx_vsize))
         decimal_fee = Decimal(str(fee)) / Wallet.COIN  # type: Decimal
         total_out = amount + decimal_fee
         if total_out > self.balance:
+            #if not spend_all:
             print("total_out {:.8f} = amount {:.8f} + decimal_fee {:.8f}".format(total_out, amount, decimal_fee))
             raise Exception("Insufficient funds.")
+            #else:
+            #    amount -= decimal_fee
+            #    print ("amount {}".format(amount))
+            #    # type: Tuple[Tx, Set[str], int]
+            #    t1 = self._mktx(address, amount, is_high_fee, rbf=rbf)
+            #    tx, in_addrs, chg_vout, del_utxo_candidates = t1
+            #    t2 = self._get_fee(tx, coin_per_kb)  # type: Tuple[int, int]
+            #    fee, tx_vsize = t2
+            #    print ("fee, tx_vsize: {} {}".format(fee, tx_vsize))
+            #    decimal_fee = Decimal(str(fee)) / Wallet.COIN  # type: Decimal
+            #    total_out = amount + decimal_fee
         logging.info("unsigned_tx {}".format(tx) )
         self._signtx(tx, in_addrs, fee)
 

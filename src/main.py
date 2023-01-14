@@ -19,6 +19,7 @@ from asyncio import sleep as asyncio_sleep
 import logging
 
 from decimal import Decimal
+from decimal import InvalidOperation as DecimalInvalidOperation
 
 
 from kivy.utils import platform
@@ -26,7 +27,10 @@ from kivy.core.window import Window
 
 from kivy.compat import unichr
 from kivy.metrics import dp
-from kivy.properties import NumericProperty, StringProperty, ObjectProperty
+from kivy.properties import NumericProperty
+from kivy.properties import StringProperty
+from kivy.properties import ObjectProperty
+from kivy.properties import BooleanProperty
 from kivy.uix.screenmanager import Screen
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.boxlayout import MDBoxLayout
@@ -97,7 +101,7 @@ top_blk = {'height', 0}
 
 
 
-__version__ = "0.1.145"
+__version__ = "0.1.146"
 
 if platform == "android":
     Window.softinput_mode = "below_target"
@@ -161,6 +165,7 @@ class PassphraseControlField(MDRelativeLayout):
 class QRScanAddressField(MDRelativeLayout):
     text = StringProperty()
     helper_text = StringProperty()
+    error = BooleanProperty()
 
 class UTXOListItem(TwoLineListItem):
     """ """
@@ -188,13 +193,14 @@ class BalanceListItem(TwoLineIconListItem):
     history = ObjectProperty()
     app = MDApp.get_running_app()
     def on_press(self):
-        print(self.history.as_dict)
+        print("self.history.as_dict() {}".format(self.history.as_dict()))
         print(self.history.value)
         print(dir(self.history.tx_obj))
-        open_tx_preview_bottom_sheet(self.history.tx_obj, self.history, app.wallet)
+        open_tx_preview_bottom_sheet(app.drawer_bg_color, self.history.tx_obj, self.history, app.wallet)
 
 
 class FloatInput(MDTextField):
+    hint_text = StringProperty()
     pat = re.compile('[^0-9]')
 
     def insert_text(self, substring, from_undo=False):
@@ -205,6 +211,12 @@ class FloatInput(MDTextField):
             s = '.'.join([re.sub(pat, '', s) for s in substring.split('.', 1)])
         return super(FloatInput, self).insert_text(s, from_undo=from_undo)
 
+
+class SpendAmount(MDRelativeLayout):
+    text = StringProperty()
+    #helper_text = StringProperty()
+    hint_text = StringProperty()
+    error = BooleanProperty()
 
 class BrainbowApp(MDApp):
     units = StringProperty()
@@ -730,17 +742,20 @@ class BrainbowApp(MDApp):
         netcode = self.chain.netcode
         is_valid = is_valid_address(addr, netcode)
         self.root.ids.address_input.error = not is_valid
+        print ("self.root.ids.address_input.error is {}".format(self.root.ids.address_input.error))
 
     def set_amount_error(self, amount):
-        _amount = Decimal(amount) if amount else Decimal("0")
-        is_valid = _amount / self.unit_factor <= self.wallet.balance
-        self.root.ids.spend_amount_input.error = not is_valid
+        try:
+            _amount = Decimal(amount) if amount else Decimal("0")
+            is_valid = _amount / self.unit_factor <= self.wallet.balance
+            self.root.ids.spend_amount_input.error = not is_valid
+        except DecimalInvalidOperation:
+            self.root.ids.spend_amount_input.text = "0"
+            self.root.ids.spend_amount_input.error = True
+        print ("self.root.ids.spend_amount_input.error is {}".format(self.root.ids.spend_amount_input.error))
 
     async def do_spend(self, address, amount, fee_rate):
-        self.spend_tuple = await self.wallet.spend(address,
-                                                    amount,
-                                                    fee_rate,
-                                                    rbf=self.rbf)
+        self.spend_tuple = await self.wallet.spend(address, amount, fee_rate, rbf=self.rbf)
 
     async def do_broadcast(self):
         if self.spend_tuple:
@@ -820,7 +835,7 @@ class BrainbowApp(MDApp):
         #    self.show_dialog("Transaction sent!", message)
         #else:
             #self.show_dialog("Transaction ready!", message)
-        self.tx_btm_sheet = open_tx_preview_bottom_sheet(signed_tx=tx)
+        self.tx_btm_sheet = open_tx_preview_bottom_sheet(self.drawer_bg_color, signed_tx=tx)
 
     def check_new_history(self):
         if self.wallet.new_history:
@@ -1152,7 +1167,7 @@ class BrainbowApp(MDApp):
             #else:
             units = self.units
         else:
-            if self.currency == "BTC":
+            if self.currency in ["BTC", "TBTC"]:
                 balance = "{:.8f}".format(self.wallet.balance)
             else:
                 balance = "{:.2f}".format(self.wallet.balance * self.get_rate())
@@ -1210,6 +1225,7 @@ class BrainbowApp(MDApp):
             print (ex)
             pass
 
+
     def update_utxo_screen(self):
         balance = Decimal(0)
         self.root.ids.utxoRecycleView.data_model.data = []
@@ -1231,12 +1247,19 @@ class BrainbowApp(MDApp):
                      }
             self.root.ids.utxoRecycleView.data_model.data.append(_utxo)
         self.update_addresses_screen()
-        print ("Computed balance: {}".format(balance))
+        print ("Computed Balance: {}".format(balance))
 
     def update_send_screen(self):
         self.root.ids.send_balance.text = \
-            "Available balance:\n" + self.balance_str()
+            "Available Balance:\n" + self.balance_str()
         self.root.ids.fee_input.text = str(self.current_fee)
+
+    def spend_all_UTXOs(self):
+        #val = self.unit_precision.format(hist.value * self.unit_factor)
+        utxo_balance = self.wallet.utxo_balance()
+        self.root.ids.spend_amount_input.text = "{}".format(utxo_balance)
+        self.root.ids.send_all_minus_fee.text = "Sending 'Available Balance - Miner Fee'"
+        print ("spend_all_UTXOs, self.root.ids.spend_amount_input.text = {} ".format(self.root.ids.spend_amount_input.text))
 
     def update_recieve_screen(self):
         address = self.update_recieve_qrcode()
@@ -1456,10 +1479,13 @@ class BrainbowApp(MDApp):
         if platform =='android':
             from android.permissions import request_permissions, Permission
             request_permissions([Permission.CAMERA])
-            request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
+            request_permissions([Permission.WAKE_LOCK])
+            #request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
 
             #from android_utils import dark_mode
             #self.is_darkmode = dark_mode()
+            from android_utils import android_setflag
+            android_setflag()
 
         self.is_darkmode = True # Force dark mode for all
 
@@ -1477,6 +1503,8 @@ class BrainbowApp(MDApp):
         #self.theme_cls.theme_style_switch_animation = True
         #self.theme_cls.theme_style_switch_animation_duration = 0.8
 
+        self.drawer_bg_color = self.root.ids.nav_drawer.md_bg_color
+        print("drawer_bg_color {}".format(self.drawer_bg_color))
         self.use_kivy_settings = False
         self.rbf = self.config.getboolean("brainbow", "rbf")
         self.units = self.config.get("brainbow", "units")
@@ -1581,6 +1609,16 @@ class BrainbowApp(MDApp):
             if tab and name == "main":
                 self.root.ids.main_tabs.switch_tab(tab, search_by="title")
 
+    def on_selected(self, instance_selection_list, instance_selection_item):
+        self.root.ids.toolbar.title = str(
+            len(instance_selection_list.get_selected_list_items())
+        )
+
+    def on_unselected(self, instance_selection_list, instance_selection_item):
+        if instance_selection_list.get_selected_list_items():
+            self.root.ids.toolbar.title = str(
+                len(instance_selection_list.get_selected_list_items())
+            )
 
 
 if __name__ == "__main__":
