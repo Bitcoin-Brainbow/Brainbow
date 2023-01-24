@@ -45,7 +45,7 @@
         hint_text: "Passphrase"
         write_tab: False
         required: True
-        font_size: '21sp'
+        #font_size: '21sp'
         on_text: app.check_entropy()
     MDIconButton:
         icon: "eye-off"
@@ -128,9 +128,8 @@ MDScreen:
                 MDFloatLayout:
                 Carousel:
                     id: caraousel
-                    use_pagination: True
-                    on_current_slide: app.current_slide(self.index)
                     MDFloatLayout:
+                        name: "onboarding_welcome"
                         FitImage:
                             source: "assets/dark-onboarding_00.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
@@ -158,12 +157,16 @@ MDScreen:
                             color: "#c9c9c9"
                             on_release: app.goto_slide('login')
                         MDLabel:
-                            text: "– of –"
+                            #text: "Swipe left for more."
+                            text: "SWIPE LEFT"
                             pos_hint: {"center_y": .055}
                             halign: "center"
-                            font_size: "14sp"
+                            font_size: "10sp"
                             color: "#c9c9c9"
+                    # ----------------------------------------------------------
+
                     MDFloatLayout:
+                        name: "onboarding_access"
                         Image:
                             source: "assets/dark-onboarding_10.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
@@ -192,13 +195,15 @@ MDScreen:
                             halign: "center"
                             color: "#c9c9c9"
                             on_release: app.goto_slide('login')
-                        MDLabel:
-                            text: "– of –"
-                            pos_hint: {"center_y": .055}
-                            halign: "center"
-                            font_size: "14sp"
-                            color: "#c9c9c9"
+                        # MDLabel:
+                        #     text: "Swipe left for more."
+                        #     pos_hint: {"center_y": .055}
+                        #     halign: "center"
+                        #     font_size: "12sp"
+                        #     color: "#c9c9c9"
+                    # ----------------------------------------------------------
                     MDFloatLayout:
+                        name: "onboarding_protect"
                         Image:
                             source: "assets/dark-onboarding_20.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
@@ -227,15 +232,15 @@ MDScreen:
                             halign: "center"
                             color: "#c9c9c9"
                             on_release: app.goto_slide('login')
-                        MDLabel:
-                            text: "– of –"
-                            pos_hint: {"center_y": .055}
-                            halign: "center"
-                            font_size: "14sp"
-                            color: "#c9c9c9"
-
+                        # MDLabel:
+                        #     text: "Swipe left for more."
+                        #     pos_hint: {"center_y": .055}
+                        #     halign: "center"
+                        #     font_size: "12sp"
+                        #     color: "#c9c9c9"
+                    # ----------------------------------------------------------
                     MDFloatLayout:
-                        name: "salt_is"
+                        name: "onboarding_salt"
                         Image:
                             source: "assets/dark-what-salt-is.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
@@ -267,14 +272,15 @@ MDScreen:
                             halign: "center"
                             color: "#c9c9c9"
                             on_release: app.goto_slide('login')
-                        MDLabel:
-                            text: "– of –"
-                            pos_hint: {"center_y": .055}
-                            halign: "center"
-                            font_size: "14sp"
-                            color: "#c9c9c9"
+                        # MDLabel:
+                        #     text: "Swipe left for more."
+                        #     pos_hint: {"center_y": .055}
+                        #     halign: "center"
+                        #     font_size: "12sp"
+                        #     color: "#c9c9c9"
                     # ----------------------------------------------------------
                     MDFloatLayout:
+                        name: "onboarding_passphrase"
                         Image:
                             source: "assets/dark-strong_passphrase.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
@@ -303,14 +309,16 @@ MDScreen:
                             halign: "center"
                             color: "#c9c9c9"
                             on_release: app.goto_slide('login')
-                        MDLabel:
-                            text: "– of –"
-                            pos_hint: {"center_y": .055}
-                            halign: "center"
-                            font_size: "14sp"
-                            color: "#c9c9c9"
+                        # MDLabel:
+                        #     text: "Swipe left for more."
+                        #     pos_hint: {"center_y": .055}
+                        #     halign: "center"
+                        #     font_size: "12sp"
+                        #     color: "#c9c9c9"
+                    # ----------------------------------------------------------
 
                     MDFloatLayout:
+                        name: "onboarding_unimitted_wallets"
                         Image:
                             source: "assets/dark-onboarding_unlimited_wallets.png"
                             pos_hint: {"center_x": .5, "center_y": .7}
@@ -334,101 +342,193 @@ MDScreen:
                         MDTextButton:
                             text: "SKIP AND CONNECT TO BITCOIN"
                             font_size: '18sp'
-                            text_color: "black"
                             pos_hint: {"center_x": .5, "center_y": .136}
                             halign: "center"
-                            color: "#c9c9c9"
                             on_release: app.goto_slide('login')
+
+                    # ----------------------------------------------------------
+                    MDFloatLayout:
+                        id: startup_my_electrum
+                        name: "startup_my_electrum"
+                        Image:
+                            source: "assets/dark-btc-own-node.png"
+                            pos_hint: {"center_x": .5, "center_y": .7}
+                            size_hint: .66, .66
+                            #size_hint: .42, .42
                         MDLabel:
-                            text: "– of –"
-                            pos_hint: {"center_y": .055}
+                            text: "[b]Electrum Server[/b]"
+                            markup: True
+                            pos_hint: {"center_y": .485}
                             halign: "center"
-                            font_size: "14sp"
-                            color: "#c9c9c9"
+                            font_size: "25sp"
+                            color: rgba(1, 3, 23, 225)
+                        MDTextField:
+                            size_hint_x: 0.85
+                            id: dropdown_electrum_field
+                            hint_text: "<protocol>://<hostname>:<port>"
+                            color_mode: "accent"
+                            write_tab: False
+                            required: False
+                            pos_hint: {"center_x": .5, "center_y": .38}
+                            font_size: '21sp'
+                            on_text: app.validate_electrum_settings()
+                            on_text: if self.focus: app.electrum_select.dismiss()
+                            on_focus: if self.focus: app.electrum_select.open()
+                        MDLabel:
+                            margin: "8dp"
+                            pos_hint: {"center_y": .22}
+                            opacity: 0.95
+                            halign: 'center'
+                            font_size: '16sp'
+                            text: "Brainbow connects to the given Electrum Server.\n\nWhen using a preset, Brainbow connects to a\npublic server that can view your transactions."
+                        MDTextButton:
+                            text: "SKIP AND CONNECT TO BITCOIN"
+                            font_size: '18sp'
+                            pos_hint: {"center_x": .5, "center_y": .081}
+                            halign: "center"
+                            on_release: app.goto_slide('login')
+                    # ------------------
 
+                    MDFloatLayout:
+                        name: "testnet_or_not"
+                        Image:
+                            source: "assets/dark-playground.png"
+                            pos_hint: {"center_x": .5, "center_y": .7}
+                            size_hint: .66, .66
+                            #size_hint: .42, .42
+                        MDLabel:
+                            text: "[b]Testnet Playground[/b]"
+                            markup: True
+                            pos_hint: {"center_y": .485}
+                            halign: "center"
+                            font_size: "25sp"
+                            color: rgba(1, 3, 23, 225)
+                        MDSwitch:
+                            active: True
+                            size_hint: None, None
+                            size: "48dp", "48dp"
+                            pos_hint: {"center_x": .5, "center_y": .4}
+                            on_active: app.testnet_on_off_switch(*args)
+                        MDLabel:
+                            margin: "8dp"
+                            pos_hint: {"center_y": .225}
+                            opacity: 0.95
+                            halign: 'center'
+                            font_size: '16sp'
+                            text: "By disabling 'Testnet', Brainbow will\noperate using valuable bitcoin and\nconnect to the Bitcoin mainnet.\n\nDon't be reckless!"
+                        MDTextButton:
+                            text: "SKIP AND CONNECT TO BITCOIN"
+                            font_size: '18sp'
+                            pos_hint: {"center_x": .5, "center_y": .081}
+                            halign: "center"
+                            on_release: app.goto_slide('login')
 
+                    # ----------------------------------------------------------
+                    MDFloatLayout:
+                        name: "onboarding_logoff"
+                        Image:
+                            source: "assets/dark-when-you-go.png"
+                            pos_hint: {"center_x": .5, "center_y": .7}
+                            size_hint: .66, .66
+                            #size_hint: .42, .42
+                        MDLabel:
+                            text: "[b]When leaving Brainbow[/b]"
+                            markup: True
+                            #pos_hint: {"center_y": .58}
+                            pos_hint: {"center_y": .485}
+                            halign: "center"
+                            font_size: "25sp"
+                            color: rgba(1, 3, 23, 225)
+                        MDLabel:
+                            margin: "8dp"
+                            pos_hint: {"center_y": .34}
+                            opacity: 0.95
+                            halign: 'center'
+                            font_size: '16sp'
+                            text: "\nAll secret information are gone. Same is true\nfor your bitcoin, if you forget your credentials. \n\nYou will have to reconnect and reload the\nwallet using your salt and passphrase\nor a BIP39 mnemonic next time.\n\nNO CREDENTIALS, NO COINS! "
+                        MDTextButton:
+                            text: "SKIP AND CONNECT TO BITCOIN"
+                            font_size: '18sp'
+                            pos_hint: {"center_x": .5, "center_y": .081}
+                            halign: "center"
+                            on_release: app.goto_slide('login')
+                    # ----------------------------------------------------------
                     MDFloatLayout:
                         name: "login"
                         id: id_login
-                        AnchorLayout:
-                            MDBoxLayout:
-                                size_hint: 0.8, 0.55 # 0.8, 0.55
-                                spacing: 3
-                                orientation: "vertical"
-                                MDTextField:
-                                    id: email_field
-                                    hint_text: "Email/Username/Salt"
-                                    color_mode: "accent"
-                                    write_tab: False
-                                    required: True
-                                    font_size: '21sp'
-                                PassphraseControlField:
-                                    id: pass_field
-                                MDTextField:
-                                    id: confirm_field
-                                    hint_text: "Repeat Passphrase"
-                                    color_mode: "accent"
-                                    write_tab: False
-                                    password: True
-                                    required: True
-                                    font_size: '21sp'
-                                    on_text: app.check_entropy()
-                                #BoxLayout:
-                                #    MDCheckbox:
-                                #        id: use_multisig
-                                #        size_hint: None, None
-                                #        size:  dp(33), dp(33)
-                                #    MDLabel:
-                                #        text: "2-of-3 multisig wallet"
-                                #        theme_text_color: "Primary"
-                                #        font_style:"Caption"
-                                #        size_hint_y: None
-                                #        height: dp(36)
-                                MDLabel:
-                                    id: passphrase_hint
-                                    text: "WARNING: Use a better passphrase!"
-                                    halign: "center"
-                                    font_size: "14sp"
-                                    color: "#ff0000"
-                                MDProgressBar:
-                                    id: pass_progress
-                                    value: 0
-                                    max: 128
-                                    size_hint_y:None
-                                    height:dp(4)
-                                    color: "#ff0000"
-                                BoxLayout:
-                                    MDCheckbox:
-                                        id: bech32_checkbox
-                                        size_hint: None, None
-                                        size:  dp(33), dp(33)
-                                        opacity: 0
-                                        active: False
-                                        disabled: True #  bech32 implementation seems broken right now. not sure if it ever worked
-                                MDRaisedButton:
-                                    size_hint_x: 1
-                                    text: "Let's get started"
-                                    id: login_button
-                                    md_bg_color: "#252525"
-                                    on_release: app.login()
-                                    font_size: '18sp'
+                        Image:
+                            source: "assets/dark-onboarding_10.png"
+                            pos_hint: {"center_x": .5, "center_y": .7}
+                            size_hint: .66, .66
+                        MDLabel:
+                            text: "[b]Connect using credentials[/b]"
+                            markup: True
+                            pos_hint: {"center_y": .485}
+                            halign: "center"
+                            font_size: "25sp"
+                            color: rgba(1, 3, 23, 225)
+                        BoxLayout:
+                            size_hint: 0.85, .465
+                            pos_hint: {"center_x": .5, }
+                            orientation: "vertical"
+                            MDTextField:
+                                id: email_field
+                                hint_text: "Salt / Email / Username"
+                                color_mode: "accent"
+                                write_tab: False
+                                required: True
+                                pos_hint: {"center_y": .435}
+                            PassphraseControlField:
+                                id: pass_field
+                                pos_hint: {"center_y": .370}
+                            MDTextField:
+                                id: confirm_field
+                                hint_text: "Repeat Passphrase"
+                                color_mode: "accent"
+                                write_tab: False
+                                password: True
+                                required: True
+                                on_text: app.check_entropy()
+                                pos_hint: {"center_y": .305}
+                            MDLabel:
+                                id: passphrase_hint
+                                text: ""
+                                halign: "center"
+                                font_size: "12sp"
+                                color: "#ff0000"
+                            MDProgressBar:
+                                id: pass_progress
+                                value: 0
+                                max: 128
+                                size_hint_y:None
+                                height:dp(4)
+                                color: "#ff0000"
+                            MDRaisedButton:
+                                size_hint_x: 1
+                                text: "Let's get started"
+                                id: login_button
+                                md_bg_color: "#252525"
+                                on_release: app.login()
+                                font_size: '18sp'
+                            BoxLayout:
+                                MDCheckbox:
+                                    id: bech32_checkbox
+                                    size_hint: None, None
+                                    size:  dp(33), dp(33)
+                                    opacity: 0
+                                    active: False
+                                    disabled: True #  bech32 implementation seems broken right now. not sure if it ever worked
 
-                                MDLabel:
-                                    size: self.size
-                                    opacity: 0.85
-                                    halign: 'center'
-                                    font_size: '12sp'
-                                    pos_hint: {"center_x": .5, "center_y": .115}
-                                    text: ""#– OR –"
+                            MDTextButton:
+                                text: "Use BIP39 Mnemonic instead".upper()
+                                font_size: '18sp'
+                                halign: "center"
+                                pos_hint: {"center_x": .5, "center_y": .1}
+                                on_release: app.goto_slide('login_with_bip39')
+                            MDLabel:
+                                text: "\n" # placeholder string
 
-                                MDTextButton:
-                                    text: "Use BIP39 Mnemonic instead".upper()
-                                    font_size: '18sp'
-                                    text_color: "black"
-                                    halign: "center"
-                                    pos_hint: {"center_x": .5, "center_y": .1}
-                                    color: "#c9c9c9"
-                                    on_release: app.goto_slide('login_with_bip39')
+                            # ----------------------------------------------------------
 
                                 #MDLabel:
                                 #    size: self.size
@@ -439,9 +539,21 @@ MDScreen:
                     MDFloatLayout:
                         name: "login_with_bip39"
                         id: id_login_with_bip39
+                        Image:
+                            source: "assets/dark-use-bip39.png"
+                            pos_hint: {"center_x": .5, "center_y": .7}
+                            size_hint: .66, .66
+                            #size_hint: .42, .42
+                        MDLabel:
+                            text: "[b]Connect using mnemonic[/b]"
+                            markup: True
+                            pos_hint: {"center_y": .485}
+                            halign: "center"
+                            font_size: "25sp"
+                            color: rgba(1, 3, 23, 225)
                         AnchorLayout:
                             BoxLayout:
-                                size_hint: 0.8, 0.55 # 0.55
+                                size_hint: 0.85, .5
                                 spacing: 3
                                 orientation: "vertical"
                                 MDTextField:
@@ -449,8 +561,8 @@ MDScreen:
                                     hint_text: "BIP39 Mnemonic (12 or 24 words)"
                                     color_mode: "accent"
                                     write_tab: False
+                                #    font_size: '21sp'
                                     required: False
-                                    font_size: '21sp'
                                 ##PassphraseControlField:
                                 ##    id: pass_field
                                 #MDTextField:
@@ -481,73 +593,52 @@ MDScreen:
                                     font_size: '18sp'
 
 
-                    MDFloatLayout:
-                        name: "startup_offline_mode"
-                        Image:
-                            source: "assets/dark-online.png"
-                            id: startup_offline_mode_image_source
-                            pos_hint: {"center_x": .5, "center_y": .7}
-                            size_hint: .66, .66
-                            #size_hint: .42, .42
-                        MDLabel:
-                            text: "[b]Offline Mode[/b]"
-                            markup: True
-                            pos_hint: {"center_y": .485}
-                            halign: "center"
-                            font_size: "25sp"
-                            color: rgba(1, 3, 23, 225)
-                        MDSwitch:
-                            size_hint: None, None
-                            size: "48dp", "48dp"
-                            pos_hint: {"center_x": .5, "center_y": .4}
-                            on_active: app.on_offline_switch_active(*args)
-                        MDLabel:
-                            margin: "8dp"
-                            pos_hint: {"center_y": .3}
-                            opacity: 0.95
-                            halign: 'center'
-                            font_size: '16sp'
-                            text: "By enabling 'Offline Mode', Brainbow does\nnot establish any network connections."
-                        MDLabel:
-                            text: "m of n"
-                            pos_hint: {"center_y": .055}
-                            halign: "center"
-                            font_size: "14sp"
-                            color: "#c9c9c9"
 
-                    MDFloatLayout:
-                        name: "startup_my_electrum"
-                        Image:
-                            source: "assets/dark-btc-own-node.png"
-                            pos_hint: {"center_x": .5, "center_y": .7}
-                            size_hint: .66, .66
-                            #size_hint: .42, .42
-                        MDLabel:
-                            text: "[b]Private Electurm Server[/b]"
-                            markup: True
-                            pos_hint: {"center_y": .485}
-                            halign: "center"
-                            font_size: "25sp"
-                            color: rgba(1, 3, 23, 225)
-                        MDSwitch:
-                            size_hint: None, None
-                            size: "48dp", "48dp"
-                            pos_hint: {"center_x": .5, "center_y": .4}
 
-                        MDLabel:
-                            margin: "8dp"
-                            pos_hint: {"center_y": .225}
-                            opacity: 0.95
-                            halign: 'center'
-                            font_size: '16sp'
-                            text: "By enabling 'Private Electurm Server', Brainbow\nwill connect to the given Electrum Server only.\n\nWhen disabled, Brainbow connects to a random\npublic server that can see your transactions."
+                    # ----------------------------------------------------------
 
-                        MDLabel:
-                            text: "m of n"
-                            pos_hint: {"center_y": .055}
-                            halign: "center"
-                            font_size: "14sp"
-                            color: "#c9c9c9"
+
+                            # ----------------------------------------------------------
+
+
+                    # MDFloatLayout:
+                    #     name: "startup_offline_mode"
+                    #     Image:
+                    #         source: "assets/dark-online.png"
+                    #         id: startup_offline_mode_image_source
+                    #         pos_hint: {"center_x": .5, "center_y": .7}
+                    #         size_hint: .66, .66
+                    #         #size_hint: .42, .42
+                    #     MDLabel:
+                    #         text: "[b]Offline Mode[/b]"
+                    #         markup: True
+                    #         pos_hint: {"center_y": .485}
+                    #         halign: "center"
+                    #         font_size: "25sp"
+                    #         color: rgba(1, 3, 23, 225)
+                    #     MDSwitch:
+                    #         size_hint: None, None
+                    #         size: "48dp", "48dp"
+                    #         pos_hint: {"center_x": .5, "center_y": .4}
+                    #         on_active: app.on_offline_switch_active(*args)
+                    #     MDLabel:
+                    #         margin: "8dp"
+                    #         pos_hint: {"center_y": .3}
+                    #         opacity: 0.95
+                    #         halign: 'center'
+                    #         font_size: '16sp'
+                    #         text: "By enabling 'Offline Mode', Brainbow does\nnot establish any network connections."
+                    #     MDLabel:
+                    #         text: "Swipe left for advanced features."
+                    #         pos_hint: {"center_y": .055}
+                    #         halign: "center"
+                    #         font_size: "12sp"
+                    #         color: "#c9c9c9"
+                    # ----------------------------------------------------------
+
+
+
+                    # ----------------------------------------------------------
 
 
 
@@ -561,14 +652,14 @@ MDScreen:
                 MDTabs
                     tab_display_mode: "icons"
                     on_tab_switch: app.give_current_tab_name(*args)
-                    #on_slide_progress: print('hello')
-                    #background_color: "#4d4d4d"
                     background_color: "#343432"
-                #    underline_color: "#f7931a"
+                    indicator_color: [0.97, 0.58, 0.10, 1.0] # #f7931a bitcoin orange
                     tab_bar_height:  dp(52)
                     id: main_tabs
                     Tab:
                         name: "balance"
+                        text_color_active:  "#ff3432"
+                        id: main_tabs_balance
                         title: "TRANSACTIONS"
                         title_icon_mode: "Top"
                         icon: "database-check"
@@ -983,23 +1074,34 @@ MDScreen:
                     title: "Brainbow"
                     text: "(no active wallet)"
                     text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     id: active_wallet_alias
                     padding: "12dp", 0, 0, "56dp"
 
                 MDNavigationDrawerItem:
                     icon: "database-import"
                     text: "Receive"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     on_release: app.goto_screen('main', 'RECEIVE')
 
                 MDNavigationDrawerItem:
                     icon: "database-export"
                     text: "Send"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     on_release: app.goto_screen('main', 'SEND')
 
                 MDNavigationDrawerItem:
                     icon: "database-check"
                     right_text: ""
-                    text_right_color: "#4a4939"
+                    text_right_color: "#c9c9c9"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     text: "Transactions"
                     id: nav_drawer_item_transactions
                     on_release: app.goto_screen('main', 'TRANSACTIONS')
@@ -1017,16 +1119,25 @@ MDScreen:
 
                 MDNavigationDrawerItem:
                     icon: "map-marker-multiple"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     text: "Receive Addresses"
                     on_release: app.goto_screen('main', 'RECEIVE ADDRESSES')
 
                 MDNavigationDrawerItem:
                     icon: "map-marker-multiple-outline"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     text: "Change Addresses"
                     on_release: app.goto_screen('main', 'CHANGE ADDRESSES')
 
                 MDNavigationDrawerItem:
                     icon: "database-marker"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     text: "UTXOs (Coins)"
                     on_release: app.goto_screen('main', "UTXOs (Coins)")
 
@@ -1041,6 +1152,9 @@ MDScreen:
                 MDNavigationDrawerDivider:
 
                 MDNavigationDrawerLabel:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     text: "Current Session and State"
 
                 #MDNavigationDrawerLabel:
@@ -1066,12 +1180,18 @@ MDScreen:
 
                 MDNavigationDrawerItem:
                     icon: "counter"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     text: "Block Height"
                     on_release: app.load_blockheight_view()
 
 
                 MDNavigationDrawerItem:
                     icon: "cash-100"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     text: "Live Exchange Rates"
                     on_release: app.load_exchangerate_view()
 
@@ -1079,25 +1199,40 @@ MDScreen:
 
 
                 MDNavigationDrawerLabel:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     text: "Wallet Information and Export"
 
                 MDNavigationDrawerItem:
                     icon: "database-arrow-down-outline"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     text: "Extended Public Key"
                     on_release: app.load_pubkey_view()
 
                 MDNavigationDrawerItem:
                     icon: "database-arrow-down"
                     text: "Wallet Import Format"
+                    icon_color: "#c9c9c9"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     on_release: app.load_seed_view()
 
                 MDNavigationDrawerItem:
                     icon: "database-arrow-down"
+                    icon_color: "#c9c9c9"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     text: "BIP39 Mnemonic"
                     on_release: app.load_bip39_mnemonic_view()
 
                 MDNavigationDrawerItem:
                     icon: "database-off"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon_color: "#c9c9c9"
                     text: "Disconnet Wallet and Exit"
                     on_release: app.logoff()
 
@@ -1105,9 +1240,9 @@ MDScreen:
 
                 MDNavigationDrawerLabel:
                     id: active_wallet_version
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     text: ""
-
-
 
     MDNavigationLayout:
         MDNavigationDrawer:
@@ -1117,48 +1252,87 @@ MDScreen:
             radius: (0, 0, 0, 0)
             MDNavigationDrawerMenu:
                 MDNavigationDrawerHeader:
+                    text_color: "#c9c9c9"
                     title: "Brainbow"
                     text: "On-boarding"
-                    padding: "12dp", 0, 0, "56dp"
+                    padding: "12dp", 0, 0, "6dp"
                 MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     text: "Welcome to Brainbow"
-                    on_release: pass
+                    on_release: app.goto_slide('onboarding_welcome')
                 MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     text: "Access your wallet"
-                    on_release: pass
+                    on_release: app.goto_slide('onboarding_access')
                 MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     text: "Protect your wallet"
-                    on_release: pass
+                    on_release: app.goto_slide('onboarding_protect')
                 MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     text: "What salt is"
-                    text_color: "#000000"
-                    on_release: app.goto_slide('salt_is')
+                    on_release: app.goto_slide('onboarding_salt')
                 MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     text: "What a passphrase is"
-                    on_release: pass
+                    on_release: app.goto_slide('onboarding_passphrase')
                 MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     text: "Unlimited wallets"
-                    on_release: pass
+                    on_release: app.goto_slide('onboarding_unimitted_wallets')
+
+                MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    text: "When leaving Brainbow"
+                    on_release: app.goto_slide('onboarding_logoff')
+
                 MDNavigationDrawerDivider:
                 MDNavigationDrawerLabel:
-                    text: "Wallet Access"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    text: "Access your wallet"
+
                 MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     icon: "form-textbox-password"
                     text: "Connect to Bitcoin"
                     on_release: app.goto_slide('login')
                 MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     icon: "format-columns"
                     text: "Use BIP39 Mnemonic"
                     on_release: app.goto_slide('login_with_bip39')
                 MDNavigationDrawerDivider:
                 MDNavigationDrawerLabel:
-                    text: "Advanced Settings"
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    text: "Options and settings"
+                #MDNavigationDrawerItem:
+                #    icon: "toggle-switch-off"
+                #    text: "Offline Mode"
                 MDNavigationDrawerItem:
-                    icon: "toggle-switch-off"
-                    text: "Offline Mode"
-                MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     icon: "toggle-switch-off"
                     text: "Private Electrum Server"
+                    on_release: app.goto_slide('startup_my_electrum')
                 MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
+                    icon: "toggle-switch-off"
+                    text: "Testnet Playground"
+                    on_release: app.goto_slide('testnet_or_not')
+                MDNavigationDrawerItem:
+                    text_color: "#c9c9c9"
+                    selected_color: [0.97, 0.58, 0.10, 1.0]
                     icon: "toggle-switch-off"
                     text: "Live Exchange Rates"

@@ -11,8 +11,7 @@ from embit import bech32 as embit_bech32
 
 from decimal import Decimal
 
-BLOCK_CYPHER_TOKEN = "2ae45fa90753473bb2b40c56f062bf80"
-BLOCK_CYPHER_COIN = 'btc-testnet' # 'btc' #
+
 
 from typing import (
     Tuple, List, Set, Dict, KeysView, Any,
@@ -24,6 +23,9 @@ from pycoin.tx.Tx import Tx
 tx = Tx.from_hex(hextx)
 
 """
+
+def format_txid(txid):
+    return "{}...{}".format(txid[:11], txid[-11:])
 
 def is_valid_address(addr, netcode):
     """

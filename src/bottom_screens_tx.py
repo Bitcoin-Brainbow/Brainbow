@@ -16,15 +16,24 @@ from kivymd.app import MDApp
 
 from kivymd.uix.scrollview import MDScrollView
 from kivymd.uix.list import TwoLineIconListItem
+from kivymd.uix.list import TwoLineListItem
 from kivymd.uix.list import TwoLineAvatarIconListItem
 from kivymd.uix.list import IconLeftWidget
 from kivymd.uix.list import IconRightWidget
 
 from kivymd.uix.list import MDList
 
+from kivy.properties import StringProperty
+#from kivy.properties import ObjectProperty
 
+class TXOTwoLineListItem(TwoLineListItem):
+    txid = StringProperty()
 
 from kivy_utils import open_url
+
+
+from utils import format_txid
+from decimal import Decimal
 
 
 class BroadcastButton(MDRaisedButton):
@@ -80,7 +89,7 @@ class DetailTab(MDFloatLayout, MDTabsBase):
 
 
 class TxDetailInfo(MDGridLayout):
-    def __init__(self, bg_color, signed_tx, history=None, wallet=None, **var_args):
+    def __init__(self, bg_color, tx, history, wallet, **var_args):
         super(TxDetailInfo, self).__init__(**var_args)
         in_out_sats_tx_value = 0.0
 
@@ -106,44 +115,45 @@ class TxDetailInfo(MDGridLayout):
 
         tabs = MDTabs()
         tabs.background_color = bg_color
-    #    tabs.text_color_normal = "#000000"
-    #    tabs.text_color_active = "#000000"
+        tabs.indicator_color = [0.97, 0.58, 0.10, 1.0] # #f7931a bitcoin orange
 
 
         overview_tab = DetailTab(title="OVERVIEW")
         overview_tab.background_color = bg_color
-
-        txid = signed_tx.id()
-        txid_short = "{}..{}".format(txid[:13], txid[-13:])
+        if type(tx) == type(""):
+            txid = tx # an txid was passed
+        else:
+            txid = tx.id()
+        txid_short = format_txid(txid)
+        stored_tx = wallet.history_store.get_tx(txid)
 
         overview_box = MDBoxLayout()
         overview_box.orientation = "vertical"
         overview_box.background_color = bg_color
 
-        lbl1 = MDLabel(text ='Amount')
-    #    lbl1.text_color: "#000000"
-        lbl1.halign = "center"
-        lbl1.font_size = '24sp'
-        lbl1.theme_text_color = "Primary" #color: "#000000"
-        lbl1.valign = "top"
-        lbl1.bold = True
-        overview_box.add_widget(lbl1)
+        if False:
+            lbl1 = MDLabel(text ='Amount')
+        #    lbl1.text_color: "#000000"
+            lbl1.halign = "center"
+            lbl1.font_size = '24sp'
+            lbl1.theme_text_color = "Primary" #color: "#000000"
+            lbl1.valign = "top"
+            lbl1.bold = True
+            overview_box.add_widget(lbl1)
 
+            lbl2 = MDLabel(text = "{} sats or {} USD".format(in_out_sats_tx_value, "" ))
+        #    lbl2.text_color: "#000000"
+            lbl2.halign = "center"
+            #lbl2.font_name = "RobotoMono"
+            lbl2.valign = "top"
+            overview_box.add_widget(lbl2)
 
-
-        lbl2 = MDLabel(text = "{} sats or {} USD".format(in_out_sats_tx_value, "0.00" ))
-    #    lbl2.text_color: "#000000"
-        lbl2.halign = "center"
-        #lbl2.font_name = "RobotoMono"
-        lbl2.valign = "top"
-        overview_box.add_widget(lbl2)
-
-        #lbl3 = MDLabel(text = "{} {}".format("", "USD"))
-        #lbl3.text_color: "#000000"
-        #lbl3.halign = "center"
-        #lbl3.font_name = "RobotoMono"
-        #lbl3.valign = "top"
-        #overview_box.add_widget(lbl3)
+            #lbl3 = MDLabel(text = "{} {}".format("", "USD"))
+            #lbl3.text_color: "#000000"
+            #lbl3.halign = "center"
+            #lbl3.font_name = "RobotoMono"
+            #lbl3.valign = "top"
+            #overview_box.add_widget(lbl3)
 
 
         lbl12 = MDLabel(text ='Transaction ID')
@@ -215,27 +225,11 @@ class TxDetailInfo(MDGridLayout):
             btn_box.add_widget(explorer_btn)
             overview_box.add_widget(btn_box)
 
-            for input in history.tx_obj.txs_in:
-                """
-                print("input, {}".format(input))
-                """
-                for ii in  dir(input):
-                    try:
-                        print("input, {} {}".format(ii, getattr(input, ii, "-")))
-                    except Exception as ex:
-                        print (ex)
-                    try:
-                        print("input, {} {}".format(ii, getattr(input, ii, "-")()))
-                    except Exception as ex:
-                        print (ex)
-                        pass
-
-
         overview_tab.add_widget(overview_box)
         tabs.add_widget(overview_tab)
 
         # Tab Inputs
-        inputs_tab = DetailTab(title="Inputs/UTXOs")
+        inputs_tab = DetailTab(title="INPUTS")
         #inputs_tab.background_color = "#fafafa"
         inputs_box = MDBoxLayout()
         inputs_box.orientation = "vertical"
@@ -244,65 +238,70 @@ class TxDetailInfo(MDGridLayout):
         scroll_input_list = MDList(id="scroll_view_list")
         scroll_input_view = MDScrollView(scroll_input_list)
         scroll_input_view.minimum_height = self.height
-        for ii in  dir(signed_tx):
-            try:
-                print("signed_tx, {} {}".format(ii, getattr(signed_tx, ii, "-")))
-            except Exception as ex:
-                print (ex)
-                pass
-            try:
-                print("signed_tx, {} {}".format(ii, getattr(signed_tx, ii, "-")()))
-            except Exception as ex:
-                print (ex)
-                pass
-        """
-        """
-        for input in signed_tx.txs_in:
-            """
-            print("input, {}".format(input))
-            """
-            for ii in  dir(input):
-                try:
-                    print("input, {} {}".format(ii, getattr(input, ii, "-")))
-                except Exception as ex:
-                    print (ex)
-                try:
-                    print("input, {} {}".format(ii, getattr(input, ii, "-")()))
-                except Exception as ex:
-                    print (ex)
-                    pass
 
-            scroll_input_list.add_widget(
-                TwoLineIconListItem(
-                    IconLeftWidget(
-                        icon="arrow-right-circle-outline" # = UTXO was spent (empty)
-                    ),
-                    text="{}".format(input.bitcoin_address()),
-                    secondary_text="secondary_text",
-                ))
+        app = MDApp.get_running_app()
+        def sats2btc(val):
+            return "{:.8f} {}".format(Decimal(coin_value) / 100000000, app.units)
+
+        if stored_tx:
+            for input in stored_tx.get('txs_in', []):
+                previous_txo = input.get('previous_txo', None)
+                if previous_txo:
+                    address = previous_txo.get('address', "(unknown)")
+                    coin_value = previous_txo.get('coin_value', "(unknown)")
+                else:
+                    address = "(unknown)"
+                    coin_value = "(unknown)"
+                if coin_value != "(unknown)":
+                    coin_value = sats2btc(coin_value)
+                previous_hash = input.get('previous_hash', None)
+                previous_index = input.get('previous_index', "(unknown)")
+                scroll_input_list.add_widget(
+                    #TwoLineIconListItem(
+                    #    IconLeftWidget(
+                    #        icon="arrow-right-circle-outline" # = UTXO was spent (empty)
+                    #    ),
+                    TwoLineListItem(
+                        text = coin_value,
+                        secondary_text = address,
+                        tertiary_text = "{}:{}".format(
+                            format_txid(previous_hash),
+                            previous_index),
+                        #on_release = app.open_txi_menu_items
+                    )
+                )
         inputs_box.add_widget(scroll_input_view)
-        """
-        print(signed_tx.total_in)
-        lbl2x = MDLabel(text = "Total Inputs: {}".format(len(signed_tx.txs_in)))
-        lbl2x.text_color: "#000000"
-        lbl2x.halign = "center"
-        #lbl2.font_name = "RobotoMono"
-        lbl2x.valign = "top"
-        inputs_box.add_widget(lbl2x)
-        """
+
 
 
         inputs_tab.add_widget(inputs_box)
         tabs.add_widget(inputs_tab)
 
         # Tab Outputs
-        outputs_tab = DetailTab(title="Outputs")
+        outputs_tab = DetailTab(title="OUTPUTS")
         outputs_box = MDBoxLayout()
         outputs_box.orientation = "vertical"
 
         scroll_output_list = MDList(id="scroll_output_list")
         scroll_output_view = MDScrollView(scroll_output_list)
         scroll_output_view.minimum_height = self.height
+
+        if stored_tx:
+            for tx_out in stored_tx.get('txs_out', []):
+                coin_value = tx_out.get('coin_value', "(unknown)")
+                if coin_value != "(unknown)":
+                    coin_value = sats2btc(coin_value)
+
+                scroll_output_list.add_widget(
+                    #TwoLineAvatarIconListItem(
+                    TXOTwoLineListItem(
+                        text=coin_value,
+                        secondary_text=str(tx_out.get('address', "(unknown)")),
+                        txid=txid,
+                        on_release = app.open_txo_menu_items
+                    )
+                )
+        """
         for tx_out in signed_tx.txs_out:
             #print(dir(tx_out))
             scroll_output_list.add_widget(
@@ -314,63 +313,59 @@ class TxDetailInfo(MDGridLayout):
                     text=str(tx_out.address(netcode="XTN")),
                     secondary_text=str(tx_out.coin_value/100000000.),
                     ))
+        """
         outputs_box.add_widget(scroll_output_view)
         outputs_tab.add_widget(outputs_box)
         tabs.add_widget(outputs_tab)
 
-        # Tab Fee
-        fee_tab = DetailTab(title="Miner Fee")
-        fee_box = MDBoxLayout()
-        fee_box.orientation = "vertical"
-        try:
-            fee  =   str("n/a")   
-            try:
-                print ("history.value - signed_tx.total_out() {}".format(history.value - signed_tx.total_out()))
-            except Exception as ex:
-                fee = str("n/a")
-                print (ex)
-            try:
-                fee = signed_tx.fee()
-            except:
-                pass
-
-        except Exception as ex:
-            fee = str("n/a")
-            print (ex)
-        fee_lbl = MDLabel(text = "{}".format(fee)) #"{}..{}".format(signed_tx.as_hex()[:12], signed_tx.as_hex()[-12:]))
-    #    fee_lbl.text_color: "#000000"
-        fee_lbl.halign = "center"
-        fee_lbl.valign = "top"
-        fee_box.add_widget(fee_lbl)
-
-        fee_tab.add_widget(fee_box)
-        tabs.add_widget(fee_tab)
-
-        # Raw hex
-        raw_tx_hex_tab = DetailTab(title="Raw Transaction")
-        raw_tx_hex_box = MDBoxLayout()
-        raw_tx_hex_box.orientation = "vertical"
-
-        raw_tx_hex_lbl = MDLabel(text = "{}..{}".format(signed_tx.as_hex()[:12], signed_tx.as_hex()[-12:]))
-    #    raw_tx_hex_lbl.text_color: "#000000"
-        raw_tx_hex_lbl.halign = "center"
-        raw_tx_hex_lbl.font_name = "RobotoMono"
-        raw_tx_hex_lbl.valign = "top"
-        raw_tx_hex_box.add_widget(raw_tx_hex_lbl)
-
-        raw_tx_hex_tab.add_widget(raw_tx_hex_box)
-        tabs.add_widget(raw_tx_hex_tab)
+        # # Tab Fee
+        # fee_tab = DetailTab(title="Miner Fee")
+        # fee_box = MDBoxLayout()
+        # fee_box.orientation = "vertical"
+        # try:
+        #     fee = signed_tx.fee()
+        # except Exception as ex:
+        #     fee  =  str("(unknown)")
+        #     print (ex)
+        # fee_lbl = MDLabel(text = "{}".format(fee))
+        #
+        # fee_lbl.halign = "center"
+        # fee_lbl.valign = "top"
+        # fee_box.add_widget(fee_lbl)
+        #
+        # fee_tab.add_widget(fee_box)
+        # tabs.add_widget(fee_tab)
+        #
+        # # Raw hex
+        # raw_tx_hex_tab = DetailTab(title="Raw Transaction")
+        # raw_tx_hex_box = MDBoxLayout()
+        # raw_tx_hex_box.orientation = "vertical"
+        #
+        # hextx = stored_tx.get('stored_tx', None)
+        # if hextx:
+        #     hextxtext = "{}...{}".format(hextx[:10], hextx[-10:])
+        # else:
+        #     hextxtext = "(unknown)"
+        #
+        # raw_tx_hex_lbl = MDLabel(text = hextxtext)
+        #
+        # raw_tx_hex_lbl.halign = "center"
+        # raw_tx_hex_lbl.font_name = "RobotoMono"
+        # raw_tx_hex_lbl.valign = "top"
+        # raw_tx_hex_box.add_widget(raw_tx_hex_lbl)
+        #
+        # raw_tx_hex_tab.add_widget(raw_tx_hex_box)
+        # tabs.add_widget(raw_tx_hex_tab)
 
         self.add_widget(tabs)
 
 
 
-def open_tx_preview_bottom_sheet(bg_color, signed_tx, history=None, wallet=None):
+def open_tx_preview_bottom_sheet(bg_color, tx, history, wallet):
     screen_box = MDBoxLayout()
-    #screen_box.md_bg_color = "#fafafa"
     screen_box.orientation = "vertical"
     screen_box.size_hint_y = None
-    screen_box.add_widget(TxDetailInfo(bg_color, signed_tx, history, wallet))
+    screen_box.add_widget(TxDetailInfo(bg_color, tx, history, wallet))
 
     tx_btm_sheet = MDCustomBottomSheet(screen=screen_box)
     tx_btm_sheet.open()

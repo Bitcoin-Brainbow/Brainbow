@@ -71,7 +71,6 @@ from pycoin.serialize import b2h
 
 import nowallet
 
-from electrum_servers import get_random_server
 from exchange_rate import fetch_exchange_rates
 from fee_estimate import fetch_fee_estimate
 from settings_json import settings_json
@@ -89,7 +88,7 @@ from utils import utxo_deduplication
 from utils import is_valid_address
 from utils import get_payable_from_BIP21URI
 
-from bottom_screens_signed_tx import open_tx_preview_bottom_sheet
+from bottom_screens_tx import open_tx_preview_bottom_sheet
 
 from camera4kivy import Preview
 from qrreader import QRReader
@@ -101,7 +100,7 @@ top_blk = {'height', 0}
 
 
 
-__version__ = "0.1.146"
+__version__ = "0.1.147"
 
 if platform == "android":
     Window.softinput_mode = "below_target"
@@ -181,9 +180,6 @@ class UTXOListItem(TwoLineListItem):
         app.utxo_menu.open()
 
 
-
-
-
 class AddressListItem(TwoLineIconListItem):
     icon = StringProperty("database-marker-outline")
 
@@ -230,7 +226,7 @@ class BrainbowApp(MDApp):
 
 
     def __init__(self, loop):
-        self.chain = nowallet.TBTC # TBTC
+        self.chain = nowallet.TBTC
     #    self.chain = nowallet.BTC
         self.loop = loop
         self.is_amount_inputs_locked = False
@@ -249,6 +245,19 @@ class BrainbowApp(MDApp):
         self._qr_preview_modal = None
         self._dialog = None # generic dialog
         self._disconnect_dialog = None
+        self.electrum_server_presets_testnet = [
+            "tcp://testnet.qtornado.com:51001",
+            "ssl://testnet.aranguren.org:51002",
+        ]
+        self.electrum_server_presets_mainnet = [
+            #"ssl://electrum.blockstream.info:50002", Disconnects after a few seconds..
+            "ssl://bitcoin.lu.ke:50002",
+            "ssl://electrum.emzy.de:50002",
+            "ssl://electrum.bitaroo.net:50002",
+        ]
+        #TODO: when switching to mainnet instead of testnet
+        # self.electrum_server_presets = self.electrum_server_presets_mainnet
+        self.electrum_server_presets = self.electrum_server_presets_testnet
 
         # class MyMenuItem(MDMenuItem):
         class MyMenuItem(OneLineListItem):
@@ -267,6 +276,7 @@ class BrainbowApp(MDApp):
                             "text": "Settings",
                             "on_release": lambda x="Settings": app.menu_item_handler(x)},
                            ]
+
 
         self.utxo_menu_items = [{"viewclass": "MyMenuItem",
                                  "on_release": lambda x="view-address": self.utxo_menu_callback(self, x),
@@ -312,29 +322,79 @@ class BrainbowApp(MDApp):
 
 
 
+    def open_txo_menu_items(self, txo):
+        """ """
+        address = txo.secondary_text
+        txid = txo.txid # the TXO is part of this TX
+        print("txid: {}".format(txid))
+        self.txo_menu_items = []
+
+        if address in self.wallet.get_all_used_addresses(receive=True, change=False, addr=True):
+            self.txo_menu_items.append({"viewclass": "MyMenuItem",
+                                      "on_release": lambda x={
+                                         'cmd': 'view-address',
+                                         'address': address
+                                      }: app.txo_menu_callback(x),
+                                      "text": "View Address",
+                                      "disabled": False})
+        else:
+            self.txo_menu_items.append({"viewclass": "MyMenuItem",
+                                        "text": "View Address",
+                                        "disabled": True})
+
+        if self.wallet.history_store.get_tx(txid) :
+            self.txo_menu_items.append({"viewclass": "MyMenuItem",
+                                      "on_release": lambda x={
+                                         'cmd': 'view-txid',
+                                         'txid': txid
+                                      }: app.txo_menu_callback(x),
+                                      "text": "View Transaction",
+                                      "disabled": False})
+        else:
+            self.txo_menu_items.append({"viewclass": "MyMenuItem",
+                                      "text": "View Transaction",
+                                      "disabled": True})
+
+
+        app.txo_menu = MDDropdownMenu(items=self.txo_menu_items,
+                                         width_mult=6,
+                                         caller=txo,
+                                         max_height=0)
+        app.txo_menu.open()
+
+    def txo_menu_callback(self, x):
+        print("txo_menu_callback callback: {}".format( x))
+        app.txo_menu.dismiss()
+        if x.get('cmd', '') == "view-address":
+            self.open_address_bottom_sheet_callback(address=x.get('address'))
+        elif x.get('cmd', '') == "view-txid":
+            #open_tx_preview_bottom_sheet(self.drawer_bg_color, x.get('txid'), , app.wallet)
+            print("WE NEED A TX OBJ HERE OR CHANGE open_tx_preview_bottom_sheet()")
     def utxo_menu_callback(self, cls, x):
-        print("menu_callback: {} {}".format( cls.utxo.address(netcode="XTN"), x))
+        print("utxo_menu_callback: {} {}".format( cls.utxo.address(netcode="XTN"), x))
         #print ("352 {}".format(dir(cls)))
         app.utxo_menu.dismiss()
 
         if x == "view-address":
             self.open_address_bottom_sheet_callback(address=cls.utxo.address(netcode="XTN"))
 
-    def current_slide(self, index):
-        print("current_slide {} ".format(index))
-        pass
+    #def current_slide(self, index):
+    #    """
+    #    called using
+    #    #on_current_slide: app.current_slide(self.index)
+    #    """
+    #    print("current_slide {} ".format(index))
+    #    pass
 
 
     def give_current_tab_name(self, *args):
         self.current_tab_name = args[1].name
-        print ("current_tab_name: {}".format(self.current_tab_name))
         # DEBUGGING, REMOVE LATER
-        if self.current_tab_name == "utxos":
-            self.update_utxo_screen()
+        #if self.current_tab_name == "utxos":
+        #    self.update_utxo_screen()
 
 
     def _hide_fiat_fields(self):
-        print("_hide_fiat_fields")
         for widget_btc, widget_fiat in [
             (self.root.ids.spend_amount_input, self.root.ids.spend_amount_input_fiat),
             (self.root.ids.receive_amount_input, self.root.ids.receive_amount_input_fiat)]:
@@ -348,7 +408,6 @@ class BrainbowApp(MDApp):
         self._fiat_fields_hidden = True
 
     def _show_fiat_fields(self):
-        print("_show_fiat_fields")
         for widget_btc, widget_fiat in [
             (self.root.ids.spend_amount_input, self.root.ids.spend_amount_input_fiat),
             (self.root.ids.receive_amount_input, self.root.ids.receive_amount_input_fiat)]:
@@ -362,6 +421,17 @@ class BrainbowApp(MDApp):
             self.update_amounts(widget_btc.text, "coin")
         self._fiat_fields_hidden = False
 
+    def testnet_on_off_switch(self, switch, on_off):
+        """ Used during onboarding to switch between test- and mainnet. """
+        if self._wallet_ready is False:
+            if on_off:
+                self.chain = nowallet.TBTC
+                self.electrum_server_presets = self.electrum_server_presets_testnet
+            else:
+                self.chain = nowallet.BTC
+                self.electrum_server_presets = self.electrum_server_presets_mainnet
+            self.set_electrum_preset_chooser()
+
     def on_exchange_rate_switch_active(self, switch, on_off):
         if on_off:
             self.currency = "USD"
@@ -374,8 +444,8 @@ class BrainbowApp(MDApp):
             self.currency = "BTC"
             self.root.ids.current_btc_exchange_rate.text = "1 BTC = 1 BTC"
             self._hide_fiat_fields()
-
         self.update_balance_screen()
+
 
     def on_offline_switch_active(self, switch, on_off):
         if on_off:
@@ -384,6 +454,8 @@ class BrainbowApp(MDApp):
         else:
             print("NOT OFFLINE MODE")
             self.root.ids.startup_offline_mode_image_source.source = "assets/dark-online.png"
+
+
     def show_snackbar(self, text):
         snackbar = Snackbar(text=text,
                             snackbar_x="8dp",
@@ -421,22 +493,27 @@ class BrainbowApp(MDApp):
                                )
         self._dialog.open()
 
+
     def close_dialog(self, *args):
         if self._dialog:
             self._dialog.dismiss()
 
+
     def close_disconnect_dialog(self, *args):
         if self._disconnect_dialog:
             self._disconnect_dialog.dismiss()
+
+
     def close_disconnect_dialog_and_reconnect(self, *args):
         if self._disconnect_dialog:
             self._disconnect_dialog.dismiss()
-        print("close_disconnect_dialog_and_reconnect")
+
 
     def close_preview_modal(self, *args):
         if self._qr_preview_modal:
             self._qr_preview_modal.dismiss()
         self.qrreader_release()
+
 
     def qrreader_release(self, *args):
         if self._qrreader:
@@ -444,8 +521,6 @@ class BrainbowApp(MDApp):
             self._qrreader = None
         if self._qr_preview_modal:
             self._qr_preview_modal = None
-
-
 
 
     def show_preview_modal(self):
@@ -465,7 +540,6 @@ class BrainbowApp(MDApp):
             if amount:
                 self.root.ids.spend_amount_input.text = str(amount)
         except ValueError as ve:
-
             self.show_dialog("Error", str(ve))
         if address:
             self.show_snackbar("Found {}..{}".format(address[:11], address[-11:]))
@@ -476,9 +550,6 @@ class BrainbowApp(MDApp):
             self.show_preview_modal()
         else:
             self.qrreader_release()
-
-
-
 
 
     def qrcode_handler(self, symbols):
@@ -493,12 +564,14 @@ class BrainbowApp(MDApp):
         self.root.ids.sm.current = "main"
 
 
+    #TODO: Remove
     def switch_theme_handler(self):
         if self.is_darkmode:
             self.theme_cls.theme_style = "Light"
         else:
             self.theme_cls.theme_style = "Dark"
         self.is_darkmode = not self.is_darkmode
+
 
     def onboarding_menu_handler(self):
         if not self._wallet_ready:
@@ -509,21 +582,12 @@ class BrainbowApp(MDApp):
         if self._wallet_ready:
             self.root.ids.nav_drawer.set_state("open")
         elif self.root.ids.sm.current == "wait":
-            self.show_snackbar('Loading wallet state...')
+            self.show_snackbar('Loading wallet state... Please wait.')
         else:
-            self.show_snackbar('No active session.')
+            self.show_snackbar('No active session. Load wallet first.')
 
-
-
-
-    def navigation_handler(self, button):
-        print ("navigation_handler. button={}".format(button), button)
-        #app.root.ids.sm.current = "main"
-        self.root.ids.sm.current = "main"
-        pass
 
     # START EXPORT #####
-
     def download_prv(self):
         """ """
         from os.path import join as os_path_join
@@ -536,7 +600,6 @@ class BrainbowApp(MDApp):
         self.file_manager = MDFileManager(
             exit_manager=self.exit_manager,
             select_path=self.select_path,
-            #background_color_toolbar= [1.0, 1.0, 1.0, 1.0],
             selector="folder",
         )
         try:
@@ -551,9 +614,6 @@ class BrainbowApp(MDApp):
 
 
     def _export_xpriv_file(self, *args):
-        print(self._xpriv_file)
-        #print (path)
-        #print(self.wallet.private_BIP32_root_key)
         if self.export_xprv_dialog:
             self.export_xprv_dialog.dismiss()
             self.export_xprv_dialog = None
@@ -564,10 +624,10 @@ class BrainbowApp(MDApp):
         if self.export_xprv_dialog:
             self.export_xprv_dialog.dismiss()
             self.export_xprv_dialog = None
-        print ("self._xpriv_file = {}".format(self._xpriv_file))
+
 
     def select_path(self, path: str):
-        '''
+        """
         It will be called when you click on the file name
         or the catalog selection button.
 
@@ -586,15 +646,9 @@ class BrainbowApp(MDApp):
         This is dangerous and is recommended for testing purposes only.
         This is dangerous and only recommended for testing purposes.
         This is only recommended for testing purposes.
-
-        '''
-
+        """
         self.exit_manager()
-
-
-
         self._xpriv_file = "{}/xprv-{}".format(path, self.wallet.fingerprint)
-
         self.export_xprv_dialog = MDDialog(
                 title="Export BIP32 Root Key (WIF)",
                 text="Please note that a cleartext file is exported without encryption or protection.\n\nThis is dangerous and is recommended for testing purposes only.",
@@ -613,16 +667,17 @@ class BrainbowApp(MDApp):
         self.export_xprv_dialog.open()
 
 
-
     def exit_manager(self, *args):
-        '''Called when the user reaches the root of the directory tree.'''
-
+        """
+        Called when the user reaches the root of the directory tree.
+        """
         self.manager_open = False
         self.file_manager.close()
 
     def file_manager_events(self, instance, keyboard, keycode, text, modifiers):
-        '''Called when buttons are pressed on the mobile device.'''
-
+        """
+        Called when buttons are pressed on the mobile device.
+        """
         if keyboard in (1001, 27):
             if self.manager_open:
                 self.file_manager.back()
@@ -634,45 +689,59 @@ class BrainbowApp(MDApp):
         """
         Used for settings and wallet mechanics, not transactions.
         """
-        self.root.ids.toolbar.left_action_items = [["menu", lambda x: self.nav_drawer_handler()],
-                        ["theme-light-dark", lambda x: app.switch_theme_handler()],
-                        ["creation", lambda x: app.dump_history_to_fs()],
-                        ]
+        self.root.ids.toolbar.left_action_items = [
+                    ["menu", lambda x: self.nav_drawer_handler()],
+                    ["theme-light-dark", lambda x: app.switch_theme_handler()],
+                    ["creation", lambda x: app.dump_history_to_fs()],
+                ]
         self.root.ids.toolbar.right_action_items = []
         app.root.ids.sm.current = current
 
+
     def load_seed_view(self):
+        """
+        """
         self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
         self.root.ids.toolbar.right_action_items = [["file-download-outline", lambda x: self.download_prv()]]
         self.root.ids.nav_drawer.set_state("close")
         self.root.ids.sm.current = "seed"
 
+
     def load_bip39_mnemonic_view(self):
+        """
+        """
         self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
-        #self.root.ids.toolbar.right_action_items = [["file-download-outline", lambda x: self.download_prv()]]
         self.root.ids.nav_drawer.set_state("close")
         self.root.ids.sm.current = "bip39_mnemonic_screen"
 
 
     def load_pubkey_view(self):
+        """
+        """
         self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
         self.root.ids.nav_drawer.set_state("close")
         self.root.ids.sm.current = "ypub"
 
     def load_exchangerate_view(self):
+        """
+        """
         self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
         self.root.ids.nav_drawer.set_state("close")
         self.root.ids.sm.current = "exchangerate"
 
     def load_blockheight_view(self):
+        """
+        """
         self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
         self.root.ids.nav_drawer.set_state("close")
         self.root.ids.sm.current = "blockheightscreen"
 
     def check_entropy(self):
-        """ Update entropy hint. Aim for 128+ bits """
+        """
+        Update entropy hint.
+        Aim for 128+ bits
+        """
         passphrase_entropy_bits = entropy_bits(self.root.ids.pass_field.text)
-        print(passphrase_entropy_bits)
         self.root.ids.pass_progress.set_norm_value(passphrase_entropy_bits/128.)
         if passphrase_entropy_bits >= 128:
             self.root.ids.passphrase_hint.text = ""
@@ -684,17 +753,16 @@ class BrainbowApp(MDApp):
                 self.root.ids.pass_progress.color = "#DD6E0F"
             else:
                 self.root.ids.pass_progress.color = "red"
-            self.root.ids.passphrase_hint.color = "red"
-            self.root.ids.passphrase_hint.text = "WARNING: Use a better passphrase!"
+            if len(self.root.ids.pass_field.text) > 0:
+                self.root.ids.passphrase_hint.text = "WARNING: Use a better passphrase!"
         if int(passphrase_entropy_bits) >= 128:
             self.root.ids.passphrase_hint.color = "black"
             self.root.ids.passphrase_hint.text = "~{} bits of entropy".format(int(passphrase_entropy_bits))
 
 
-
-
     def menu_item_handler(self, text):
-        # Main menu items
+        """
+        """
         if "PUB" in text:
             self.root.ids.sm.current = "ypub"
         if "BIP32" in text:
@@ -704,7 +772,6 @@ class BrainbowApp(MDApp):
             key = self.wallet.search_for_key(addr)
             if not key:
                 key = self.wallet.search_for_key(addr, change=True)
-
             if "Private" in text:
                 self.show_dialog("Private key", "", qrdata=key.wif())
             if "Redeem" in text:
@@ -714,9 +781,10 @@ class BrainbowApp(MDApp):
                 self.show_dialog("Redeem script", "", qrdata=script)
 
 
-    def fee_select_callback(self, selected_fee="custom"):
 
-        """mempool_recommended_fees = {  "fastestFee": 5,
+    def fee_select_callback(self, selected_fee="custom"):
+        """
+        mempool_recommended_fees = {  "fastestFee": 5,
                                       "halfHourFee": 4,
                                       "hourFee": 3,
                                       "economyFee": 2,
@@ -838,8 +906,7 @@ class BrainbowApp(MDApp):
         #    self.show_dialog("Transaction sent!", message)
         #else:
             #self.show_dialog("Transaction ready!", message)
-        self.tx_btm_sheet = open_tx_preview_bottom_sheet(self.drawer_bg_color, signed_tx=tx)
-
+        self.tx_btm_sheet = open_tx_preview_bottom_sheet(self.drawer_bg_color, tx, None, app.wallet)
     def check_new_history(self):
         if self.wallet.new_history:
             logging.info("self.wallet.new_history=True")
@@ -881,7 +948,7 @@ class BrainbowApp(MDApp):
             self.show_dialog("Error", "All fields are required.")
             return
         if passphrase != confirm:
-            self.show_dialog("Error", "Passwords did not match.")
+            self.show_dialog("Error", "Passphrases did not match.")
             return
         self.bech32 = self.root.ids.bech32_checkbox.active
         self.menu_items[0]["text"] = "View {}PUB".format(self.pub_char.upper())
@@ -919,7 +986,7 @@ class BrainbowApp(MDApp):
             self.show_dialog("Error", "All fields are required.")
             return
         if passphrase != confirm:
-            self.show_dialog("Error", "Passwords did not match.")
+            self.show_dialog("Error", "BIP39 Passphrases did not match.")
             return
 
         self.bech32 = self.root.ids.bech32_checkbox.active
@@ -973,10 +1040,10 @@ class BrainbowApp(MDApp):
                    height=dp(dialog_height),
                    auto_dismiss=False,
                    buttons=[
-                      # MDFlatButton(
-                        #   text="TYR RECONNECT",
-                        #   on_release=partial(self.close_disconnect_dialog_and_reconnect))
-                       #,
+                       # MDFlatButton(
+                       #     text="RECONNECT",
+                       #     on_release=partial(self.try_reconnect)
+                       # ),
                        MDFlatButton(
                            text="QUIT",
                            on_release=partial(self.logoff))
@@ -988,6 +1055,52 @@ class BrainbowApp(MDApp):
                    )
         self._disconnect_dialog.open()
         # exit wallet, continue offline
+
+    def get_electrum_settings(self):
+        """
+        Returns None it invalid settings,
+        (server, port, proto) otherwise.
+        """
+        try:
+            s = self.root.ids.dropdown_electrum_field.text
+            protocol_code, reminder = s.split("://")
+            if protocol_code not in ['tcp', 'ssl']:
+                print(protocol_code)
+                return None
+            else:
+                proto = protocol_code[0]
+            server, port = reminder.split(':')
+            return server, int(port), proto
+        except Exception as ex:
+            print(traceback.format_exc())
+            return None
+
+    def validate_electrum_settings(self):
+        if self.get_electrum_settings():
+            self.root.ids.dropdown_electrum_field.error = False
+        else:
+            self.root.ids.dropdown_electrum_field.error = True
+
+
+
+    def set_electrum_preset_chooser(self):
+        # electrum chooser / or custom
+        electrum_server_items = [
+            {
+                "viewclass": "MyMenuItem",
+                "height": dp(56),
+                "text": "{}".format(i),
+                "on_release": lambda x="{}".format(i): self.set_electrum_server(x),
+            } for i in self.electrum_server_presets]
+
+
+        self.electrum_select = MDDropdownMenu(
+            caller=self.root.ids.dropdown_electrum_field,
+            items=electrum_server_items,
+            position = "auto",
+            width_mult=8,
+        )
+        self.root.ids.dropdown_electrum_field.text = self.electrum_server_presets[0]
 
     async def track_top_block(self):
         global top_blk
@@ -1004,6 +1117,12 @@ class BrainbowApp(MDApp):
         task1 = asyncio_create_task(self.track_top_block())
 
     #
+    # async def try_reconnect(*args, **kwargs):
+    #     try:
+    #         await self.connection.do_connect()
+    #     except Exception as ex:
+    #         print("EX1024")
+    #         print(traceback.format_exc())
 
     async def do_listen_task(self):
         logging.info("Listening for new transactions.")
@@ -1013,31 +1132,39 @@ class BrainbowApp(MDApp):
         self.root.ids.wait_text.text = "Connecting".upper()
         self.root.ids.wait_text_small.text = "Getting a random server for you."
         try:
-            server, port, proto = await get_random_server(self.loop)
-            print ("server, port, proto = {} {} {} ".format(server, port, proto))
-            self.root.ids.wait_text_small.text = "Connected to {}.".format(server)
-        except:
-            pass
-        try:
-            connection = nowallet.Connection(self.loop, server, port, proto, disconnect_callback=self.disconnect_callback)
+            electrum_settings = self.get_electrum_settings()
+            if electrum_settings:
+                server, port, proto = electrum_settings
+                print ("server, port, proto = {} {} {} ".format(server, port, proto))
+                self.root.ids.wait_text_small.text = "Connected to {}.".format(server)
+            else:
+                self.show_dialog("Error",
+                                 "Electrum settings are invalid.\n\nPlease restart Brainbow and try again.",
+                                 cb=lambda x: sys.exit(1))
         except Exception as ex:
             print(traceback.format_exc())
-            await connection.do_connect()
-        await connection.do_connect()
+            pass
+        try:
+            self.connection = nowallet.Connection(self.loop, server, port, proto, disconnect_callback=self.disconnect_callback)
+        except Exception as ex:
+            print("EX1024")
+            print(traceback.format_exc())
+            await self.connection.do_connect()
+        await self.connection.do_connect()
 
         if email and passphrase:
             self.root.ids.wait_text.text = "Deriving\nKeys".upper()
             self.root.ids.wait_text_small.text = "Deriving keys will take some time to complete."
             self.wallet = nowallet.Wallet(salt=email, passphrase=passphrase,
                                 bip39_mnemonic=None, bip39_passphrase=None,
-                                connection=connection, loop=self.loop,
+                                connection=self.connection, loop=self.loop,
                                 chain=self.chain, bech32=self.bech32)
         elif bip39_mnemonic:
             self.root.ids.wait_text.text = "Loading\nBIP39\nmnemonic".upper()
             self.wallet = nowallet.Wallet(salt=None, passphrase=None,
                                 bip39_mnemonic=bip39_mnemonic,
                                 bip39_passphrase=bip39_passphrase,
-                                connection=connection, loop=self.loop,
+                                connection=self.connection, loop=self.loop,
                                 chain=self.chain, bech32=self.bech32)
         else:
             self.show_dialog("Error",
@@ -1194,10 +1321,13 @@ class BrainbowApp(MDApp):
             "timestamp": self.timestamp
         }
         """
+
         f = open("brainbow-history-dump-{}.csv".format(self.wallet.fingerprint), 'w')
         for hist in self.wallet.get_tx_history():
             f.write("{}, {}, {}, {}\n".format(hist.value, hist.is_spend, hist.tx_obj.id(), hist.tx_obj.as_hex()))
         f.close()
+
+        self.wallet.history_store.save_to_file()
 
         # fix balance screen
         utxo_balance_combined = {}
@@ -1269,7 +1399,7 @@ class BrainbowApp(MDApp):
                         str(utxo.tx_hash)[-19:],
                         utxo.tx_out_index),  #Spendable
                      "utxo": utxo,
-                     "tertiary_text": "{}".format(utxo.address("XTN")),
+                     "tertiary_text": "{}".format(utxo.address("XTN")), #FIXME
 
                      }
             self.root.ids.utxoRecycleView.data_model.data.append(_utxo)
@@ -1522,8 +1652,6 @@ class BrainbowApp(MDApp):
             self.theme_cls.theme_style = "Dark"
         else:
             self.theme_cls.theme_style = "Light"
-        print (self.theme_cls)
-        print (dir(self.theme_cls))
         #self.theme_cls.primary_hue = "200"  # "500"
         #self.theme_cls.secondary_palette = "Red"
         #self.theme_cls.primary_hue = "200"  # "500"
@@ -1531,7 +1659,6 @@ class BrainbowApp(MDApp):
         #self.theme_cls.theme_style_switch_animation_duration = 0.8
 
         self.drawer_bg_color = self.root.ids.nav_drawer.md_bg_color
-        print("drawer_bg_color {}".format(self.drawer_bg_color))
         self.use_kivy_settings = False
         self.rbf = self.config.getboolean("brainbow", "rbf")
         self.units = self.config.get("brainbow", "units")
@@ -1547,6 +1674,13 @@ class BrainbowApp(MDApp):
                                             caller=self.root.ids.fee_input,
                                             max_height=dp(250)
                                             )
+        self.set_electrum_preset_chooser()
+
+    def set_electrum_server(self, server):
+        """
+        """
+        self.root.ids.dropdown_electrum_field.text = server
+        self.electrum_select.dismiss()
 
     def build_config(self, config):
         config.setdefaults("brainbow", {
@@ -1609,7 +1743,7 @@ class BrainbowApp(MDApp):
         #else:
         #    chain_tip = 0
         data = self.root.ids.recycleView.data_model.data
-        if history.height == 0:
+        if history.height <= 0:
             icon = "timer-sand"
         elif abs(self.block_height-history.height)+1 < 6:
             icon = "numeric-{}-circle".format( abs(self.block_height- history.height)+1  ) # confirmation count
@@ -1636,16 +1770,6 @@ class BrainbowApp(MDApp):
             if tab and name == "main":
                 self.root.ids.main_tabs.switch_tab(tab, search_by="title")
 
-    # def on_selected(self, instance_selection_list, instance_selection_item):
-    #     self.root.ids.toolbar.title = str(
-    #         len(instance_selection_list.get_selected_list_items())
-    #     )
-    #
-    # def on_unselected(self, instance_selection_list, instance_selection_item):
-    #     if instance_selection_list.get_selected_list_items():
-    #         self.root.ids.toolbar.title = str(
-    #             len(instance_selection_list.get_selected_list_items())
-    #         )
 
 
 if __name__ == "__main__":

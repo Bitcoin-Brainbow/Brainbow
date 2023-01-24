@@ -50,8 +50,27 @@ class AddressDetailInfo(MDGridLayout):
         spacer = MDBoxLayout()
         spacer.add_widget(lbl2)
         spacer.padding = ["42dp", 0, "42dp", 0]
-
         self.add_widget(spacer)
+
+        # chip
+        """
+        from kivymd.uix.chip.chip import MDChip
+        chip_box = MDBoxLayout()
+        chip_box.id = "chip_box"
+        chip_box.adaptive_size = False
+        chip_box.spacing = "8dp"
+        chip_box.padding = ["21dp", "21dp", "21dp", "21dp"]
+        chip_box.add_widget(MDChip(text="already used", icon_left='check', spacing = "8dp"))
+        chip_box.add_widget(MDChip(text="KYC free", icon_left='check', spacing = "8dp"))
+        chip_box.add_widget(MDChip(text="FU GREG", icon_left='check'))
+        chip_box.add_widget(MDChip(text="AMMO FUND", icon_left='check'))
+        chip_box.add_widget(MDChip(text="STEAK", icon_left='check'))
+        chip_box.add_widget(MDChip(text="KYC free", icon_left='check'))
+
+        self.add_widget(chip_box)
+        """
+        # end chip
+
 
         qrcode_widget = QRCodeWidget()
         qrcode_widget.id = "addr_qrcode_list_btm_screen"
@@ -63,8 +82,6 @@ class AddressDetailInfo(MDGridLayout):
         spacer_btm.add_widget(qrcode_widget)
         spacer_btm.padding = [0, 0, 0, "42dp"]
         self.add_widget(spacer_btm)
-
-
 
 
 def open_address_bottom_sheet(address, qr=False):

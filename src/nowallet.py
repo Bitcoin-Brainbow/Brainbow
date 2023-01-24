@@ -47,6 +47,7 @@ Chain = collections.namedtuple("Chain", ["netcode", "chain_1209k", "bip44"])
 BTC = Chain(netcode="BTC", chain_1209k="btc", bip44=0)
 TBTC = Chain(netcode="XTN", chain_1209k="tbtc", bip44=1)
 
+from nowallet_history_store import HistoryStore
 
 class Wallet:
     """ Provides all functionality required for a fully functional and secure
@@ -166,6 +167,9 @@ class Wallet:
         self.zeroconf_balance = Decimal("0")  # type: Decimal
 
         self.new_history = False  # type: bool
+
+        # New data structure to connect everything and merge multiple UTXOs from the same TX.
+        self.history_store = HistoryStore(wallet=self)
 
     @property
     def ypub(self) -> str:
@@ -402,6 +406,7 @@ class Wallet:
         spend_vout = 1 if chg_vout == 1 else 0 # type: int
         return tx.txs_out[spend_vout].coin_value
 
+
     async def _process_history(self, history: Tx, address: str, height: int) -> History:
         """ Coroutine. Creates a _History namedtuple from a given Tx object.
 
@@ -413,7 +418,7 @@ class Wallet:
         is_spend = False  # type: bool
         for txout in history.txs_out:
             if txout.address(netcode=self.chain.netcode) == address:
-                # Accumulate the value of all outputs.
+                # Accumulate the value of all outputs
                 if value is None:
                     value = txout.coin_value
                 else:
@@ -429,6 +434,8 @@ class Wallet:
                               height=height)  # type: History
         await history_obj.get_timestamp(self.connection)
         logging.debug("Processed history object: %s", history_obj)
+        # add to new storage structure
+        self.history_store.store_tx(tx_obj=history, history_obj=history_obj)
         return history_obj
 
     async def _interpret_history(self, statuses: List[str], change: bool = False) -> bool:
