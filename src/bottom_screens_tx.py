@@ -301,19 +301,7 @@ class TxDetailInfo(MDGridLayout):
                         on_release = app.open_txo_menu_items
                     )
                 )
-        """
-        for tx_out in signed_tx.txs_out:
-            #print(dir(tx_out))
-            scroll_output_list.add_widget(
-                TwoLineAvatarIconListItem(
-                    None,
-                    IconRightWidget(
-                        icon="arrow-right-circle-outline" # = UTXO was spent (empty)
-                    ),
-                    text=str(tx_out.address(netcode="XTN")),
-                    secondary_text=str(tx_out.coin_value/100000000.),
-                    ))
-        """
+     
         outputs_box.add_widget(scroll_output_view)
         outputs_tab.add_widget(outputs_box)
         tabs.add_widget(outputs_tab)

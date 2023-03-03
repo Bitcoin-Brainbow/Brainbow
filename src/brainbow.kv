@@ -21,6 +21,17 @@
 <TxInputListItem>:
     on_release: print("TxInputListItem")
 
+<LabelDialogContent>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "110dp"
+    MDLabel:
+        id: label_dlg_label
+        text: "---"
+    MDTextField:
+        id: label_dlg_text
+        hint_text: "Note to self"
 
 
 <BalanceListItem>:
@@ -850,6 +861,7 @@ MDScreen:
 
                     Tab:
                         name: "utxos"
+                        id: utxos
                         icon: "database-marker"
                         title: "UTXOs (Coins)"
                         title_icon_mode: "Top"
@@ -864,7 +876,7 @@ MDScreen:
                                 halign: "center"
                                 size_hint_y: None
                                 #height: self.texture_size[1] + dp(48)
-                                height:dp(12)
+                                height: dp(12)
                                 #on_release: app.toggle_balance_label()
                             RecycleView:
                                 id: utxoRecycleView
@@ -1188,7 +1200,7 @@ MDScreen:
 
 
                 MDNavigationDrawerItem:
-                    icon: "cash-100"
+                    icon: "currency-usd"
                     text_color: "#c9c9c9"
                     selected_color: [0.97, 0.58, 0.10, 1.0]
                     icon_color: "#c9c9c9"

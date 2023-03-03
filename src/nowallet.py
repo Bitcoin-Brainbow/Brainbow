@@ -102,9 +102,7 @@ class Wallet:
                 )  # type: Union[int, Tuple[int, bytes]]
                 assert isinstance(t, tuple), "Should never fail"
                 secret_exp, chain_code = t
-                #print  ("secret_exp, chain_code = {}, {}".format(secret_exp, chain_code))
-                #print ("self.chain.netcode = {}".format(self.chain.netcode))
-                # WarpWallet master private key
+                # WarpWallet master private key generation
                 self.warpwallet_mpk = SegwitBIP32Node(
                     netcode=self.chain.netcode,
                     chain_code=chain_code,
@@ -158,6 +156,7 @@ class Wallet:
 
         # All wallet TX info. (MUST not persist!)
         self.utxos = []  # type: List[Spendable]
+        self.selected_utxos = []  # type: List[Spendable]
         self.spent_utxos = []  # type: List[Spendable]
 
         self.history = {}  # type: Dict[Any]
@@ -314,6 +313,13 @@ class Wallet:
         """ Accumulate all UTXO after deduplication. """
         balance = Decimal(0)
         for utxo in utxo_deduplication(self.utxos):
+            balance += Decimal(str(utxo.coin_value / Wallet.COIN))
+        return balance
+
+    def selected_utxo_balance(self):
+        """ Accumulate all selected UTXO after deduplication. """
+        balance = Decimal(0)
+        for utxo in utxo_deduplication(self.selected_utxos):
             balance += Decimal(str(utxo.coin_value / Wallet.COIN))
         return balance
 
@@ -794,15 +800,18 @@ class Wallet:
 
         # Collect enough UTXOs for this spend.
         # Add them to spent list and delete them from UTXO list later.
+        # If we have selected UTXOs, than only take from those.
         for i, utxo in enumerate(self.utxos):
             if total_out < amount + fee_highball:
-                self.spent_utxos.append(utxo)
-                #if utxo not in spendables: <--
-                #    spendables.append(utxo)
-                spendables.append(utxo)
-                in_addrs.add(utxo.address(self.chain.netcode))
-                del_indexes.append(i)
-                total_out += utxo.coin_value
+                if self.selected_utxos and utxo in self.selected_utxos \
+                    or not self.selected_utxos:
+                    self.spent_utxos.append(utxo)
+                    #if utxo not in spendables: <-- #FIXME
+                    #    spendables.append(utxo)
+                    spendables.append(utxo)
+                    in_addrs.add(utxo.address(self.chain.netcode))
+                    del_indexes.append(i)
+                    total_out += utxo.coin_value
         # Do not remove them now.
         # We will remove them from the UTXOs as soon as we broadcast the TX.
         #self.utxos = [utxo for i, utxo in enumerate(self.utxos) if i not in del_indexes]
@@ -812,7 +821,7 @@ class Wallet:
         for i, utxo in enumerate(self.utxos):
             for d_i in del_indexes:
                 if i == d_i:
-                    print("remove candidate, index: {}, utxo: {} ".format(d_i, utxo))
+                    print("Remove candidate, index: {}, utxo: {} ".format(d_i, utxo))
                     del_utxo_candidates.append(utxo)
 
         # Get change address, mark index as used, and create payables list

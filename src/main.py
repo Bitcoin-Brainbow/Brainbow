@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import sys, traceback
-
 # Monkey patch based on https://github.com/kivy/python-for-android/issues/1866#issuecomment-927157780
 import ctypes
 try:
@@ -56,6 +55,7 @@ from kivymd.uix.tab import MDTabsBase
 from kivymd.uix.snackbar import Snackbar
 from kivy.uix.modalview import ModalView
 
+
 #from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.button import ButtonBehavior
 #from kivy.uix.boxlayout import BoxLayout
@@ -93,6 +93,9 @@ from bottom_screens_tx import open_tx_preview_bottom_sheet
 from camera4kivy import Preview
 from qrreader import QRReader
 
+from kivy_utils import get_storage_path
+
+from label_store import LabelStore
 
 top_blk = {'height', 0}
 
@@ -166,17 +169,85 @@ class QRScanAddressField(MDRelativeLayout):
     helper_text = StringProperty()
     error = BooleanProperty()
 
+
+class LabelDialogContent(MDBoxLayout):
+    pass
+
+
+LABEL_DIALOG_TITLE_ADDRESS = "Label Address"
+LABEL_DIALOG_TITLE_TRANSACTION = "Label Transaction"
+LABEL_DIALOG_TITLE_UTXO = "Label UTXO"
+
 class UTXOListItem(TwoLineListItem):
     """ """
     utxo = ObjectProperty()
 
     def open_utxo_menu(self):
         app = MDApp.get_running_app()
-        app.utxo = self.utxo
-        app.utxo_menu = MDDropdownMenu(items=app.utxo_menu_items,
-                                        width_mult=6,
+        this_utxo_menu_items = [{"viewclass": "MyMenuItem",
+                                 "on_release": lambda fx="view-address": app.utxo_menu_callback(self, fx),
+                                 "text": "View Address"},
+                                 {"viewclass": "MyMenuItem",
+                                  "on_release": lambda fx="add-label-address": app.utxo_menu_callback(self, fx),
+                                  "text": LABEL_DIALOG_TITLE_ADDRESS },
+                                 {"viewclass": "MyMenuItem",
+                                  "on_release": lambda fx="add-label-tx": app.utxo_menu_callback(self, fx),
+                                  "text": LABEL_DIALOG_TITLE_TRANSACTION},
+                                 {"viewclass": "MyMenuItem",
+                                  "on_release": lambda fx="add-label-utxo": app.utxo_menu_callback(self, fx),
+                                  "text": LABEL_DIALOG_TITLE_UTXO},
+                                 {"viewclass": "MyMenuItem",
+                                  "on_release": lambda fx="private-key": app.utxo_menu_callback(self, fx),
+                                  "text": "Private Key"},
+                                   {"viewclass": "MyMenuItem",
+                                    "on_release": lambda fx="redeem-script": app.utxo_menu_callback(self, fx),
+                                    "text": "Redeem Script"},
+
+                                ]
+
+
+
+        if self.utxo not in app.wallet.selected_utxos:
+            this_utxo_menu_items.insert(0, {"viewclass": "MyMenuItem",
+                                            "text": "Select Coin",
+                                            "on_release": lambda fx="add-utxo-to-selection": app.utxo_menu_callback(self, fx),
+                                            })
+        else:
+            this_utxo_menu_items.insert(0, {"viewclass": "MyMenuItem",
+                                            "text": "Unselect Coin",
+                                            "on_release": lambda fx="remove-utxo-from-selection": app.utxo_menu_callback(self, fx),
+                                            })
+
+        ## do not spend coins ("label/group")
+
+        """
+        {"viewclass": "MyMenuItem",
+         "on_release": lambda x="copy-address": self.utxo_menu_callback(self, x),
+         "text": "TODO:Copy Address"},  # to clipboard
+
+        {"viewclass": "MyMenuItem",
+         "on_release": lambda x="copy-address": self.utxo_menu_callback(self, x),
+         "text": "TODO:Copy TXID "}, #to clipboard
+
+        {"viewclass": "MyMenuItem",
+         "on_release": lambda x="Sign Message": self.utxo_menu_callback(self, x),
+         "text": "TODO:Sign/Verify Message" },
+
+
+        {"viewclass": "MyMenuItem",
+         "on_release": lambda x="View Private Key": self.utxo_menu_callback(self, x),
+         "text": "TODO:View Private Key"},
+
+        {"viewclass": "MyMenuItem",
+         "on_release": lambda x="View Redeem Script": self.utxo_menu_callback(self, x),
+         "text": "TODO:View Redeem Script"},
+         """
+
+        app.utxo_menu = MDDropdownMenu(items=this_utxo_menu_items,
+                                        width_mult=8,
                                         caller=self,
                                         max_height=0,)
+
         app.utxo_menu.open()
 
 
@@ -214,6 +285,9 @@ class SpendAmount(MDRelativeLayout):
     hint_text = StringProperty()
     error = BooleanProperty()
 
+
+
+
 class BrainbowApp(MDApp):
     units = StringProperty()
     currency = StringProperty()
@@ -235,16 +309,19 @@ class BrainbowApp(MDApp):
         self.exchange_rates = None
         self.current_tab_name = "balance"
         self.spend_tuple = None # Holds a tuple (signed Tx ready to broadcast, chg_vout, decimal_fee, tx_vsize, del_utxo_candidates) or None
+        self.label_dialog = None # used to label utxos and txns
         self.tx_btm_sheet = None
         self.current_fee = 1
         self.mempool_recommended_fees = None
         # for QR code reading UX
         self._qrreader = None
         self._fiat_fields_hidden = True
-
+        self.selected_list_items = [] # will hold all selected utxos
         self._qr_preview_modal = None
         self._dialog = None # generic dialog
         self._disconnect_dialog = None
+        self.label_store = None
+
         self.electrum_server_presets_testnet = [
             "tcp://testnet.qtornado.com:51001",
             "ssl://testnet.aranguren.org:51002",
@@ -258,7 +335,6 @@ class BrainbowApp(MDApp):
         #TODO: when switching to mainnet instead of testnet
         # self.electrum_server_presets = self.electrum_server_presets_mainnet
         self.electrum_server_presets = self.electrum_server_presets_testnet
-
         # class MyMenuItem(MDMenuItem):
         class MyMenuItem(OneLineListItem):
             pass
@@ -278,29 +354,7 @@ class BrainbowApp(MDApp):
                            ]
 
 
-        self.utxo_menu_items = [{"viewclass": "MyMenuItem",
-                                 "on_release": lambda x="view-address": self.utxo_menu_callback(self, x),
-                                 "text": "View Address"},
 
-                                {"viewclass": "MyMenuItem",
-                                 "on_release": lambda x="copy-address": self.utxo_menu_callback(self, x),
-                                 "text": "TODO:Copy Address"},
-
-                                {"viewclass": "MyMenuItem",
-                                 "on_release": lambda x="Sign Message": self.utxo_menu_callback(self, x),
-                                 "text": "TODO:Sign/Verify Message" },
-
-
-                                {"viewclass": "MyMenuItem",
-                                 "on_release": lambda x="View Private Key": self.utxo_menu_callback(self, x),
-                                 "text": "TODO:View Private Key"},
-
-                                {"viewclass": "MyMenuItem",
-                                 "on_release": lambda x="View Redeem Script": self.utxo_menu_callback(self, x),
-                                 "text": "TODO:View Redeem Script"},
-
-
-                                ]
 
         self.fee_preset_items = [{"viewclass": "MyMenuItem",
                                     "on_release": lambda x="fastestFee": self.fee_select_callback(x),
@@ -321,12 +375,68 @@ class BrainbowApp(MDApp):
         super().__init__()
 
 
+    def show_label_dialog(self, title, label_target):
+        if not self.label_dialog:
+            self.label_dialog = MDDialog(
+                title=title,
+                type="custom",
+                content_cls=LabelDialogContent(),
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL",
+                        theme_text_color="Custom",
+                        text_color=self.theme_cls.primary_color,
+                        on_release=partial(self.dismiss_label_dialog)
+                    ),
+                    MDFlatButton(
+                        text="ADD",
+                        theme_text_color="Custom",
+                        text_color=self.theme_cls.primary_color,
+                        on_release=partial(self.store_from_label_dialog)
+                    ),
+                    MDFlatButton(
+                        text="ADD & SYNC",
+                        theme_text_color="Custom",
+                        text_color=self.theme_cls.primary_color,
+                        on_release=partial(self.store_and_sync_from_label_dialog)
+                    )
+                ],
+            )
+        self.label_dialog.content_cls.ids.label_dlg_label.text = label_target
+        self.label_dialog.open()
+
+    def store_and_sync_from_label_dialog(self, *args):
+        self.store_from_label_dialog()
+        self.label_store.sync()
+
+    def store_from_label_dialog(self, *args):
+        if self.label_dialog:
+            label_target = self.label_dialog.content_cls.ids.label_dlg_label.text
+            label_text = self.label_dialog.content_cls.ids.label_dlg_text.text
+
+            if self.label_dialog.title == LABEL_DIALOG_TITLE_ADDRESS:
+                self.label_store.add_label(type="addr", ref=label_target, label=label_text)
+
+            elif self.label_dialog.title == LABEL_DIALOG_TITLE_TRANSACTION:
+                self.label_store.add_label(type="tx", ref=label_target, label=label_text)
+
+            elif self.label_dialog.title == LABEL_DIALOG_TITLE_UTXO:
+                self.label_store.add_label(type="output", ref=label_target, label=label_text)
+
+
+            self.label_dialog.dismiss()
+            self.label_dialog = None
+
+    def dismiss_label_dialog(self, *args):
+        if self.label_dialog:
+            self.label_dialog.dismiss()
+            self.label_dialog = None
+
 
     def open_txo_menu_items(self, txo):
         """ """
         address = txo.secondary_text
         txid = txo.txid # the TXO is part of this TX
-        print("txid: {}".format(txid))
         self.txo_menu_items = []
 
         if address in self.wallet.get_all_used_addresses(receive=True, change=False, addr=True):
@@ -370,13 +480,68 @@ class BrainbowApp(MDApp):
         elif x.get('cmd', '') == "view-txid":
             #open_tx_preview_bottom_sheet(self.drawer_bg_color, x.get('txid'), , app.wallet)
             print("WE NEED A TX OBJ HERE OR CHANGE open_tx_preview_bottom_sheet()")
-    def utxo_menu_callback(self, cls, x):
-        print("utxo_menu_callback: {} {}".format( cls.utxo.address(netcode="XTN"), x))
-        #print ("352 {}".format(dir(cls)))
+
+    def utxo_menu_callback(self, utxo_item, fx):
+        """ """
+        print("utxo_menu_callback: {} {}".format( utxo_item.utxo.address(netcode=self.chain.netcode), fx))
         app.utxo_menu.dismiss()
 
-        if x == "view-address":
-            self.open_address_bottom_sheet_callback(address=cls.utxo.address(netcode="XTN"))
+        address = None
+        key = None
+
+        if fx in ["view-address",
+                  "private-key",
+                  "redeem-script",
+                  "add-label-address"]:
+            address = utxo_item.utxo.address(netcode=self.chain.netcode)
+
+
+        # get key
+        if address and fx in ["private-key",
+                              "redeem-script"]:
+            key = self.wallet.search_for_key(address)
+            if not key:
+                key = self.wallet.search_for_key(address, change=True)
+            print("Key for address: {} {} ".format(key, address))
+
+
+        if fx == "view-address":
+            self.open_address_bottom_sheet_callback(address)
+
+        elif fx == "add-label-address":
+            self.show_label_dialog(title=LABEL_DIALOG_TITLE_ADDRESS, label_target="{}".format(address))
+
+        elif fx == "add-label-tx":
+            t = "{}".format(utxo_item.utxo.tx_hash)
+            self.show_label_dialog(title=LABEL_DIALOG_TITLE_TRANSACTION, label_target=t)
+
+        elif fx == "add-label-utxo":
+            t = "{}:{}".format(utxo_item.utxo.tx_hash, utxo_item.utxo.tx_out_index)
+            self.show_label_dialog(title=LABEL_DIALOG_TITLE_UTXO, label_target=t)
+
+        elif key and fx == "private-key":
+            self.show_dialog("Private Key", "", qrdata=key.wif())
+        elif key and fx == "redeem-script":
+            if self.bech32:
+                return
+            script = b2h(key.p2wpkh_script())
+            print ("script: {}".format(script))
+            self.show_dialog("Redeem Script", "", qrdata=script)
+
+        # coin selection code
+        elif fx == "add-utxo-to-selection":
+            self.wallet.selected_utxos.append(utxo_item.utxo)
+            self.selected_list_items.append(utxo_item)
+            utxo_item.bg_color = [0.97, 0.58, 0.10, .1]
+        elif fx == "remove-utxo-from-selection":
+            self.wallet.selected_utxos.remove(utxo_item.utxo)
+            self.selected_list_items.remove(utxo_item)
+            utxo_item.bg_color = (0, 0, 0, 1) # from kivy.utils import get_color_from_hex self.overlay_color
+        if fx in ["add-utxo-to-selection", "remove-utxo-from-selection"]:
+            self.load_coin_selection_user_interface()
+            print(self.wallet.selected_utxos)
+
+
 
     #def current_slide(self, index):
     #    """
@@ -590,26 +755,19 @@ class BrainbowApp(MDApp):
     # START EXPORT #####
     def download_prv(self):
         """ """
-        from os.path import join as os_path_join
+
         from kivymd.uix.filemanager import MDFileManager
 
         Window.bind(on_keyboard=self.file_manager_events)
         self.manager_open = False
         self._xpriv_file = None
-        print("download_prv")
+
         self.file_manager = MDFileManager(
             exit_manager=self.exit_manager,
             select_path=self.select_path,
             selector="folder",
         )
-        try:
-            from android.storage import primary_external_storage_path
-            ext_path = primary_external_storage_path()
-        except ModuleNotFoundError:
-            from os.path import expanduser
-            ext_path = expanduser("~")
-        storage_path = os_path_join(ext_path, 'Downloads')
-        self.file_manager.show(storage_path)
+        self.file_manager.show(get_storage_path())
         self.manager_open = True
 
 
@@ -618,6 +776,7 @@ class BrainbowApp(MDApp):
             self.export_xprv_dialog.dismiss()
             self.export_xprv_dialog = None
         self.show_snackbar("xpriv saved as {}".format(self._xpriv_file))
+
 
     def _cancel_xpriv_file(self, *args):
         self._xpriv_file = None
@@ -674,6 +833,7 @@ class BrainbowApp(MDApp):
         self.manager_open = False
         self.file_manager.close()
 
+
     def file_manager_events(self, instance, keyboard, keycode, text, modifiers):
         """
         Called when buttons are pressed on the mobile device.
@@ -684,18 +844,18 @@ class BrainbowApp(MDApp):
         return True
     # END EXPORT #####
 
-
     def close_wallet_context_view(self, current="main"):
         """
         Used for settings and wallet mechanics, not transactions.
         """
         self.root.ids.toolbar.left_action_items = [
                     ["menu", lambda x: self.nav_drawer_handler()],
-                    ["theme-light-dark", lambda x: app.switch_theme_handler()],
+                    #["theme-light-dark", lambda x: app.switch_theme_handler()],
                     ["creation", lambda x: app.dump_history_to_fs()],
                 ]
         self.root.ids.toolbar.right_action_items = []
-        app.root.ids.sm.current = current
+        if current is not None:
+            app.root.ids.sm.current = current
 
 
     def load_seed_view(self):
@@ -708,33 +868,58 @@ class BrainbowApp(MDApp):
 
 
     def load_bip39_mnemonic_view(self):
-        """
-        """
-        self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
+        """ Loads the mnemonic screen. """
+        self.root.ids.toolbar.left_action_items = [["close",
+                                lambda x: self.close_wallet_context_view()]]
         self.root.ids.nav_drawer.set_state("close")
         self.root.ids.sm.current = "bip39_mnemonic_screen"
 
 
+    def unselect_all_utxos_and_close_wallet_context_view(self):
+        """ Unselects all UTXOs and restores the toolbar. """
+        for list_item in self.selected_list_items:
+            list_item.bg_color = [0, 0, 0, 1]
+        self.selected_list_items = []
+        self.wallet.selected_utxos = []
+        self.close_wallet_context_view(current=None)
+        self.set_wallet_fingerprint() # reset toolbar title
+        self.update_send_screen()
+
+
+    def load_coin_selection_user_interface(self):
+        """ Loads dedicated toolbar and refreshes the UI. """
+        self.root.ids.nav_drawer.set_state("close")
+        selected_utxos_count = len(self.wallet.selected_utxos)
+        if selected_utxos_count == 0:
+            self.unselect_all_utxos_and_close_wallet_context_view()
+        else:
+            self.root.ids.toolbar.left_action_items = [["close",
+                lambda x: self.unselect_all_utxos_and_close_wallet_context_view()]]
+            self.root.ids.toolbar.title = "{}   {:.8f}".format(selected_utxos_count,
+                                            self.wallet.selected_utxo_balance())
+        self.update_send_screen()
+
+
     def load_pubkey_view(self):
-        """
-        """
+        """ Loads the pubkey view including the dedicated toolbar. """
         self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
         self.root.ids.nav_drawer.set_state("close")
         self.root.ids.sm.current = "ypub"
 
+
     def load_exchangerate_view(self):
-        """
-        """
+        """ Loads the exchange rates view including the dedicated toolbar. """
         self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
         self.root.ids.nav_drawer.set_state("close")
         self.root.ids.sm.current = "exchangerate"
 
+
     def load_blockheight_view(self):
-        """
-        """
+        """ Loads the "block clock" view. """
         self.root.ids.toolbar.left_action_items = [["close", lambda x: self.close_wallet_context_view()]]
         self.root.ids.nav_drawer.set_state("close")
         self.root.ids.sm.current = "blockheightscreen"
+
 
     def check_entropy(self):
         """
@@ -759,7 +944,7 @@ class BrainbowApp(MDApp):
             self.root.ids.passphrase_hint.color = "black"
             self.root.ids.passphrase_hint.text = "~{} bits of entropy".format(int(passphrase_entropy_bits))
 
-
+    #TODO: Verify if used
     def menu_item_handler(self, text):
         """
         """
@@ -767,18 +952,6 @@ class BrainbowApp(MDApp):
             self.root.ids.sm.current = "ypub"
         if "BIP32" in text:
             self.root.ids.sm.current = "seed"
-        elif self.root.ids.sm.current == "utxo": # UTXO menu items
-            addr = self.utxo.address(self.chain.netcode)
-            key = self.wallet.search_for_key(addr)
-            if not key:
-                key = self.wallet.search_for_key(addr, change=True)
-            if "Private" in text:
-                self.show_dialog("Private key", "", qrdata=key.wif())
-            if "Redeem" in text:
-                if self.bech32:
-                    return
-                script = b2h(key.p2wpkh_script())
-                self.show_dialog("Redeem script", "", qrdata=script)
 
 
 
@@ -805,8 +978,11 @@ class BrainbowApp(MDApp):
 
     def fee_input_handler(self):
         text = self.root.ids.fee_input.text
-        if text:
-            self.current_fee = int(float(text))
+        try:
+            if text:
+                self.current_fee = int(float(text))
+        except:
+            pass
         self.fee_selection.dismiss()
 
     def set_address_error(self, addr):
@@ -833,27 +1009,35 @@ class BrainbowApp(MDApp):
             tx, chg_vout, decimal_fee, tx_vsize, del_utxo_candidates = self.spend_tuple
             chg_out = tx.txs_out[chg_vout]  # type: TxOut
             txid, exception = await self.wallet.broadcast(tx.as_hex(), chg_out)  # type: str
+
             if txid:
-                # successfully broadcasted
-                # remove UTXOs once broadcasted
-                self.wallet.utxos = []
+                # Successfully broadcasted, remove UTXOs and reset fields.
+
+                # TODO: remove base on TX_ins, this is not working code /we need spendables here.
+                #for tx_in in tx.txs_in:
+                #    if tx_in in self.wallet.utxos:
+                #        print ("WOULD removing spend coin {}".format(utxo))
+
                 for i, utxo in enumerate(self.wallet.utxos):
-                    if i not in del_utxo_candidates and utxo not in self.wallet.utxos:
-                        self.wallet.utxos.append(utxo)
+                    if utxo in del_utxo_candidates and utxo in self.wallet.utxos:
+                        self.wallet.utxos.remove(utxo)
+
+                # Reset last used values in send tab and unselect all previously selected utxos.
+                self.fee_select_callback()
+                self.root.ids.address_input.text = ""
+                self.root.ids.address_input.error = False
+                self.root.ids.spend_amount_input_fiat.text = "0"
+                self.root.ids.spend_amount_input.text = "0"
+                self.unselect_all_utxos_and_close_wallet_context_view()
+
                 self.update_screens()
                 self.goto_screen('main', 'TRANSACTIONS')
                 if self.tx_btm_sheet:
                     self.tx_btm_sheet.dismiss()
                     self.tx_btm_sheet = None
 
-                # Reset last used values in send tab
-                self.fee_select_callback()
-                self.root.ids.address_input.text = ""
-                self.root.ids.address_input.error = False
-                self.root.ids.spend_amount_input_fiat.text = "0"
-                self.root.ids.spend_amount_input.text = "0"
-
                 self.show_snackbar("Transaction {}..{} sent.".format(txid[:11],txid[-11:]))
+
             else:
                 try:
                     error_message = str(exception).split("[")[0]
@@ -919,12 +1103,14 @@ class BrainbowApp(MDApp):
         Wallet is ready.
         - load main screen
         - unlock nav
+        - init label store
         """
-
         self._wallet_ready = True
+
         print("_wallet_ready=True")
         self.root.ids.sm.current = "main"
         self.root.ids.active_wallet_version.text = "Version {}".format(__version__)
+
         # All methods below verify if self._wallet_ready is True.
         #self._unlock_nav_drawer()
         #self.show_dialog("Loaded for the first time?", "If you are loading this wallet for the first time, it is recommended to close it and reload it.\n\This way you can make sure that you did not make a typo.\n\nIf the wallet is ___ again, then everything is fine.")
@@ -933,6 +1119,15 @@ class BrainbowApp(MDApp):
             self.show_dialog("New wallet?",
                     "To make sure that you did not make a typo, it is recommended to close the wallet now and reloading it.\n\nIf the wallet name is '{}' after reloading it, everything is fine.".format(
                     wallet_alias(self.wallet.fingerprint[0:2], self.wallet.fingerprint[2:4])))
+
+        # init label store and try to import if present
+        self.label_store = LabelStore(self, self.wallet)
+        if self.label_store.check_for_import():
+            self.show_dialog("Load labels?",
+                    "A label file for this wallet could be loaded from the file system.")
+
+
+
     @property
     def pub_char(self):
         if self.chain == nowallet.BTC:
@@ -1171,7 +1366,7 @@ class BrainbowApp(MDApp):
                              "Please provide either your salt and passphrase or your BIP39 mnemonic to use Brainbow.",
                              cb=lambda x: sys.exit(1))
             return
-        self.set_wallet_fingetprint(self.wallet.fingerprint)
+        self.set_wallet_fingerprint()
         self.root.ids.wait_text_small.text = \
                 "Wallet fingerprint is {}.\n{}\n".format(
                         self.wallet.fingerprint,
@@ -1285,6 +1480,9 @@ class BrainbowApp(MDApp):
             pass
 
 
+    def selected_balance_str(self):
+        balance = "{:.8f}".format(self.wallet.selected_utxo_balance())
+        return "{} {}".format(balance, self.units)
 
 
     def balance_str(self, fiat=False):
@@ -1303,7 +1501,8 @@ class BrainbowApp(MDApp):
             units = self.currency
         return "{} {}".format(balance, units)
 
-    def set_wallet_fingetprint(self, fingerprint):
+    def set_wallet_fingerprint(self):
+        fingerprint = self.wallet.fingerprint
         walias = wallet_alias(fingerprint[0:2], fingerprint[2:4])
         self.root.ids.toolbar.title = walias
         self.root.ids.active_wallet_alias.text = "{} ({})".format(walias, fingerprint)
@@ -1384,14 +1583,14 @@ class BrainbowApp(MDApp):
 
 
     def update_utxo_screen(self):
-        balance = Decimal(0)
+        #balance = Decimal(0)
         self.root.ids.utxoRecycleView.data_model.data = []
         self.wallet.utxos = utxo_deduplication(self.wallet.utxos)
         for utxo in self.wallet.utxos:
             #print("*"*30)
             #print(dir(utxo))
             value = Decimal(str(utxo.coin_value / nowallet.Wallet.COIN))
-            balance += value
+            #balance += value
             utxo_str = (self.unit_precision + " {}").format(value * self.unit_factor, self.units)
             _utxo = {"text": utxo_str,
                      "secondary_text": "{}....{}:{}".format(
@@ -1399,24 +1598,37 @@ class BrainbowApp(MDApp):
                         str(utxo.tx_hash)[-19:],
                         utxo.tx_out_index),  #Spendable
                      "utxo": utxo,
-                     "tertiary_text": "{}".format(utxo.address("XTN")), #FIXME
+                     "tertiary_text": "{}".format(utxo.address(self.chain.netcode)),
 
                      }
             self.root.ids.utxoRecycleView.data_model.data.append(_utxo)
         self.update_addresses_screen()
-        print ("Computed Balance: {}".format(balance))
+        #print ("Computed Balance: {}".format(balance))
 
     def update_send_screen(self):
-        self.root.ids.send_balance.text = \
-            "Available Balance:\n" + self.balance_str()
+        if len(self.wallet.selected_utxos):
+            self.root.ids.send_balance.text = \
+                "Coin Selection Balance:\n" + self.selected_balance_str()
+        else:
+            self.root.ids.send_balance.text = \
+                "Available Balance:\n" + self.balance_str()
+
         self.root.ids.fee_input.text = str(self.current_fee)
 
     def spend_all_UTXOs(self):
         #val = self.unit_precision.format(hist.value * self.unit_factor)
-        utxo_balance = self.wallet.utxo_balance()
-        self.root.ids.spend_amount_input.text = "{}".format(utxo_balance)
-        self.root.ids.send_all_minus_fee.text = "Sending 'Available Balance - Miner Fee'"
-        print ("spend_all_UTXOs, self.root.ids.spend_amount_input.text = {} ".format(self.root.ids.spend_amount_input.text))
+        if len(self.wallet.selected_utxos):
+            selected_utxo_balance = self.wallet.selected_utxo_balance()
+            self.root.ids.spend_amount_input.text = "{}".format(selected_utxo_balance)
+            self.root.ids.send_all_minus_fee.text = "Sending 'Coin Selection Balance - Miner Fee'"
+            print ("spend_all_UTXOs, self.root.ids.spend_amount_input.text = {} ".format(
+                self.root.ids.spend_amount_input.text))
+        else:
+            utxo_balance = self.wallet.utxo_balance()
+            self.root.ids.spend_amount_input.text = "{}".format(utxo_balance)
+            self.root.ids.send_all_minus_fee.text = "Sending 'Available Balance - Miner Fee'"
+            print ("spend_all_UTXOs, self.root.ids.spend_amount_input.text = {} ".format(
+                self.root.ids.spend_amount_input.text))
 
     def update_recieve_screen(self):
         address = self.update_recieve_qrcode()
@@ -1491,7 +1703,6 @@ class BrainbowApp(MDApp):
                 self.root.ids.addresses_recycle_view.data_model.data.append(item)
 
 
-
     def update_addresses_screen(self):
         self.root.ids.addresses_recycle_view.data_model.data = []
         self.root.ids.changeaddresses_recycle_view.data_model.data = []
@@ -1548,6 +1759,7 @@ class BrainbowApp(MDApp):
         self.root.ids.pin_back_button.disabled = False
         self.root.ids.lock_button.text = "lock"
 
+
     def update_pin_input(self, char):
         pin_input = self.root.ids.pin_input
         if char == "clear":
@@ -1561,6 +1773,7 @@ class BrainbowApp(MDApp):
         else:
             pin_input.text += char
 
+
     def update_unit(self):
         self.unit_factor = 1
         self.unit_precision = "{:.8f}"
@@ -1571,6 +1784,7 @@ class BrainbowApp(MDApp):
         fiat = Decimal(self.current_fiat) / self.unit_factor
         self.update_amount_fields(coin, fiat)
 
+
     def get_rate(self):
         try:
             rate = self.exchange_rates[self.currency]
@@ -1579,10 +1793,12 @@ class BrainbowApp(MDApp):
             self.exchange_rates = False
             return Decimal(str(0))
 
+
     def copy_something_to_clipboard(self, something, message=""):
         Clipboard.copy(something)
         if message:
             self.show_snackbar(text=message)
+
 
     def copy_current_address_to_clipboard(self):
         if self.current_tab_name == "receive":
@@ -1592,6 +1808,7 @@ class BrainbowApp(MDApp):
                 self.show_snackbar(text="Copied {}...{} to clipboard.".format(current_address[:8], current_address[-8:]))
             except:
                 self.show_snackbar(text="Can't copy to clipboard.")
+
 
     def update_amounts(self, text=None, type="coin"):
         if self.is_amount_inputs_locked:
@@ -1603,13 +1820,17 @@ class BrainbowApp(MDApp):
             return
         rate = self.get_rate() / self.unit_factor
         new_amount = None
-        if type == "coin":
-            new_amount = amount * rate
-            self.update_amount_fields(amount, new_amount)
-        elif type == "fiat":
-            new_amount = amount / rate
-            self.update_amount_fields(new_amount, amount)
-        self.update_recieve_qrcode()
+        if rate:
+            if type == "coin":
+                new_amount = amount * rate
+                self.update_amount_fields(amount, new_amount)
+            elif type == "fiat":
+                new_amount = amount / rate
+                self.update_amount_fields(new_amount, amount)
+            self.update_recieve_qrcode()
+        else:
+            self.show_snackbar(text="Exchange rate is loading... Wait and retry.")
+
 
     def update_amount_fields(self, coin, fiat):
         self.is_amount_inputs_locked = True
@@ -1624,8 +1845,10 @@ class BrainbowApp(MDApp):
         #
         self.is_amount_inputs_locked = False
 
+
     def on_start(self):
         pass
+
 
     def build(self):
         """ """
@@ -1676,11 +1899,13 @@ class BrainbowApp(MDApp):
                                             )
         self.set_electrum_preset_chooser()
 
+
     def set_electrum_server(self, server):
         """
         """
         self.root.ids.dropdown_electrum_field.text = server
         self.electrum_select.dismiss()
+
 
     def build_config(self, config):
         config.setdefaults("brainbow", {
@@ -1696,6 +1921,7 @@ class BrainbowApp(MDApp):
     def build_settings(self, settings):
         coin = self.chain.chain_1209k.upper()
         #settings.add_json_panel("Settings", self.config, data=settings_json(coin))
+
 
     def on_config_change(self, config, section, key, value):
         print("on_config_change {} {} {} {}".format(config, section, key, value))
@@ -1729,13 +1955,16 @@ class BrainbowApp(MDApp):
             self._qrreader.disconnect_camera()
         return True
 
+
     def on_resume(self):
         return True
+
 
     def on_stop(self):
         if self._qrreader:
             self._qrreader.disconnect_camera()
         return True
+
 
     def add_list_item(self, text, history):
         #if self.block_height:
@@ -1755,6 +1984,7 @@ class BrainbowApp(MDApp):
                         "history": history,
                         "icon": icon })
 
+
     def goto_slide(self, name):
         self.root.ids.onboarding_drawer.set_state("close")
         for i in app.root.ids.caraousel.slides:
@@ -1762,6 +1992,7 @@ class BrainbowApp(MDApp):
             if i.name == name:
                 app.root.ids.caraousel.load_slide(i)
                 return
+
 
     def goto_screen(self, name, tab=None):
         if self._wallet_ready:

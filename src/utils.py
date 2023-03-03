@@ -32,16 +32,19 @@ def is_valid_address(addr, netcode):
     :param addr: "address" or "pay_to_script"
     :param netcode: BTC or XTN
     """
-    is_valid = addr.strip() and \
-        validate.is_address_valid(
-            addr.strip(), ["address", "pay_to_script"], [netcode]) == netcode
-    if not is_valid:
-        addr = addr.lower()
-        hrp = addr.split("1")[0]
-        ver, prog = embit_bech32.decode(hrp, addr)
-        if ver is not None:
-            if 0 <= ver <= 16 and prog:
-                is_valid = True
+    try:
+        is_valid = addr.strip() and \
+            validate.is_address_valid(
+                addr.strip(), ["address", "pay_to_script"], [netcode]) == netcode
+        if not is_valid:
+            addr = addr.lower()
+            hrp = addr.split("1")[0]
+            ver, prog = embit_bech32.decode(hrp, addr)
+            if ver is not None:
+                if 0 <= ver <= 16 and prog:
+                    is_valid = True
+    except:
+        is_valid = False
     return is_valid
 
 

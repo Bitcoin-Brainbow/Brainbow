@@ -1,11 +1,20 @@
 # Compatibility and utils
-
 from kivy.utils import platform
+from os.path import join as os_path_join
+
+def get_storage_path(filename=""):
+    try:
+        from android.storage import primary_external_storage_path
+        ext_path = primary_external_storage_path()
+    except ModuleNotFoundError:
+        from os.path import expanduser
+        ext_path = expanduser("~")
+    return os_path_join(ext_path, 'Downloads', filename)
 
 
 def open_url(url):
     if platform == 'android':
-        ''' Open a webpage in the default Android browser.  '''
+        """ Open a webpage in the default Android browser. """
         from jnius import autoclass, cast
         context = autoclass('org.kivy.android.PythonActivity').mActivity
         Uri = autoclass('android.net.Uri')
