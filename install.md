@@ -37,7 +37,7 @@ pyzbar
 pip install -r new_requirements.txt
 ```
 
-Note: for MacOS I had to install zbar with brew
+Note: for MacOS install zbar with brew
 
 ```shell
 brew install zbar
