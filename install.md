@@ -1,10 +1,12 @@
+# How to run the sources on your own machine 
+
 ## Create a Python3 virtual environment
 
 ```shell
 python -m venv ~/brainbowenv/
 ```
 
-## Activate the Python virtual environment 
+## Activate the Python virtual environment
 
 ```shell
 source ~/brainbowenv/bin/activate
@@ -22,4 +24,4 @@ pip install -r new_requirements.txt
 ```
 
 ## NOTES:
-- Tor must be installed and running. 
+- Tor must be installed and running.
