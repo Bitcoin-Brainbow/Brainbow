@@ -1,12 +1,12 @@
 # How to run the sources on your own machine 
 
-## Create Python3 virtual environment
+## Create a Python3 virtual environment
 
 ```shell
 python -m venv ~/brainbowenv/
 ```
 
-## Activate the python virtual environment 
+## Activate the Python3 virtual environment 
 
 ```shell
 source ~/brainbowenv/bin/activate
