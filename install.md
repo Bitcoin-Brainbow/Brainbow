@@ -15,7 +15,7 @@ source ~/brainbowenv/bin/activate
 Note: you can deactivate the python environment at any time with the command `deactivate`
 read more about it [here](https://docs.python.org/3/library/venv.html)
 
-## Clone brainbow repository and install requirements
+## Clone Brainbow repository and install requirements
 
 ```shell
 git clone https://github.com/Bitcoin-Brainbow/Brainbow.git brainbow
