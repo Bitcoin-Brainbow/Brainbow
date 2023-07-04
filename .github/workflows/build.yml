@@ -31,6 +31,7 @@ jobs:
       #    workdir: .
       #    buildozer_version: stable
       - name: Build with Buildozer
+        id: buildozer
         run: |
           pip3 install --user --upgrade buildozer Cython virtualenv
           export PATH=$PATH:~/.local/bin/
