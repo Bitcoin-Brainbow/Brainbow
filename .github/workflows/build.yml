@@ -43,10 +43,13 @@ jobs:
           buildozer android debug
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
+        #with:
+        #  name: package
+        #  path: ${{ steps.buildozer.outputs.filename }}
         with:
           name: package
-          path: ${{ steps.buildozer.outputs.filename }}
-
+          path: bin/*.apk
+          
       - name: Checkout
         uses: actions/checkout@v2
         with:
