@@ -24,7 +24,7 @@ jobs:
           path: master
 
       - name: Build with Buildozer
-        uses: ./master # REPLACE WITH ArtemSBulgakov/buildozer-action@v1
+        #uses: ./master # REPLACE WITH ArtemSBulgakov/buildozer-action@v1
         id: buildozer
         with:
           repository_root: master
@@ -38,7 +38,7 @@ jobs:
           sudo apt update
           sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           cd ${{ github.workspace }}
-          buildozer android debug  
+          buildozer android debug
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
