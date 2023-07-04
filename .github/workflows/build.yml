@@ -23,13 +23,14 @@ jobs:
         with:
           path: master
 
+      #- name: Build with Buildozer
+      #  uses: ./master # REPLACE WITH ArtemSBulgakov/buildozer-action@v1
+      #  id: buildozer
+      #  with:
+      #    repository_root: master
+      #    workdir: .
+      #    buildozer_version: stable
       - name: Build with Buildozer
-        #uses: ./master # REPLACE WITH ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          repository_root: master
-          workdir: .
-          buildozer_version: stable
         run: |
           pip3 install --user --upgrade buildozer Cython virtualenv
           export PATH=$PATH:~/.local/bin/
