@@ -27,9 +27,6 @@ source.exclude_dirs = tests, bin, venv, old-sources, multisig
 # (str) Application versioning (method 2)
 version.regex = __version__ = ['"](.*)['"]
 version.filename = %(source.dir)s/main.py
- 
-#Cython==0.29.32 -> Cython==0.29.36
-# https://github.com/kivy/python-for-android/issues/2847
     
 # (list) Application requirements
 requirements =
