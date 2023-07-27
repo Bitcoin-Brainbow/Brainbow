@@ -34,8 +34,8 @@ version.filename = %(source.dir)s/main.py
 # (list) Application requirements
 requirements =
   #python3==3.9.9,
-  #python==3.10,
-  python3,
+  # python==3.10,
+  python==3.11.0,
   #cffi==1.13.2,
   cffi==1.15.1,
   pbkdf2,
@@ -473,7 +473,6 @@ ios.codesign.allowed = false
 
 
 [buildozer]
-
 # (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
 log_level = 2
 
