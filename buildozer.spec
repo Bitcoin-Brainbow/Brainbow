@@ -27,11 +27,13 @@ source.exclude_dirs = tests, bin, venv, old-sources, multisig
 # (str) Application versioning (method 2)
 version.regex = __version__ = ['"](.*)['"]
 version.filename = %(source.dir)s/main.py
+
     
-# (list) Application requirements
-requirements =
   #python3==3.9.9,
   # python==3.10,
+  
+# (list) Application requirements
+requirements =
   python==3.11.0,
   #cffi==1.13.2,
   cffi==1.15.1,
