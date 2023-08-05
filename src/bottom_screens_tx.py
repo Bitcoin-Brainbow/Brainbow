@@ -212,7 +212,7 @@ class TxDetailInfo(MDGridLayout):
             broadcast_btn_dl.font_size = '18sp'
     #        broadcast_btn_dl.md_bg_color = "#252525"
 
-            btn_box.add_widget(broadcast_btn_dl)
+            # WIP: btn_box.add_widget(broadcast_btn_dl)
             btn_box.add_widget(broadcast_btn)
             overview_box.add_widget(btn_box)
         else:
@@ -301,7 +301,7 @@ class TxDetailInfo(MDGridLayout):
                         on_release = app.open_txo_menu_items
                     )
                 )
-     
+
         outputs_box.add_widget(scroll_output_view)
         outputs_tab.add_widget(outputs_box)
         tabs.add_widget(outputs_tab)

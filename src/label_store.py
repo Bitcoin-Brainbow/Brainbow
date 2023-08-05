@@ -1,8 +1,10 @@
 from kivy_utils import get_storage_path
 import os
 import shutil
-
-
+from functools import partial
+from kivymd.uix.button import MDFlatButton
+from kivymd.uix.dialog import MDDialog
+from kivy.metrics import dp
 
 class LabelStore:
     """
@@ -16,14 +18,41 @@ class LabelStore:
         self._unsynced_labels = 0
         self._types = ['tx','input', 'output', 'addr', 'xpub', 'pubkey']
         self.store = []
+        self._dialog = None
 
+    def _close_dialog(self, *args):
+        """ """
+        if self._dialog:
+            self._dialog.dismiss()
+
+    def _import_close_dialog(self, *args):
+        """ """
+        self.load_from_file()
+        if self._dialog:
+            self._dialog.dismiss()
 
     def _mark_synced(self):
         self._unsynced_labels = 0
 
     def check_for_import(self):
+        """ """
         if self.check_for_label_file():
-            self.kivyapp.show_dialog("Import labels?", "Label file found")     
+            self._dialog = MDDialog(title="Import labels from file?",
+                                        text="Label file found",
+                                        size_hint=(.8, None),
+                                        height=dp(200),
+                                        auto_dismiss=False,
+                                        buttons=[
+                                            MDFlatButton(text="NO THANKS",
+                                                on_release=partial(self._close_dialog)),
+                                            MDFlatButton(text="YES",
+                                                on_release=partial(self._import_close_dialog)),
+
+                                               ]
+
+                                           )
+            # WIP: self._dialog.open()
+
 
     def check_for_label_file(self, path=None):
         if path is None:

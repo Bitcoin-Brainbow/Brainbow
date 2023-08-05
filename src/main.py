@@ -58,7 +58,6 @@ from kivy.uix.modalview import ModalView
 
 #from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.button import ButtonBehavior
-#from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty
 
 from kivy_garden.qrcode import QRCodeWidget
@@ -103,13 +102,12 @@ top_blk = {'height', 0}
 
 
 
-__version__ = "0.1.147"
+__version__ = "0.1.148"
 
 if platform == "android":
     Window.softinput_mode = "below_target"
 else:
     Window.size = (768/2, 1366/2)
-
 
 
 class IconLeftConfirmationWidget(ILeftBodyTouch, MDIconButton):
@@ -187,22 +185,24 @@ class UTXOListItem(TwoLineListItem):
         this_utxo_menu_items = [{"viewclass": "MyMenuItem",
                                  "on_release": lambda fx="view-address": app.utxo_menu_callback(self, fx),
                                  "text": "View Address"},
-                                 {"viewclass": "MyMenuItem",
-                                  "on_release": lambda fx="add-label-address": app.utxo_menu_callback(self, fx),
-                                  "text": LABEL_DIALOG_TITLE_ADDRESS },
-                                 {"viewclass": "MyMenuItem",
-                                  "on_release": lambda fx="add-label-tx": app.utxo_menu_callback(self, fx),
-                                  "text": LABEL_DIALOG_TITLE_TRANSACTION},
-                                 {"viewclass": "MyMenuItem",
-                                  "on_release": lambda fx="add-label-utxo": app.utxo_menu_callback(self, fx),
-                                  "text": LABEL_DIALOG_TITLE_UTXO},
-                                 {"viewclass": "MyMenuItem",
-                                  "on_release": lambda fx="private-key": app.utxo_menu_callback(self, fx),
-                                  "text": "Private Key"},
-                                   {"viewclass": "MyMenuItem",
-                                    "on_release": lambda fx="redeem-script": app.utxo_menu_callback(self, fx),
-                                    "text": "Redeem Script"},
-
+                                 # WIP: {"viewclass": "MyMenuItem",
+                                 # WIP:  "on_release": lambda fx="view-labels": app.utxo_menu_callback(self, fx),
+                                 # WIP:  "text": "View Labels"},
+                                 # WIP: {"viewclass": "MyMenuItem",
+                                 # WIP:  "on_release": lambda fx="add-label-address": app.utxo_menu_callback(self, fx),
+                                 # WIP:  "text": LABEL_DIALOG_TITLE_ADDRESS },
+                                 # WIP: {"viewclass": "MyMenuItem",
+                                 # WIP:  "on_release": lambda fx="add-label-tx": app.utxo_menu_callback(self, fx),
+                                 # WIP:  "text": LABEL_DIALOG_TITLE_TRANSACTION},
+                                 # WIP: {"viewclass": "MyMenuItem",
+                                 # WIP:  "on_release": lambda fx="add-label-utxo": app.utxo_menu_callback(self, fx),
+                                 # WIP:  "text": LABEL_DIALOG_TITLE_UTXO},
+                                 # WIP: {"viewclass": "MyMenuItem",
+                                 # WIP:  "on_release": lambda fx="private-key": app.utxo_menu_callback(self, fx),
+                                 # WIP:  "text": "Private Key"},
+                                 # WIP:   {"viewclass": "MyMenuItem",
+                                 # WIP:     "on_release": lambda fx="redeem-script": app.utxo_menu_callback(self, fx),
+                                 # WIP: "text": "Redeem Script"},
                                 ]
 
 
@@ -217,7 +217,7 @@ class UTXOListItem(TwoLineListItem):
                                             "text": "Unselect Coin",
                                             "on_release": lambda fx="remove-utxo-from-selection": app.utxo_menu_callback(self, fx),
                                             })
-
+        # WIP:
         ## do not spend coins ("label/group")
 
         """
@@ -232,7 +232,6 @@ class UTXOListItem(TwoLineListItem):
         {"viewclass": "MyMenuItem",
          "on_release": lambda x="Sign Message": self.utxo_menu_callback(self, x),
          "text": "TODO:Sign/Verify Message" },
-
 
         {"viewclass": "MyMenuItem",
          "on_release": lambda x="View Private Key": self.utxo_menu_callback(self, x),
@@ -335,7 +334,9 @@ class BrainbowApp(MDApp):
         #TODO: when switching to mainnet instead of testnet
         # self.electrum_server_presets = self.electrum_server_presets_mainnet
         self.electrum_server_presets = self.electrum_server_presets_testnet
+
         # class MyMenuItem(MDMenuItem):
+
         class MyMenuItem(OneLineListItem):
             pass
 
@@ -452,6 +453,8 @@ class BrainbowApp(MDApp):
                                         "text": "View Address",
                                         "disabled": True})
 
+        # WIP: See "WE NEED A TX OBJ HERE OR CHANGE" below.
+        """
         if self.wallet.history_store.get_tx(txid) :
             self.txo_menu_items.append({"viewclass": "MyMenuItem",
                                       "on_release": lambda x={
@@ -464,7 +467,7 @@ class BrainbowApp(MDApp):
             self.txo_menu_items.append({"viewclass": "MyMenuItem",
                                       "text": "View Transaction",
                                       "disabled": True})
-
+        """
 
         app.txo_menu = MDDropdownMenu(items=self.txo_menu_items,
                                          width_mult=6,
@@ -490,6 +493,7 @@ class BrainbowApp(MDApp):
         key = None
 
         if fx in ["view-address",
+                  "view-labels",
                   "private-key",
                   "redeem-script",
                   "add-label-address"]:
@@ -507,6 +511,10 @@ class BrainbowApp(MDApp):
 
         if fx == "view-address":
             self.open_address_bottom_sheet_callback(address)
+
+        elif fx == "view-labels":
+            self.open_labels_bottom_sheet_callback(address)
+
 
         elif fx == "add-label-address":
             self.show_label_dialog(title=LABEL_DIALOG_TITLE_ADDRESS, label_target="{}".format(address))
@@ -1682,6 +1690,10 @@ class BrainbowApp(MDApp):
         from bottom_screens_address import open_address_bottom_sheet
         open_address_bottom_sheet(address=address)
 
+    def open_labels_bottom_sheet_callback(self, address):
+        from bottom_screens_labels import open_labels_bottom_sheet
+        open_labels_bottom_sheet(address=address)
+
     def _update_addresses_screen(self, change=False):
         all_used_addresse = self.wallet.get_all_used_addresses(receive=not change, change=change)
         for address in self.wallet.get_all_known_addresses(addr=True, change=change):
@@ -1820,7 +1832,8 @@ class BrainbowApp(MDApp):
             return
         rate = self.get_rate() / self.unit_factor
         new_amount = None
-        if rate:
+        if rate or self.exchange_rates in [None, False]:
+            # We now either have a rate or don't need an exchange rate.
             if type == "coin":
                 new_amount = amount * rate
                 self.update_amount_fields(amount, new_amount)
