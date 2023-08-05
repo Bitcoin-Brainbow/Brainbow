@@ -25,7 +25,8 @@ source.exclude_dirs = tests, bin, venv, old-sources, multisig
 #version = 0.1.136
 
 # (str) Application versioning (method 2)
-version.regex = __version__ = ['"](.*)['"]
+version.regex = __version__ = ['"]([0-9]+\.[0-9]+\.[0-9]+)['"]
+
 version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
