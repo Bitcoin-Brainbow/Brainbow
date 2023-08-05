@@ -859,7 +859,7 @@ class BrainbowApp(MDApp):
         self.root.ids.toolbar.left_action_items = [
                     ["menu", lambda x: self.nav_drawer_handler()],
                     #["theme-light-dark", lambda x: app.switch_theme_handler()],
-                    ["creation", lambda x: app.dump_history_to_fs()],
+                # WIP:     ["creation", lambda x: app.dump_history_to_fs()],
                 ]
         self.root.ids.toolbar.right_action_items = []
         if current is not None:
