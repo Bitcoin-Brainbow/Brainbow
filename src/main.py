@@ -98,11 +98,7 @@ from label_store import LabelStore
 
 top_blk = {'height', 0}
 
-#import os
-
-
-
-__version__ = "0.1.148"
+__version__ = "0.1.149"
 
 if platform == "android":
     Window.softinput_mode = "below_target"

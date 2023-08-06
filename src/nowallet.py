@@ -38,6 +38,8 @@ from app import update_waiting_texts
 from connection import Connection
 
 from embit import bip32, bip39, bip85
+from embit import bech32 as embit_bech32
+from pycoin.tx.script import tools
 
 from utils import is_valid_address
 from utils import utxo_deduplication
@@ -873,7 +875,19 @@ class Wallet:
         txs_out = []  # type: List[TxOut]
         for payable in payables:
             bitcoin_address, coin_value = payable
-            script = standard_tx_out_script(bitcoin_address)  # type: bytes
+            try:
+                script = standard_tx_out_script(bitcoin_address)  # type: bytes
+            except:
+                # Handle bech32 using embit.
+                # Our pycoin 0.8 is not able to do it directly.
+                addr = bitcoin_address.lower()
+                hrp = addr.split("1")[0]
+                ver, prog = embit_bech32.decode(hrp, addr)
+                # Convert the witness program (prog) to bytes
+                decoded_prog = bytes(prog)
+                # Construct the scriptPubKey for P2WPKH
+                script = bytes([0x00, len(decoded_prog)]) + decoded_prog
+
             txs_out.append(TxOut(coin_value, script))
         txs_out.sort(key=lambda txo: (txo.coin_value, b2h(txo.script)))
 
