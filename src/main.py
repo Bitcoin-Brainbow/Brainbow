@@ -316,6 +316,7 @@ class BrainbowApp(MDApp):
         self._dialog = None # generic dialog
         self._disconnect_dialog = None
         self.label_store = None
+        self.low_entropy_warning = True
 
         self.electrum_server_presets_testnet = [
             "tcp://testnet.qtornado.com:51001",
@@ -634,6 +635,7 @@ class BrainbowApp(MDApp):
         return snackbar
 
     def show_dialog(self, title, message, qrdata=None, cb=None):
+        print("show_dialog {}".format(title))
         if qrdata:
             dialog_height = 300
             content = QRCodeWidget(data=qrdata,
@@ -648,7 +650,8 @@ class BrainbowApp(MDApp):
             #                   size_hint_y=None,
             #                   valign='top')
             # content.bind(texture_size=content.setter('size'))
-        self._dialog = MDDialog(title=title,
+
+        _dialog = MDDialog(title=title,
                                content_cls=content if content else None,
                                text=message if not content else "",
                                size_hint=(.8, None),
@@ -657,15 +660,18 @@ class BrainbowApp(MDApp):
                                buttons=[
                                    MDFlatButton(
                                        text="DISMISS",
-                                       on_release=partial(self.close_dialog))
+                                       on_release=lambda x: self.close_dialog(_dialog))
                                    ]
                                )
-        self._dialog.open()
+        _dialog.open()
 
 
-    def close_dialog(self, *args):
-        if self._dialog:
-            self._dialog.dismiss()
+
+
+    def close_dialog(self, dialog_instance, *args):
+        if dialog_instance:
+            dialog_instance.dismiss()
+
 
 
     def close_disconnect_dialog(self, *args):
@@ -934,8 +940,10 @@ class BrainbowApp(MDApp):
         self.root.ids.pass_progress.set_norm_value(passphrase_entropy_bits/128.)
         if passphrase_entropy_bits >= 128:
             self.root.ids.passphrase_hint.text = ""
+            self.low_entropy_warning = False
             self.root.ids.pass_progress.color = "green"
         else:
+            self.low_entropy_warning = True
             if passphrase_entropy_bits >= 128/3*2:
                 self.root.ids.pass_progress.color = "orange"
             elif passphrase_entropy_bits >= 128/2:
@@ -945,6 +953,7 @@ class BrainbowApp(MDApp):
             if len(self.root.ids.pass_field.text) > 0:
                 self.root.ids.passphrase_hint.text = "WARNING: Use a better passphrase!"
         if int(passphrase_entropy_bits) >= 128:
+            self.low_entropy_warning = False
             self.root.ids.passphrase_hint.color = "black"
             self.root.ids.passphrase_hint.text = "~{} bits of entropy".format(int(passphrase_entropy_bits))
 
@@ -1119,6 +1128,13 @@ class BrainbowApp(MDApp):
         #self._unlock_nav_drawer()
         #self.show_dialog("Loaded for the first time?", "If you are loading this wallet for the first time, it is recommended to close it and reload it.\n\This way you can make sure that you did not make a typo.\n\nIf the wallet is ___ again, then everything is fine.")
         #  in your salt or passphrase
+
+        if self.low_entropy_warning:
+            self.show_dialog("Warning: Low Entropy!",
+            """The provided passphrase and salt combination appears to have low entropy (less than 128 bits). This could potentially compromise the security of your wallet.
+            \n\nPlease consider using a longer and more complex passphrase and salt to ensure a higher level of protection."""
+            )
+
         if len(self.wallet.get_tx_history()) == 0:
             self.show_dialog("New wallet?",
                     "To make sure that you did not make a typo, it is recommended to close the wallet now and reloading it.\n\nIf the wallet name is '{}' after reloading it, everything is fine.".format(
@@ -1397,9 +1413,9 @@ class BrainbowApp(MDApp):
         #self.root.ids.wait_text_small.text = "Wating for fee estimate .."
 
         coinkb_fee = await self.wallet.get_relayfee()
+        print("coinkb_fee {}".format(coinkb_fee))
         relayfee = nowallet.Wallet.coinkb_to_satb(coinkb_fee)
-
-        print("fee {} relay {}".format(self.current_fee, relayfee))
+        print("fee {}, relayfee {}".format(self.current_fee, relayfee))
 
         self.mempool_recommended_fees = {}
         if self.current_fee == relayfee:
