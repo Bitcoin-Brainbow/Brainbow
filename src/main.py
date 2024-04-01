@@ -98,7 +98,7 @@ from label_store import LabelStore
 
 top_blk = {'height', 0}
 
-__version__ = "0.1.150"
+__version__ = "0.1.151"
 
 if platform == "android":
     Window.softinput_mode = "below_target"
@@ -316,8 +316,9 @@ class BrainbowApp(MDApp):
         ]
         self.electrum_server_presets_mainnet = [
             #"ssl://electrum.blockstream.info:50002", Disconnects after a few seconds..
-            "ssl://bitcoin.lu.ke:50002",
+            #"ssl://bitcoin.lu.ke:50002",
             "ssl://electrum.emzy.de:50002",
+            "ssl://fulcrum.sethforprivacy.com:50002",
             "ssl://electrum.bitaroo.net:50002",
         ]
         #TODO: when switching to mainnet instead of testnet
@@ -591,9 +592,11 @@ class BrainbowApp(MDApp):
         if self._wallet_ready is False:
             if on_off:
                 self.chain = nowallet.TBTC
+                self.units = "TBTC"
                 self.electrum_server_presets = self.electrum_server_presets_testnet
             else:
                 self.chain = nowallet.BTC
+                self.units = "BTC"
                 self.electrum_server_presets = self.electrum_server_presets_mainnet
             self.set_electrum_preset_chooser()
 
@@ -1623,12 +1626,6 @@ class BrainbowApp(MDApp):
         else:
             self.root.ids[tab_id].opacity = 1
 
-
-
-
-
-
-
     def update_balance_screen(self):
         if self.is_offline_mode:
             self.display_offline_message(True, 'main_tabs_balance', self.n_a_offline_mode_msg)
@@ -1982,25 +1979,19 @@ class BrainbowApp(MDApp):
             android_setflag()
 
         self.is_darkmode = True # Force dark mode for all
-
-        # Theme settings
         self.theme_cls.material_style = "M2"
         if self.is_darkmode:
             self.theme_cls.theme_style = "Dark"
         else:
             self.theme_cls.theme_style = "Light"
-        #self.theme_cls.primary_hue = "200"  # "500"
-        #self.theme_cls.secondary_palette = "Red"
-        #self.theme_cls.primary_hue = "200"  # "500"
-        #self.theme_cls.theme_style_switch_animation = True
-        #self.theme_cls.theme_style_switch_animation_duration = 0.8
 
         self.drawer_bg_color = self.root.ids.nav_drawer.md_bg_color
         self.use_kivy_settings = False
         self.rbf = self.config.getboolean("brainbow", "rbf")
         self.units = self.config.get("brainbow", "units")
+        print(self.config.get("brainbow", "units"))
         self.update_unit()
-        self.currency = "BTC"# disable by default self.config.get("brainbow", "currency")
+        self.currency = "BTC" # disable by default self.config.get("brainbow", "currency")
         self._hide_fiat_fields()
         self.explorer = self.config.get("brainbow", "explorer")
 
