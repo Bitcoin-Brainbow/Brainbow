@@ -1,6 +1,7 @@
+## Effective immediately, as of April 25, 2024, all work on Brainbow is suspended. The repository will remain archived and read-only. Please ensure compliance with local laws when accessing Brainbow resources or running the app. 
 
 <h1 align=center>
-<img src="Logo/horizontal.png" alt="Brainbow" width=60%>
+<img src="Logo/horizontal.png" alt="Brainbow" width="210px">
 </h1>
 
 ### Secure, private, and plausibly deniable
